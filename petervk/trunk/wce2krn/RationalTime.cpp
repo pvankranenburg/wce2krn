@@ -70,6 +70,28 @@ bool RationalTime::testDenominator(int i) const {
 bool RationalTime::testNumerator(int i) const {
 	return ((i*denominator) % numerator) == 0;
 }
+
+bool RationalTime::isMultipleOf(int i) const {
+	//must be integer:	
+	if ( (numerator%denominator)!=0 ) return false;
+	//now is integer;
+	if ( (numerator/denominator)%i == 0 ) return true;
+	//sure not dividable by i
+	return false;
+}
+	
+bool RationalTime::isMultipleOf(RationalTime r) const {
+	int numr;
+	if ( testDenominator(r.getDenominator()) )
+		numr = getNumerator(r.getDenominator());
+	else
+		return false;
+	if ( (numerator%numr) == 0 )
+		return true;
+	
+	return false;
+}
+
 	
 void RationalTime::simplify() {
 	int gcd = getGCD();
@@ -77,15 +99,37 @@ void RationalTime::simplify() {
 	denominator = denominator / gcd;
 }
 
-RationalTime RationalTime::operator+( RationalTime r) {
+RationalTime RationalTime::operator+( RationalTime r) const {
 	int newdenominator = denominator*r.getDenominator();
 	int newnumerator = r.getNumerator()*denominator + r.getDenominator()*numerator;
 	RationalTime res(newnumerator, newdenominator);
 	return res;
 }
 
-bool RationalTime::operator==( RationalTime r) {
+RationalTime RationalTime::operator-( RationalTime r) const {
+	int newdenominator = denominator*r.getDenominator();
+	int newnumerator = r.getDenominator()*numerator - r.getNumerator()*denominator;
+	RationalTime res(newnumerator, newdenominator);
+	return res;
+}
+
+RationalTime RationalTime::operator-() const {
+	RationalTime res(-numerator, denominator);
+	return res;
+}
+
+bool RationalTime::operator==( RationalTime r) const {
 	return (numerator*r.getDenominator()) == (denominator*r.getNumerator());
 }
-	
-	
+
+bool RationalTime::operator==( int i ) const {
+	return numerator == (denominator*i);
+}
+
+RationalTime& RationalTime::operator=(const RationalTime& r) {
+	if( &r != this ) {
+		numerator = r.getNumerator();
+		denominator = r.getDenominator();
+	}
+	return *this;
+}

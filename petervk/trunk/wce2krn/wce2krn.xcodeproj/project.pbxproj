@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8505A5030AFB9ADE0086A973 /* pvkutilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8505A5020AFB9ADE0086A973 /* pvkutilities.cpp */; };
+		85B6EF8B0AF804A000026727 /* RelLyToken.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85B6EF890AF804A000026727 /* RelLyToken.h */; };
+		85B6EF8C0AF804A000026727 /* RelLyToken.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85B6EF8A0AF804A000026727 /* RelLyToken.cpp */; };
 		85ED6A4D0AF16BBC00E2CFDF /* WCE_File.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85ED6A4B0AF16BBC00E2CFDF /* WCE_File.h */; };
 		85ED6A4E0AF16BBC00E2CFDF /* WCE_File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85ED6A4C0AF16BBC00E2CFDF /* WCE_File.cpp */; };
 		85ED6B7B0AF2201E00E2CFDF /* Song.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85ED6B790AF2201E00E2CFDF /* Song.h */; };
@@ -54,6 +57,7 @@
 				85ED6C3E0AF23F0600E2CFDF /* RationalTime.h in CopyFiles */,
 				85FC72F80AF2B5F5001B73F8 /* TimeSignature.h in CopyFiles */,
 				85FC73070AF2B975001B73F8 /* pvkutilities.h in CopyFiles */,
+				85B6EF8B0AF804A000026727 /* RelLyToken.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -61,6 +65,9 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* wce2krn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wce2krn.cpp; sourceTree = "<group>"; };
+		8505A5020AFB9ADE0086A973 /* pvkutilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pvkutilities.cpp; sourceTree = "<group>"; };
+		85B6EF890AF804A000026727 /* RelLyToken.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RelLyToken.h; sourceTree = "<group>"; };
+		85B6EF8A0AF804A000026727 /* RelLyToken.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RelLyToken.cpp; sourceTree = "<group>"; };
 		85ED6A4B0AF16BBC00E2CFDF /* WCE_File.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCE_File.h; sourceTree = "<group>"; };
 		85ED6A4C0AF16BBC00E2CFDF /* WCE_File.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WCE_File.cpp; sourceTree = "<group>"; };
 		85ED6B790AF2201E00E2CFDF /* Song.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Song.h; sourceTree = "<group>"; };
@@ -116,6 +123,9 @@
 				85FC72F60AF2B5F5001B73F8 /* TimeSignature.h */,
 				85FC72F70AF2B5F5001B73F8 /* TimeSignature.cpp */,
 				85FC73060AF2B975001B73F8 /* pvkutilities.h */,
+				85B6EF890AF804A000026727 /* RelLyToken.h */,
+				85B6EF8A0AF804A000026727 /* RelLyToken.cpp */,
+				8505A5020AFB9ADE0086A973 /* pvkutilities.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -192,6 +202,8 @@
 				85ED6C2E0AF23AF000E2CFDF /* SongLine.cpp in Sources */,
 				85ED6C3F0AF23F0600E2CFDF /* RationalTime.cpp in Sources */,
 				85FC72F90AF2B5F5001B73F8 /* TimeSignature.cpp in Sources */,
+				85B6EF8C0AF804A000026727 /* RelLyToken.cpp in Sources */,
+				8505A5030AFB9ADE0086A973 /* pvkutilities.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,10 +219,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS)",
-					"$(SRCROOT)/../museinfo/lib",
-				);
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = wce2krn;
 				ZERO_LINK = YES;
 			};
@@ -226,10 +235,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS)",
-					"$(SRCROOT)/../museinfo/lib",
-				);
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = wce2krn;
 			};
 			name = Release;
