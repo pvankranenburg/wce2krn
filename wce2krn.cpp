@@ -17,7 +17,8 @@ using namespace std;
 int main (int argc, char * const argv[]) {
 
 	//string filename(argv[1]);
-	string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL21810.wce");
+	//string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL21810.wce");
+	string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL19103.wce");
 	//string filename("/Users/pvk/Desktop/Untitled.wce");
 	//string filename("/Users/pvk/Desktop/hierinuwhuis.wce");
 	
@@ -45,11 +46,11 @@ int main (int argc, char * const argv[]) {
 	pos = basename.rfind(".wce");
 	basename.erase(pos);
 	Song s(filename);
-	
+
 	s.writeKern(basename);
-	s.writeKern(basename, true, false);
-	s.writeLy(basename, false, true, false);
-	s.writeLy(basename, true, true, false);
+	//s.writeKern(basename, true, false);
+	//s.writeLy(basename, false, true, false);
+	//s.writeLy(basename, true, true, false);
 	
 	return 0;
 }

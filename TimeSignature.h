@@ -23,6 +23,8 @@ public:
 	RationalTime getRationalTime() const;
 	int getNumerator() const;
 	int getDenominator() const;
+	
+	string getKernTimeSignature() const;
 
 private:
 	int numerator;
