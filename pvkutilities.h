@@ -29,4 +29,6 @@ inline int convertToInt(const std::string& s) {
 	return x;
 }
 
+string& pvktrim(string& s, string drop = "\t ");
+
 #endif

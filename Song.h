@@ -23,16 +23,15 @@ using namespace std;
 class Song {
 public:
 	Song(string inputfilename);
-
-	vector<string> getAbsoluteLilypondFile() const;
-	vector< vector<string> > getAbsoluteLilypondLineFiles() const;
- 	vector<Spine> getKernFile() const;
 	
 	TimeSignature translateTimeSignature(string lyTimeSignature) const;
 	RationalTime translateUpbeat(string lyUpbeat) const;
 	
-	void writeKern(string basename, bool lines = false, bool rhythm = false) const;
-	void writeLy(string basename, bool lines = false, bool absoulte = false, bool rhythm = false) const;
+	void writeToDisk(string basename,
+					 SongLine::representation repr = SongLine::KERN,
+					 bool lines = false,
+					 bool absoulte = false,
+					 bool rhythm = false) const;
 	
 private:
 	WCE_File wcefile;

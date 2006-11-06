@@ -9,6 +9,9 @@
 
 #include "TimeSignature.h"
 #include "pvkutilities.h"
+#include<string>
+#include<sstream>
+using namespace std;
 
 TimeSignature::TimeSignature() {
 	numerator = 0;
@@ -34,4 +37,12 @@ int TimeSignature::getNumerator() const {
 
 int TimeSignature::getDenominator() const {
 	return denominator;
+}
+
+string TimeSignature::getKernTimeSignature() const {
+	std::stringstream ss;
+	std::string res;
+	ss << "*M" << numerator << "/" << denominator;
+	ss >> res;
+	return res;
 }
