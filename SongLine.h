@@ -21,7 +21,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int barnumber); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int barnumber); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -50,6 +50,7 @@ public:
 	int getFinalDuration() const {return finalDuration;}
 	bool getFinalDotted() const {return finalDotted;}
 	int getFinalBarnumber() const {return finalBarnumber;}
+	int getKeySignature() const { return keySignature;}
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings.
 
@@ -75,7 +76,7 @@ private:
 	void breakWcelines(); //output goes into relLyTokens. Invoked in translate().
 	int computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const;
 	RationalTime rationalDuration(int duration, bool dotted, bool triplet) const;
-	string toKernText(string tok) const;
+	string toKernText(string tok, RelLyToken::TextStatus ts) const;
 	
 	const RationalTime initialUpbeat;
 	RationalTime finalUpbeat;
@@ -89,6 +90,7 @@ private:
 	int finalDuration;
 	const bool initialDotted;
 	bool finalDotted;
+	const int keySignature;
 	const int initialBarnumber;
 	int finalBarnumber;
 };

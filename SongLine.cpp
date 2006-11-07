@@ -14,7 +14,7 @@
 #include<cstdlib>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int barnumber) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int barnumber) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -29,6 +29,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   finalDuration(0),
 																   finalLastPitchClass(pitchclass),
 																   finalBarnumber(-1),
+																   keySignature(keysig),
 																   translationMade(false) {
 	translate();
 }
@@ -41,6 +42,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   initialOctave(4),
 					   initialLastPitchClass('g'),
 					   initialBarnumber(0),
+					   keySignature(0),
 					   translationMade(false) {
 	translate();
 }
@@ -60,6 +62,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 finalLastPitchClass(sl.getFinalLastPitchClass()),
 										 finalDotted(sl.getFinalDotted()),
 										 finalBarnumber(sl.getFinalBarnumber()),
+										 keySignature(sl.getKeySignature()),
 										 translationMade(false) {
 	translate();
 }
@@ -80,13 +83,7 @@ void SongLine::translate() {
 	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR_INFO;
 	RelLyToken::TieStatus  currentTieStatus = RelLyToken::NO_TIE;
 	bool currentTripletStatus = false;
-	
-	RationalTime cur = currentTimeSignature.getRationalTime();
-	RationalTime timeInBar = currentTimeSignature.getRationalTime() - initialUpbeat;
-	
-	//if no upbeat, and first line then barnumber = 1
-	if ( initialUpbeat == RationalTime(0,1) && currentBarnumber == 0 ) currentBarnumber = 1;
-	
+
 	//now scan the relative lilypond tokens and translate to AbsoluteLilypond and Kern
 	//assume music in first line
 	vector<RelLyToken>::iterator rl_it;
@@ -98,15 +95,44 @@ void SongLine::translate() {
 	//cout << endl;
 	
 	//for debugging
-	string rellytoken;
+	//string rellytoken;
 	//assume line 0 is melody, other lines are text
 	//first do the melody
 	string token = "";
 	absLyTokens.push_back(vector<string>());
 	kernTokens.push_back(vector<string>());
+	//Upbeat and initial barnumber if no upbeat, and first line then barnumber = 1
+
+	RationalTime timeInBar(0,1);
+	if ( initialUpbeat != 0 ) {
+		timeInBar = currentTimeSignature.getRationalTime() - initialUpbeat;
+	} else {
+		stringstream ss;
+		ss << "=" << currentBarnumber;
+		string barstr;
+		ss >> barstr;
+		kernTokens[0].push_back(barstr);
+		timeInBar = RationalTime(0,1);
+	}
 	for( rl_it = (relLyTokens[0]).begin(); rl_it != (relLyTokens[0]).end(); rl_it++ ) {
-		rellytoken = (*rl_it).getToken();
-		//to note or not to note
+		//rellytoken = (*rl_it).getToken();
+		
+		// new bar? : raise barnumber and write barlines to kern
+		if ( timeInBar == currentTimeSignature.getRationalTime() ) { // new bar
+			//write in **kern
+			stringstream ss;
+			currentBarnumber++;
+			ss << "=" << currentBarnumber;
+			string barstr;
+			ss >> barstr;
+			kernTokens[0].push_back(barstr);
+			timeInBar = RationalTime(0,1);
+		}
+		if ( timeInBar > currentTimeSignature.getRationalTime() ) {
+			cerr << "Error: bar to long: " << currentBarnumber << endl;
+		}
+
+		//to note or not to note		
 		id = (*rl_it).getIdentity();
 		switch(id) {
 			case RelLyToken::NOTE: {
@@ -123,12 +149,13 @@ void SongLine::translate() {
 				//octave
 				currentOctave = computeOctave( currentOctave, (*rl_it).getPitchClass(), lastPitchClass, (*rl_it).getOctaveCorrection() );
 				//tie
+				//RelLyToken::TieStatus rt = (*rl_it).getTie();
 				if ( currentTieStatus == RelLyToken::START_TIE || currentTieStatus == RelLyToken::CONTINUE_TIE )
-					if ( (*rl_it).getTie() == RelLyToken::START_TIE )
+					if ( (*rl_it).getTie() == RelLyToken::START_TIE)
 						currentTieStatus = RelLyToken::CONTINUE_TIE;
 					else
 						currentTieStatus = RelLyToken::END_TIE;
-				if ( currentTieStatus == RelLyToken::END_TIE || currentTieStatus == RelLyToken::NO_TIE )
+				else if ( currentTieStatus == RelLyToken::END_TIE || currentTieStatus == RelLyToken::NO_TIE )
 					if ( (*rl_it).getTie() == RelLyToken::START_TIE )
 						currentTieStatus = RelLyToken::START_TIE;
 					else
@@ -198,27 +225,20 @@ void SongLine::translate() {
 				exit(1);
 			} break;
 		}
-		// new bar? : raise barnumber and write barlines to kern
-		if ( timeInBar == currentTimeSignature.getRationalTime() ) { // new bar
-			//write in **kern
-			currentBarnumber++;
-			stringstream ss;
-			ss << "=" << currentBarnumber;
-			string barstr;
-			ss >> barstr;
-			kernTokens[0].push_back(barstr);
-			timeInBar = RationalTime(0,1);
-		}
 	}
 
 	finalOctave = currentOctave;
 	finalDuration = currentDuration;
 	finalDotted = currentDotted;
-	finalBarnumber = currentBarnumber;
 	finalTimeSignature = currentTimeSignature;
 	if (lastPitchClass != 's' && lastPitchClass != 'r') finalLastPitchClass = lastPitchClass;
-	finalUpbeat = currentTimeSignature.getRationalTime() - timeInBar;
-
+	if (timeInBar == currentTimeSignature.getRationalTime()) {
+		finalUpbeat = RationalTime(0,1);
+		finalBarnumber = currentBarnumber+1;
+	} else {
+		finalUpbeat = currentTimeSignature.getRationalTime() - timeInBar;
+		finalBarnumber = currentBarnumber;
+	}
 
 	//now do text lines (if any). Take kern as reference.
 	string str;
@@ -229,15 +249,18 @@ void SongLine::translate() {
 		kernTokens.push_back(vector<string>());
 	}
 	int relly_index = 0;
+	RelLyToken::TextStatus currentTextStatus = RelLyToken::SINGLE_WORD;
+	
 	for ( krn_it = kernTokens[0].begin(); krn_it != kernTokens[0].end(); krn_it++) {
 		//now do the krn
+
 		//if not a corresponding token in ly: add token from melodyline.
 		if ( (*krn_it).find_first_of("!=*") != string::npos ) {
 			for ( int i = 1; i<numLines; i++ ) {
 				kernTokens[i].push_back( (*krn_it) );
 			} 
 			
-			//it can be possible that there is a corresponding rel ly token (time / times). If so, add that to absLy
+			//it can be possible that there is a corresponding rel ly token (time). If so, add that to absLy
 			if ( relly_index < relLyTokens[0].size() ) {
 				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE ) {
 					for (int i = 1; i<numLines; i++ ) {
@@ -248,10 +271,26 @@ void SongLine::translate() {
 			}
 		} else { // text
 			for ( int i = 1; i<numLines; i++ ) {
+				
 				if ( relly_index >= relLyTokens[i].size() )
 					kernTokens[i].push_back( "." );
-				else
-					kernTokens[i].push_back( toKernText( relLyTokens[i][relly_index].getToken() ) );
+				else {
+					if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::TIMES_COMMAND ) {
+						//textstatus:
+						bool dash = ( relLyTokens[i][relly_index].getToken().find("--") != string::npos );
+						if ( currentTextStatus == RelLyToken::SINGLE_WORD ) {
+							if (dash) currentTextStatus = RelLyToken::BEGIN_WORD; else currentTextStatus = RelLyToken::SINGLE_WORD;
+						} else if ( currentTextStatus == RelLyToken::IN_WORD ) {
+							if (dash) currentTextStatus = RelLyToken::IN_WORD; else currentTextStatus = RelLyToken::END_WORD;
+						} else if ( currentTextStatus == RelLyToken::BEGIN_WORD ) {
+							if (dash) currentTextStatus = RelLyToken::IN_WORD; else currentTextStatus = RelLyToken::END_WORD;
+						} else if ( currentTextStatus == RelLyToken::END_WORD ) {
+							if (dash) currentTextStatus = RelLyToken::BEGIN_WORD; else currentTextStatus = RelLyToken::SINGLE_WORD;
+						}
+						kernTokens[i].push_back( toKernText( relLyTokens[i][relly_index].getToken(), currentTextStatus) );
+					} else
+						krn_it--; // Same Token again. DO NOT USE krn_it AFTER THIS.
+				}
 
 				//for absLy: just copy:
 				for( int i = 1; i<numLines; i++ )  {
@@ -333,6 +372,7 @@ void SongLine::breakWcelines() {
 		}
 	}
 	//now check wether all lines have the same number of tokens
+	/*
 	vector<vector<RelLyToken> >::iterator rlit;
 	for ( rlit = relLyTokens.begin(); rlit != relLyTokens.end(); rlit++ ) {
 		if ((*rlit).size() != (*relLyTokens.begin()).size() ) {
@@ -342,6 +382,7 @@ void SongLine::breakWcelines() {
 			writeToStdout();
 		}
 	}
+	*/
 }
 
 int SongLine::computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const {
@@ -382,6 +423,113 @@ RationalTime SongLine::rationalDuration(int duration, bool dotted, bool triplet)
 		return RationalTime(n,d);
 }
 
-string SongLine::toKernText(string tok) const {
+string SongLine::toKernText(string tok, RelLyToken::TextStatus ts) const {
+	pvktrim(tok);
+	if ( tok.size() == 0 ) return ".";
+	if ( tok == "_" ) return ".";
+	if ( tok.find(" --") != string::npos) tok.erase(tok.find(" --"));
+	
+	switch (ts) {
+		case RelLyToken::IN_WORD: tok = "-" + tok + "-"; break;
+		case RelLyToken::BEGIN_WORD: tok = tok + "-"; break;
+		case RelLyToken::END_WORD: tok = "-" + tok; break;
+	}
+	
+	//remove "
+	string::size_type pos;
+	while ( (pos = tok.find_first_of("\"")) != string::npos ) tok.erase(pos,1);
+	
 	return tok;
+}
+
+vector<string> SongLine::getLyLine(bool absolute) const{
+	vector<string> res;
+	
+	return res;
+}
+
+vector<string> SongLine::getLyBeginSignature(bool absolute) const {
+	vector<string> res;
+	
+	return res;
+}
+
+vector<string> SongLine::getLyEndSignature() const {
+	vector<string> res;
+	
+	return res;
+}
+
+vector<string> SongLine::getKernLine() const {
+	vector<string> res;
+	string s;
+	
+	if ( kernTokens.size() == 0 ) return res;
+	
+	for(int j=0; j < kernTokens[0].size(); j++) {
+		s = "";
+		for (int i=0; i < kernTokens.size(); i++ ) {
+			s = s + kernTokens[i][j] + "\t";
+		}
+		//remove last tab.
+		s = s.substr(0,s.size()-1);
+		res.push_back(s);
+	}
+	
+	return res;
+}
+
+vector<string> SongLine::getKernBeginSignature() const {
+	vector<string> res;
+	string s;
+	if ( kernTokens.size() == 0 ) return res;
+
+	//identify spine
+	s = "";
+	for(int i=0; i < kernTokens.size(); i++ ) {
+		if (i == 0 ) s = s + "**kern" + "\t" ; else s = s + "**text" + "\t";
+	}
+	//remove last tab.
+	s = s.substr(0,s.size()-1);
+	res.push_back(s);
+	
+	//time signature
+	s = "";
+	for(int i=0; i < kernTokens.size(); i++ ) {
+		if ( i == 0 ) s = s + initialTimeSignature.getKernTimeSignature() + "\t"; else s = s + "*\t";
+	}
+	s = s.substr(0,s.size()-1);
+	res.push_back(s);
+
+	string keys = "";
+	if (keySignature < 0) keys = "b-e-a-d-g-c-f-";
+	if (keySignature > 0) keys = "f#c#g#d#a#e#b#";
+
+	//key signature
+	int ks = abs(keySignature);
+	s = "";
+	for( int i=0; i< kernTokens.size(); i++ ) {
+		if ( i == 0) s = s + "*k[" + keys.substr(0,2*ks) + "]\t"; else s = s + "*\t";
+	}
+	s = s.substr(0,s.size()-1);
+	res.push_back(s);
+	
+	return res;
+}
+
+vector<string> SongLine::getKernEndSignature() const {
+	vector<string> res;
+
+	string s;
+	if ( kernTokens.size() == 0 ) return res;
+
+	//identify spine
+	s = "";
+	for(int i=0; i < kernTokens.size(); i++ ) {
+		s = s + "*-" + "\t";
+	}
+	s = s.substr(0,s.size()-1);
+	res.push_back(s);
+	
+	return res;
 }

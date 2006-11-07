@@ -27,6 +27,7 @@ public:
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
 	enum Accidental { DOUBLE_FLAT, FLAT, NO_ACCIDENTAL, NATURAL, SHARP, DOUBLE_SHARP };
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
+	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD };
 
 	string RelLyToken::getToken() const { return token; }
 	
