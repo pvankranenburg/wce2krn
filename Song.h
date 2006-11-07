@@ -12,9 +12,8 @@
 
 #include<vector>
 #include<string>
-#include<WCE_File.h>
-#include<Spine.h>
-#include<SongLine.h>
+#include"WCE_File.h"
+#include"SongLine.h"
 using namespace std;
 
 #include "RationalTime.h"
