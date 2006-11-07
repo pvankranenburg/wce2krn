@@ -131,7 +131,7 @@ string RelLyToken::createKernNote(int octave, int duration, bool dotted, bool tr
 	//open tie
 	if (tie == START_TIE) res << "[";
 	//duration
-	if (triplet) duration = duration / 4 * 3;
+	if (triplet) duration = duration / 2 * 3;
 	res << duration;
 	if (dotted) res << ".";
 	//pitch and octave
@@ -145,7 +145,8 @@ string RelLyToken::createKernNote(int octave, int duration, bool dotted, bool tr
 			for (int i=1; i<=abs(octave); i++) {
 				if (octave<0) res << pc_up; else res << pc;
 			}
-		}
+		} else
+			res << pc_up; //octave-3=0
 	}
 	//accidental
 	Accidental ac = getAccidental();

@@ -26,12 +26,12 @@ public:
 	
 	TimeSignature translateTimeSignature(string lyTimeSignature) const;
 	RationalTime translateUpbeat(string lyUpbeat) const;
+	int translateKeySignature(string lyKey) const;
 	
-	void writeToDisk(string basename,
+	void writeToDisk(string basename_full,
 					 SongLine::representation repr = SongLine::KERN,
 					 bool lines = false,
-					 bool absoulte = false,
-					 bool rhythm = false) const;
+					 bool absoulte = false) const;
 	
 private:
 	WCE_File wcefile;

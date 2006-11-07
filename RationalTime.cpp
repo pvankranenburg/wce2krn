@@ -18,8 +18,9 @@ RationalTime::RationalTime() {
 }
 
 RationalTime::RationalTime(int num, int den) : numerator(num), denominator(den) {
-	if ( denominator == 0 )
-	{ cerr << "Denominator is zero!" << endl; exit(1); }
+	if ( denominator == 0 ) {
+		cerr << "Denominator is zero!" << endl; exit(1);
+		}
 	simplify();
 }
 
@@ -124,6 +125,14 @@ bool RationalTime::operator==( RationalTime r) const {
 
 bool RationalTime::operator==( int i ) const {
 	return numerator == (denominator*i);
+}
+
+bool RationalTime::operator!=( int i ) const {
+	return numerator != (denominator*i);
+}
+
+bool RationalTime::operator>( RationalTime r ) const {
+	return (numerator*r.getDenominator()) > (r.getNumerator()*denominator);
 }
 
 RationalTime& RationalTime::operator=(const RationalTime& r) {

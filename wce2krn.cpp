@@ -14,11 +14,31 @@ using namespace std;
 
 #include "SongLine.h"
 
-int main (int argc, char * const argv[]) {
+void usage() {
+	cout << "usage: wce2krn [-s] wcefile" << endl;
+	cout << " -s: spit in lines." << endl << endl;
+}
 
+int main (int argc, char * const argv[]) {
+	
+	bool split = false;
+	bool absolute = true;
+	string filename;
+	
+	if ( argc == 3 ) {
+		filename = string(argv[2]);
+		split = true;
+	} else if ( argc == 2 ) {
+		filename = string(argv[1]);
+	} else {
+		usage();
+		exit(1);
+	}
+		
+	
 	//string filename(argv[1]);
 	//string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL21810.wce");
-	string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL19103.wce");
+	//string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL19103.wce");
 	//string filename("/Users/pvk/Desktop/Untitled.wce");
 	//string filename("/Users/pvk/Desktop/hierinuwhuis.wce");
 	
@@ -47,7 +67,7 @@ int main (int argc, char * const argv[]) {
 	basename.erase(pos);
 	Song s(filename);
 
-	s.writeKern(basename);
+	s.writeToDisk(basename, SongLine::KERN, split, absolute);
 	//s.writeKern(basename, true, false);
 	//s.writeLy(basename, false, true, false);
 	//s.writeLy(basename, true, true, false);
