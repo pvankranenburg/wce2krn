@@ -103,13 +103,15 @@ void SongLine::translate() {
 	kernTokens.push_back(vector<string>());
 	//Upbeat and initial barnumber if no upbeat, and first line then barnumber = 1
 
-	RationalTime timeInBar(0,1);
+	RationalTime timeInBar = RationalTime(0,1);
 	if ( initialUpbeat != 0 ) {
 		timeInBar = currentTimeSignature.getRationalTime() - initialUpbeat;
+		//cout << "INITIAL " << timeInBar.getNumerator() << "/" << timeInBar.getDenominator() << endl;
+		//cout << "INITIALUPBEAT " << initialUpbeat.getNumerator() << "/" << initialUpbeat.getDenominator() << endl;
 	} else {
 		stringstream ss;
 		ss << "=" << currentBarnumber;
-		string barstr;
+		string barstr = "";
 		ss >> barstr;
 		kernTokens[0].push_back(barstr);
 		timeInBar = RationalTime(0,1);
@@ -123,14 +125,14 @@ void SongLine::translate() {
 			stringstream ss;
 			currentBarnumber++;
 			ss << "=" << currentBarnumber;
-			string barstr;
+			string barstr = "";
 			ss >> barstr;
 			kernTokens[0].push_back(barstr);
 			timeInBar = RationalTime(0,1);
 		}
-		if ( timeInBar > currentTimeSignature.getRationalTime() ) {
-			cerr << "Error: bar to long: " << currentBarnumber << endl;
-		}
+		//if ( timeInBar > currentTimeSignature.getRationalTime() ) {
+		//	cerr << "Error: bar to long: " << currentBarnumber << endl;
+		//}
 
 		//to note or not to note		
 		id = (*rl_it).getIdentity();
@@ -189,6 +191,9 @@ void SongLine::translate() {
 				//set time
 				timeInBar = timeInBar + rationalDuration(currentDuration, currentDotted, currentTripletStatus);
 				// set tripletstatus to false if closingbrace after note
+				RationalTime t = rationalDuration(currentDuration, currentDotted, currentTripletStatus);
+				//cout << token << " bar:" << currentBarnumber << " " << timeInBar.getNumerator() << "/" << timeInBar.getDenominator() << 
+				//	" " << t.getNumerator() << "/" << t.getDenominator() << endl;
 				if ( currentTripletStatus && (*rl_it).containsClosingBraceAfterNote() ) currentTripletStatus = false;
 			} break;
 			
@@ -216,7 +221,8 @@ void SongLine::translate() {
 			} break;
 			
 			case RelLyToken::UNKNOWN: {
-				cerr << "Warning: Unknown token: \"" << (*rl_it).getToken() << "\"" << endl;
+				if ( (*rl_it).getToken().size() > 0 )
+					cerr << "Warning: Unknown token: \"" << (*rl_it).getToken() << "\"" << endl;
 				//exit(1);
 			} break;
 			

@@ -29,8 +29,12 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 	vector<string>::iterator str_it;
 	vector<string> singleline;
 	SongLine sl;
-	for( str_it=wcelines.begin(); str_it!=wcelines.end(); str_it++)
-		if ( (*str_it).empty() ) lineprofile.push_back(false); else lineprofile.push_back(true);
+	for( str_it=wcelines.begin(); str_it!=wcelines.end(); str_it++) {
+		bool emptyline = false;
+		if ((*str_it).empty()) emptyline = true;
+		if ((*str_it).find_first_not_of(" \t") == string::npos ) emptyline = true;
+		if ( emptyline ) lineprofile.push_back(false); else lineprofile.push_back(true);
+	}
 	//nu staan in lineprofile de dataregels op true
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
 		if (lineprofile[i] && i<lineprofile.size()) { // dataline
@@ -94,13 +98,22 @@ RationalTime Song::translateUpbeat(string lyUpbeat) const {
 	if ( lyUpbeat.size() == 0 ) return RationalTime(0,1);
 	int duration = 0;
 	int amount = 1;
+	bool dot = false;
 	pvktrim(lyUpbeat);
 	string::size_type pos;
 	if( (pos = lyUpbeat.find("*")) != string::npos ) { //number of notes
 		amount = atoi( (lyUpbeat.substr(pos+1)).c_str() );
 		lyUpbeat.erase(pos);
 	}
+	if ( (pos = lyUpbeat.find("."))  != string::npos) {
+		dot = true;
+		lyUpbeat.erase(pos);
+	}
 	duration = atoi( lyUpbeat.c_str() );
+	if (dot) {
+		amount = amount * 3;
+		duration = duration * 2;
+	}
 	return RationalTime(amount,duration);
 }
 

@@ -16,7 +16,6 @@ using namespace std;
 
 #include "RationalTime.h"
 #include "TimeSignature.h"
-#include "Spine.h"
 #include "RelLyToken.h"
 
 class SongLine {
@@ -69,7 +68,7 @@ private:
 	vector<vector<string> > kernTokens; //converted to kern
 	const vector<string> wcelines; //original wce lines (belonging to one song line)
 	vector<string> absLyLine; //lilypond line with absolute pitch and explicit note durations
-	vector<Spine> KernLine; //kern representation of the line .
+	//vector<Spine> KernLine; //kern representation of the line .
 	bool translationMade; //true if absLyLine and KernLine are made. 
 	
 	//some useful functions
