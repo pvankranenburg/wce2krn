@@ -23,10 +23,11 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   initialOctave(octave),
 																   initialLastPitchClass(pitchclass),
 																   initialBarnumber(barnumber),
-																   finalTimeSignature(TimeSignature()),
+																   finalTimeSignature(timesig),
 																   finalUpbeat(RationalTime(0,1)),
 																   finalOctave(4),
 																   finalDuration(0),
+																   finalDotted(false),
 																   finalLastPitchClass(pitchclass),
 																   finalBarnumber(-1),
 																   keySignature(keysig),
@@ -83,7 +84,7 @@ void SongLine::translate() {
 	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR_INFO;
 	RelLyToken::TieStatus  currentTieStatus = RelLyToken::NO_TIE;
 	bool currentTripletStatus = false;
-
+		
 	//now scan the relative lilypond tokens and translate to AbsoluteLilypond and Kern
 	//assume music in first line
 	vector<RelLyToken>::iterator rl_it;
@@ -101,7 +102,7 @@ void SongLine::translate() {
 	string token = "";
 	absLyTokens.push_back(vector<string>());
 	kernTokens.push_back(vector<string>());
-	//Upbeat and initial barnumber if no upbeat, and first line then barnumber = 1
+	//Upbeat and initial barnumber (if no upbeat)
 
 	RationalTime timeInBar = RationalTime(0,1);
 	if ( initialUpbeat != 0 ) {
@@ -118,26 +119,26 @@ void SongLine::translate() {
 	}
 	for( rl_it = (relLyTokens[0]).begin(); rl_it != (relLyTokens[0]).end(); rl_it++ ) {
 		//rellytoken = (*rl_it).getToken();
-		
-		// new bar? : raise barnumber and write barlines to kern
-		if ( timeInBar == currentTimeSignature.getRationalTime() ) { // new bar
-			//write in **kern
-			stringstream ss;
-			currentBarnumber++;
-			ss << "=" << currentBarnumber;
-			string barstr = "";
-			ss >> barstr;
-			kernTokens[0].push_back(barstr);
-			timeInBar = RationalTime(0,1);
-		}
-		//if ( timeInBar > currentTimeSignature.getRationalTime() ) {
-		//	cerr << "Error: bar to long: " << currentBarnumber << endl;
-		//}
 
 		//to note or not to note		
 		id = (*rl_it).getIdentity();
 		switch(id) {
 			case RelLyToken::NOTE: {
+		
+				// new bar? : raise barnumber and write barlines to kern
+				if ( timeInBar > currentTimeSignature.getRationalTime() ) {
+					cerr << "Error: bar to long: " << currentBarnumber << endl;
+				}
+				if ( timeInBar == currentTimeSignature.getRationalTime() ) { // new bar
+					//write in **kern
+					stringstream ss;
+					currentBarnumber++;
+					ss << "=" << currentBarnumber;
+					string barstr = "";
+					ss >> barstr;
+					kernTokens[0].push_back(barstr);
+					timeInBar = RationalTime(0,1);
+				}
 				//cout << (*rl_it).getToken() << ": note" << endl;
 				//now convert to abs ly and convert to kern
 				//triplet (status is set by TIMES_COMMAND below. reset here, if brace is before note, otherwhise after creating note)
@@ -199,10 +200,34 @@ void SongLine::translate() {
 			
 			case RelLyToken::TIME_COMMAND: { 
 				//cout << (*rl_it).getToken() << ": time" << endl;
+				//Change initialTimeSignature if \time is at begin of line
+				bool firstOfLine = false;
+				if ( timeInBar == RationalTime(0,1) && currentBarnumber == initialBarnumber ) {
+					const TimeSignature &tsc = initialTimeSignature;
+					TimeSignature &ts = const_cast<TimeSignature &>(tsc);
+					ts = (*rl_it).getTimeSignature();
+					firstOfLine = true;
+				}
+				//do this barline here
+				if ( timeInBar != currentTimeSignature.getRationalTime() && timeInBar != RationalTime(0,1) ) {
+					cerr << "Error: meter change out of place in bar: " << currentBarnumber << endl;
+				}
+				if ( timeInBar == currentTimeSignature.getRationalTime() ) { // new bar
+					//write in **kern
+					stringstream ss;
+					currentBarnumber++;
+					ss << "=" << currentBarnumber;
+					string barstr = "";
+					ss >> barstr;
+					kernTokens[0].push_back(barstr);
+					timeInBar = RationalTime(0,1);
+				}				
 				currentTimeSignature = (*rl_it).getTimeSignature();
 				//absLy: just copy the token
 				absLyTokens[0].push_back((*rl_it).getToken());
 				//kern: conver tot kern
+				//firstOfLine gaat mis als hele song wordt geconverteerd. Dan is er geen preamble voor elke regel.
+				//if (!firstOfLine) kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
 				kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
 			} break;
 			
@@ -262,9 +287,14 @@ void SongLine::translate() {
 
 		//if not a corresponding token in ly: add token from melodyline.
 		if ( (*krn_it).find_first_of("!=*") != string::npos ) {
-			for ( int i = 1; i<numLines; i++ ) {
-				kernTokens[i].push_back( (*krn_it) );
-			} 
+			if ( (*krn_it).find("*") == 0 )
+				for ( int i = 1; i<numLines; i++ ) {
+					kernTokens[i].push_back( "*" );
+				}
+			else
+				for ( int i = 1; i<numLines; i++ ) {
+					kernTokens[i].push_back( (*krn_it) );
+				} 
 			
 			//it can be possible that there is a corresponding rel ly token (time). If so, add that to absLy
 			if ( relly_index < relLyTokens[0].size() ) {
@@ -342,6 +372,7 @@ SongLine& SongLine::operator=(const SongLine& sl) {
 	if ( &sl != this ) {
 	}
 	cerr << "Waarschuwing: SongLine& SongLine::operator=(const SongLine& sl) gebruikt!!!!" << endl;
+	cerr.flush();
 	return *this;
 }
 

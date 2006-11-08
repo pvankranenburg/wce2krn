@@ -16,6 +16,11 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename) {
 	string::size_type pos;
 	
 	infile.open(inputfilename.c_str());
+	if (!infile.good() ) {
+		cerr << "Error: Unable to open file: " << inputfilename << endl;
+		cerr.flush();
+		exit(1);
+	}
 	
 	while(getline(infile,line)) {
 		if( pos = line.find("encoderNameTextField") != string::npos ) {
