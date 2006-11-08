@@ -123,6 +123,10 @@ bool RationalTime::operator==( RationalTime r) const {
 	return (numerator*r.getDenominator()) == (denominator*r.getNumerator());
 }
 
+bool RationalTime::operator!=( RationalTime r) const {
+	return (numerator*r.getDenominator()) != (denominator*r.getNumerator());
+}
+
 bool RationalTime::operator==( int i ) const {
 	return numerator == (denominator*i);
 }
