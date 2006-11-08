@@ -28,9 +28,10 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 	vector<bool> lineprofile;
 	vector<string>::iterator str_it;
 	vector<string> singleline;
+	bool emptyline = false;
 	SongLine sl;
 	for( str_it=wcelines.begin(); str_it!=wcelines.end(); str_it++) {
-		bool emptyline = false;
+		emptyline = false;
 		if ((*str_it).empty()) emptyline = true;
 		if ((*str_it).find_first_not_of(" \t") == string::npos ) emptyline = true;
 		if ( emptyline ) lineprofile.push_back(false); else lineprofile.push_back(true);
@@ -162,9 +163,9 @@ void Song::writeToDisk(string basename_full, SongLine::representation repr, bool
 					cout << "Writing " << s << endl;
 				}
 				switch(repr) {
-					case SongLine::KERN: part = songLines[0].getKernBeginSignature(); break;
-					case SongLine::ABSLY: part = songLines[0].getLyBeginSignature(true); break;
-					case SongLine::RELLY: part = songLines[0].getLyBeginSignature(false); break;
+					case SongLine::KERN: part = si->getKernBeginSignature(); break;
+					case SongLine::ABSLY: part = si->getLyBeginSignature(true); break;
+					case SongLine::RELLY: part = si->getLyBeginSignature(false); break;
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					out << *part_it << endl;
@@ -179,9 +180,9 @@ void Song::writeToDisk(string basename_full, SongLine::representation repr, bool
 			//postamble
 			if (lines || si == (songLines.end()-1) ) {
 				switch(repr) {
-					case SongLine::KERN: part = songLines[0].getKernEndSignature(); break;
+					case SongLine::KERN: part = si->getKernEndSignature(); break;
 					case SongLine::ABSLY:
-					case SongLine::RELLY: part = songLines[0].getLyEndSignature(); break;
+					case SongLine::RELLY: part = si->getLyEndSignature(); break;
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					out << *part_it << endl;

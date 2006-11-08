@@ -61,6 +61,9 @@ int main (int argc, char * const argv[]) {
 	sl.writeToStdout();
 	return 0; */
 	
+	cout << endl;
+	cout << "Processing " << filename << endl;
+	
 	string basename = filename;
 	string::size_type pos;	
 	pos = basename.rfind(".wce");

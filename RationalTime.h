@@ -34,6 +34,7 @@ public:
 	RationalTime operator-() const; //negation
 	RationalTime& operator=(const RationalTime& r_);
 	bool operator==( RationalTime r ) const;
+	bool operator!=( RationalTime r ) const;
 	bool operator==( int i ) const;
 	bool operator!=( int i ) const;	
 	bool operator>( RationalTime r ) const;
