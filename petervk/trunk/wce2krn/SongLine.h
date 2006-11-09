@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int barnumber); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int mtempo, int barnumber); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -50,6 +50,8 @@ public:
 	bool getFinalDotted() const {return finalDotted;}
 	int getFinalBarnumber() const {return finalBarnumber;}
 	int getKeySignature() const { return keySignature;}
+
+	int getMidiTempo() const { return midiTempo; }
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings.
 
@@ -90,6 +92,7 @@ private:
 	const bool initialDotted;
 	bool finalDotted;
 	const int keySignature;
+	const int midiTempo;
 	const int initialBarnumber;
 	int finalBarnumber;
 };

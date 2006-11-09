@@ -26,6 +26,7 @@ public:
 	TimeSignature translateTimeSignature(string lyTimeSignature) const;
 	RationalTime translateUpbeat(string lyUpbeat) const;
 	int translateKeySignature(string lyKey) const;
+	int translateMidiTempo(string lyKey) const;
 	
 	void writeToDisk(string basename_full,
 					 SongLine::representation repr = SongLine::KERN,

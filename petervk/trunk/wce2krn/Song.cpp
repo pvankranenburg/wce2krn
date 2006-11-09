@@ -53,6 +53,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  4,
 								  'g',
 								  translateKeySignature(wcefile.getKey()),
+								  translateMidiTempo(wcefile.getMidiTempo()),
 								  initialBarnumber));
 					singleline.clear();
 					//songLines.push_back(sl);
@@ -65,6 +66,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  (songLines.back()).getFinalOctave(),
 								  (songLines.back()).getFinalLastPitchClass(),
 								  (songLines.back()).getKeySignature(),
+								  (songLines.back()).getMidiTempo(),
 								  (songLines.back()).getFinalBarnumber()));
 					//songLines.push_back(sl);
 					singleline.clear();
@@ -226,6 +228,25 @@ int Song::translateKeySignature(string lykey) const {
 	if (root == "b") { res = 5; }
 		
 	if (minor) res = res - 3;
+	
+	return res;
+}
+
+int Song::translateMidiTempo(string lymtempo) const {
+	int res = 120;
+	
+	pvktrim(lymtempo);
+	string::size_type pos;
+	if ( ( pos = lymtempo.find("=") ) == string::npos ) {		
+		cerr << "Warning: Bad midiTempo; '=' missing: " << lymtempo << endl;
+		return 120;
+	}
+	
+	int duration = convertToInt(lymtempo.substr(0,pos));
+	int tempo = convertToInt(lymtempo.substr(pos+1));
+	
+	float factor = duration / 4.0;
+	res = (int)(tempo / factor);
 	
 	return res;
 }
