@@ -204,7 +204,7 @@
 						<key>_historyCapacity</key>
 						<integer>0</integer>
 						<key>bookmark</key>
-						<string>859675860B02908000E90F97</string>
+						<string>859675940B02963B00E90F97</string>
 						<key>history</key>
 						<array>
 							<string>859675770B028C0A00E90F97</string>
@@ -244,7 +244,7 @@
 						<key>_historyCapacity</key>
 						<integer>0</integer>
 						<key>bookmark</key>
-						<string>859675870B02908000E90F97</string>
+						<string>859675950B02963B00E90F97</string>
 						<key>history</key>
 						<array>
 							<string>859675790B028C0A00E90F97</string>
@@ -397,7 +397,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>859675850B02908000E90F97</string>
+										<string>859675930B02963B00E90F97</string>
 										<key>history</key>
 										<array>
 											<string>85BCAE130B00E4D800E7C8E7</string>
@@ -607,16 +607,17 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>859674E10B02797100E90F97</string>
+		<string>85BCADA10B00CFA600E7C8E7</string>
 		<string>859674B50B02756A00E90F97</string>
 		<string>859674B60B02756A00E90F97</string>
 		<string>85E752E70B01D462004FE07E</string>
-		<string>85BCAD9B0B00CF0900E7C8E7</string>
-		<string>1CD10A99069EF8BA00B06720</string>
 		<string>8596744F0B024E5300E90F97</string>
-		<string>1C0AD2B3069F1EA900FABCE6</string>
-		<string>85E752DD0B01D462004FE07E</string>
+		<string>1CD10A99069EF8BA00B06720</string>
+		<string>85BCAD9B0B00CF0900E7C8E7</string>
 		<string>/Users/pvk/SVN/music/petervk/trunk/wce2krn/wce2krn.xcodeproj</string>
+		<string>1C0AD2B3069F1EA900FABCE6</string>
+		<string>859674E10B02797100E90F97</string>
+		<string>85E752DD0B01D462004FE07E</string>
 	</array>
 	<key>WindowString</key>
 	<string>1 202 808 675 0 0 1440 878 </string>
@@ -1145,7 +1146,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>85BCADA10B00CFA600E7C8E7</string>
-				<string>85BCADA20B00CFA600E7C8E7</string>
+				<string>8596758F0B02963500E90F97</string>
 				<string>1C78EAB2065D492600B07095</string>
 				<string>1CD052920623707200166675</string>
 			</array>

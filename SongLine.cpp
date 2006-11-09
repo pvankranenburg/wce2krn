@@ -10,11 +10,12 @@
 #include "SongLine.h"
 #include "pvkutilities.h"
 #include<string>
+#include<sstream>
 #include<iostream>
 #include<cstdlib>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int barnumber) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int mtempo, int barnumber) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -31,6 +32,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   finalLastPitchClass(pitchclass),
 																   finalBarnumber(-1),
 																   keySignature(keysig),
+																   midiTempo(mtempo),
 																   translationMade(false) {
 	translate();
 }
@@ -44,6 +46,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   initialLastPitchClass('g'),
 					   initialBarnumber(0),
 					   keySignature(0),
+					   midiTempo(120),
 					   translationMade(false) {
 	translate();
 }
@@ -64,6 +67,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 finalDotted(sl.getFinalDotted()),
 										 finalBarnumber(sl.getFinalBarnumber()),
 										 keySignature(sl.getKeySignature()),
+										 midiTempo(sl.getMidiTempo()),
 										 translationMade(false) {
 	translate();
 }
@@ -542,6 +546,18 @@ vector<string> SongLine::getKernBeginSignature() const {
 	if (keySignature < 0) keys = "b-e-a-d-g-c-f-";
 	if (keySignature > 0) keys = "f#c#g#d#a#e#b#";
 
+	//midi tempo
+	stringstream ss;
+	ss << midiTempo;
+	string midiTempo_str;
+	ss >> midiTempo_str;
+	s = "";
+	for(int i=0; i < kernTokens.size(); i++ ) {
+		if ( i == 0 ) s = s + "*MM" + midiTempo_str + "\t"; else s = s + "*\t";
+	}
+	s = s.substr(0,s.size()-1);
+	res.push_back(s);
+	
 	//key signature
 	int ks = abs(keySignature);
 	s = "";
