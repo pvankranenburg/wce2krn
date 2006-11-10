@@ -120,9 +120,10 @@ RationalTime Song::translateUpbeat(string lyUpbeat) const {
 	return RationalTime(amount,duration);
 }
 
-void Song::writeToDisk(string basename_full, SongLine::representation repr, bool lines, bool absoulte) const {
+void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool lines, bool absoulte) const {
 	vector<string> part;
 	vector<string>::iterator part_it;
+	vector<SongLine>::const_iterator si;
 	
 	int line = 0;
 	stringstream ss;
@@ -144,14 +145,13 @@ void Song::writeToDisk(string basename_full, SongLine::representation repr, bool
 	string outname = path + "all-" + basename + ext;
 	ofstream out;
 	
-	if (!lines) {
+	if (!lines && repr != SongLine::TEXT) {
 		out.open(outname.c_str());
 		cout << "Writing " << outname << endl;
 	}
 	
 
-	if (songLines.size() > 0) {
-		vector<SongLine>::const_iterator si;
+	if (songLines.size() > 0 && repr != SongLine::TEXT) {
 		//songlines
 		for ( si = songLines.begin(); si != songLines.end(); si++ ) {
 			//preamble
@@ -168,6 +168,7 @@ void Song::writeToDisk(string basename_full, SongLine::representation repr, bool
 					case SongLine::KERN: part = si->getKernBeginSignature(); break;
 					case SongLine::ABSLY: part = si->getLyBeginSignature(true); break;
 					case SongLine::RELLY: part = si->getLyBeginSignature(false); break;
+					//case SongLine::TEXT: do nothing
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					out << *part_it << endl;
@@ -192,8 +193,25 @@ void Song::writeToDisk(string basename_full, SongLine::representation repr, bool
 			}
 		line++;
 		}
+	} else { //output lyrics
+		if (out.is_open()) out.close();
+		ss.clear();
+		ss << path << "lyrics-" << basename << ".txt";
+		ss >> s;
+		out.open(s.c_str());
+		cout << "Writing " << s << endl;
 		
+		int stanzas = songLines.begin()->getNumberOfLines()-1; //number of text lines. Assume melody is in line 0, rest is text
+		for ( int s = 1; s < stanzas+1; s++ ) {
+			for ( si = songLines.begin(); si != songLines.end(); si++ ) {
+				out << si->getLyricsLine(s-1) << endl;
+			}
+			out << endl;
+		}
+		out.close();
 	}
+		
+
 	//close
 	
 	if ( out.is_open() ) out.close();

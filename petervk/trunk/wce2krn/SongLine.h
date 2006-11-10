@@ -25,7 +25,7 @@ public:
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
 	
-	enum representation { KERN, RELLY, ABSLY };
+	enum Representation { KERN, RELLY, ABSLY, TEXT };
 	
 	void writeToStdout() const;
 	
@@ -63,6 +63,8 @@ public:
 	vector<string> getKernBeginSignature() const;
 	vector<string> getKernEndSignature() const;
 	
+	string getLyricsLine(int line) const; //line 0 is first text line
+	
 private:
 	void translate();
 	vector<vector<RelLyToken> > relLyTokens; //the input broken into tokens.
@@ -71,13 +73,14 @@ private:
 	const vector<string> wcelines; //original wce lines (belonging to one song line)
 	vector<string> absLyLine; //lilypond line with absolute pitch and explicit note durations
 	//vector<Spine> KernLine; //kern representation of the line .
+	vector<string> lyricsLines; //lyrics in normal text representation.
 	bool translationMade; //true if absLyLine and KernLine are made. 
 	
 	//some useful functions
 	void breakWcelines(); //output goes into relLyTokens. Invoked in translate().
 	int computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const;
 	RationalTime rationalDuration(int duration, bool dotted, bool triplet) const;
-	string toKernText(string tok, RelLyToken::TextStatus ts) const;
+	string toText(string tok, RelLyToken::TextStatus ts, Representation repr)  const;
 	
 	const RationalTime initialUpbeat;
 	RationalTime finalUpbeat;
