@@ -177,6 +177,7 @@ void Song::writeToDisk(string basename_full, SongLine::representation repr, bool
 				case SongLine::ABSLY: part = si->getLyLine(true); break;
 				case SongLine::RELLY: part = si->getLyLine(false); break;
 			}
+			if (!lines) out << "!! verse " << line << endl;
 			for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 				out << *part_it << endl;
 			//postamble
