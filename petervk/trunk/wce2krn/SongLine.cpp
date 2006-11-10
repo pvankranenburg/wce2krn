@@ -88,6 +88,8 @@ void SongLine::translate() {
 	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR_INFO;
 	RelLyToken::TieStatus  currentTieStatus = RelLyToken::NO_TIE;
 	bool currentTripletStatus = false;
+	int indexFirstKernNote = -1;
+	int indexLastKernNote = -1;
 		
 	//now scan the relative lilypond tokens and translate to AbsoluteLilypond and Kern
 	//assume music in first line
@@ -191,6 +193,10 @@ void SongLine::translate() {
 												 currentSlurStatus,
 												 currentTieStatus);
 				absLyTokens[0].push_back(token);
+				// if this was the first note: set indexFirstKernNote
+				if (indexFirstKernNote == -1) indexFirstKernNote = kernTokens[0].size()-1;
+				// set indexLastKernNote always. After finishing the line, this is correct
+				indexLastKernNote = kernTokens[0].size()-1;
 				//set LastPitchclass
 				if ((*rl_it).getPitchClass() != 'r' && (*rl_it).getPitchClass() != 's' ) lastPitchClass = (*rl_it).getPitchClass();
 				//set time
@@ -261,7 +267,13 @@ void SongLine::translate() {
 			} break;
 		}
 	}
-
+	
+	// add the { and } phrase markers to the kern melody
+	if ( indexFirstKernNote != -1 && indexLastKernNote != -1 ) {
+		kernTokens[0][indexFirstKernNote] = "{" + kernTokens[0][indexFirstKernNote];
+		kernTokens[0][indexLastKernNote] = kernTokens[0][indexLastKernNote] + "}"; 
+	}
+	
 	finalOctave = currentOctave;
 	finalDuration = currentDuration;
 	finalDotted = currentDotted;
@@ -327,6 +339,10 @@ void SongLine::translate() {
 						} else if ( currentTextStatus == RelLyToken::END_WORD ) {
 							if (dash) currentTextStatus = RelLyToken::BEGIN_WORD; else currentTextStatus = RelLyToken::SINGLE_WORD;
 						}
+						
+						//in any case, if "_" then continue word.
+						if ( relLyTokens[i][relly_index].getToken().find("_") != string::npos) currentTextStatus = RelLyToken::IN_WORD;
+						
 						kernTokens[i].push_back( toKernText( relLyTokens[i][relly_index].getToken(), currentTextStatus) );
 					} else
 						krn_it--; // Same Token again. DO NOT USE krn_it AFTER THIS.
