@@ -29,7 +29,7 @@ public:
 	int translateMidiTempo(string lyKey) const;
 	
 	void writeToDisk(string basename_full,
-					 SongLine::representation repr = SongLine::KERN,
+					 SongLine::Representation repr = SongLine::KERN,
 					 bool lines = false,
 					 bool absoulte = false) const;
 	

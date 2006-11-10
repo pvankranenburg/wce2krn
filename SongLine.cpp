@@ -294,6 +294,7 @@ void SongLine::translate() {
 	for( int i = 1; i<numLines; i++ ) {
 		absLyTokens.push_back(vector<string>());
 		kernTokens.push_back(vector<string>());
+		lyricsLines.push_back("");
 	}
 	int relly_index = 0;
 	RelLyToken::TextStatus currentTextStatus = RelLyToken::SINGLE_WORD;
@@ -343,7 +344,9 @@ void SongLine::translate() {
 						//in any case, if "_" then continue word.
 						if ( relLyTokens[i][relly_index].getToken().find("_") != string::npos) currentTextStatus = RelLyToken::IN_WORD;
 						
-						kernTokens[i].push_back( toKernText( relLyTokens[i][relly_index].getToken(), currentTextStatus) );
+						// add translated text to appropriate vectors
+						kernTokens[i].push_back( toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, KERN ) );
+						lyricsLines[i-1] = lyricsLines[i-1] + toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, TEXT );
 					} else
 						krn_it--; // Same Token again. DO NOT USE krn_it AFTER THIS.
 				}
@@ -480,16 +483,36 @@ RationalTime SongLine::rationalDuration(int duration, bool dotted, bool triplet)
 		return RationalTime(n,d);
 }
 
-string SongLine::toKernText(string tok, RelLyToken::TextStatus ts) const {
+string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation repr) const {
 	pvktrim(tok);
-	if ( tok.size() == 0 ) return ".";
-	if ( tok == "_" ) return ".";
+	
+	if ( tok.size() == 0 )
+		if ( repr == KERN ) return "."; else return "";
+	if ( tok == "_" )
+		if ( repr == KERN ) return "."; else return "";
+		
 	if ( tok.find(" --") != string::npos) tok.erase(tok.find(" --"));
 	
 	switch (ts) {
-		case RelLyToken::IN_WORD: tok = "-" + tok + "-"; break;
-		case RelLyToken::BEGIN_WORD: tok = tok + "-"; break;
-		case RelLyToken::END_WORD: tok = "-" + tok; break;
+		case RelLyToken::IN_WORD: {
+			if ( repr == KERN ) tok = "-" + tok + "-"; //else ok
+			break;
+		}
+		
+		case RelLyToken::BEGIN_WORD: {
+			if ( repr == KERN ) tok = tok + "-"; 
+			break;
+		}
+		
+		case RelLyToken::END_WORD: {
+			if ( repr == KERN ) tok = "-" + tok; else tok = tok + " ";
+			break;
+		}
+		
+		case RelLyToken::SINGLE_WORD: {
+			if ( repr == TEXT ) tok = tok + " ";
+			break;
+		}
 	}
 	
 	//remove "
@@ -601,4 +624,8 @@ vector<string> SongLine::getKernEndSignature() const {
 	res.push_back(s);
 	
 	return res;
+}
+
+string SongLine::getLyricsLine( int line ) const {
+	return lyricsLines[line];
 }

@@ -10,70 +10,80 @@
 #include <iostream>
 #include <string>
 #include "Song.h"
+//#include <cmdargs.h>
 using namespace std;
 
 #include "SongLine.h"
 
 void usage() {
-	cout << "usage: wce2krn [-s] wcefile" << endl;
-	cout << " -s: spit in lines." << endl << endl;
+	cout << "usage: wce2krn [-s] [-l] wcefile" << endl;
+	cout << " -s: spit in lines." << endl;
+	cout << " -l: generate file(s) with only the lyrics." << endl << endl;
 }
 
 int main (int argc, char * const argv[]) {
 	
+	/*
+	// Commandline arguments
+	CmdArgBool split_flag('s', "split", "generate an separate outputfile for each verse.");
+	//CmdArgInt  wnumber('w', "window", "number", "size of the window when splitting.");
+	//CmdArgInt  onumber('o', "offset", "number", "stepsize to next part when splitting.");
+	//CmdArgBool  mflag('m', "mason", "make mason diagram. Will be written in png-format");
+	CmdArgBool  text_flag('t', "text", "generate a with only the lyrics.");
+	CmdArgStr  input("input-file",  "input file. A WichcraftEditor file.");
+	//CmdArgStr  output("output-file",  "file to write featurevalues.");
+
+	// Declare command object and its argument-iterator
+	CmdLine  cmd(*argv, &split_flag, &text_flag, &input, NULL);
+	CmdArgvIter arg_iter(--argc, ++argv);
+
+	// Initialize arguments to appropriate default values.
+	split_flag = 0;
+	text_flag = 0;
+  
+	// Parse arguments
+	cmd.parse(arg_iter);	
+	*/
+	
+	
 	bool split = false;
 	bool absolute = true;
-	string filename;
+	bool lyrics = false;
 	
-	if ( argc == 3 ) {
+	string filename;
+	string arg1 = "";
+	string arg2 = "";
+	
+	if ( argc == 4 ) {
+		filename = string(argv[3]);
+		arg1 = string(argv[1]);
+		arg2 = string(argv[2]);		
+	} else if ( argc == 3 ) {
 		filename = string(argv[2]);
-		split = true;
+		arg1 = string(argv[1]);
 	} else if ( argc == 2 ) {
 		filename = string(argv[1]);
 	} else {
 		usage();
 		exit(1);
 	}
-		
 	
-	//string filename(argv[1]);
-	//string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL21810.wce");
-	//string filename("/Users/pvk/Documents/data/OGLproefcorpus/OGL19103.wce");
-	//string filename("/Users/pvk/Desktop/Untitled.wce");
-	//string filename("/Users/pvk/Desktop/hierinuwhuis.wce");
-	
-	//test conversie TimeSignature
-	/*TimeSignature ts("\\time 2325/432");
-	//cout <<	ts.getNumerator() << "/" << ts.getDenominator() << endl;
-	return 0; */
-	
-	//test inititalisatie SongLine
-	/*RationalTime ub(1,4);
-	TimeSignature ts("33/12");
-	vector<string> strs;
-	strs.push_back("eerste string");
-	strs.push_back("tweede string");
-	SongLine sl1(strs, ub, ts, 8, 4);
-	SongLine sl;
-	sl = SongLine(strs, ub, ts, 8, 4);
-	cout << sl.getUpbeat().getNumerator() << "/" << sl.getUpbeat().getDenominator() << endl;
-	cout << sl.getInitialTimeSignature().getNumerator() << "/" << sl.getInitialTimeSignature().getDenominator() << endl;
-	sl.writeToStdout();
-	return 0; */
+	if ( arg1 == "-s" || arg2 == "-s" ) split = true;
+	if ( arg1 == "-l" || arg2 == "-l" ) lyrics = true;
 	
 	cout << endl;
 	cout << "Processing " << filename << endl;
 	
+	
+	//const std::string filename = std::string(input);
 	string basename = filename;
 	string::size_type pos;	
 	pos = basename.rfind(".wce");
 	basename.erase(pos);
 	Song s(filename);
-
+	
 	s.writeToDisk(basename, SongLine::KERN, split, absolute);
-	//s.writeKern(basename, true, false);
-	//s.writeLy(basename, false, true, false);
-	//s.writeLy(basename, true, true, false);
+	if (lyrics) s.writeToDisk(basename, SongLine::TEXT, split, absolute);
 	
 	return 0;
 }
