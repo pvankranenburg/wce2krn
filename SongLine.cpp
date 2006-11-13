@@ -493,6 +493,11 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 		
 	if ( tok.find(" --") != string::npos) tok.erase(tok.find(" --"));
 	
+	//if only a dash, print a warning. Should be an underscore.
+	if ( tok.find_first_not_of("-") == string::npos ) {
+		cerr << "Warning: only a \"-\" under a note. Should be an \"_\"?" << endl;
+	}
+	
 	switch (ts) {
 		case RelLyToken::IN_WORD: {
 			if ( repr == KERN ) tok = "-" + tok + "-"; //else ok
