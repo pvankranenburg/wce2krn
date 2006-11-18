@@ -13,6 +13,7 @@
 #include <string>
 #include <sstream>
 #include <cstdlib>
+#include <cassert>s
 #include <cctype>
 using namespace std;
 
@@ -29,6 +30,7 @@ RelLyToken& RelLyToken::operator=(const RelLyToken& r) {
 	if ( &r != this ) {
 	}
 	cerr << "Waarschuwing: RelLyToken& RelLyToken::operator=(const RelLyToken& r) gebruikt!!!!" << endl;
+	assert(false);
 	return *this;
 }
 

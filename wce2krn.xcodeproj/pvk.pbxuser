@@ -48,7 +48,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					361,
+					456,
 					20,
 					48,
 					43,
@@ -103,17 +103,16 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 185107626;
-			PBXWorkspaceStateSaveDate = 185107626;
+			PBXPerProjectTemplateStateSaveDate = 185553423;
+			PBXWorkspaceStateSaveDate = 185553423;
 		};
 		perUserProjectItems = {
+			853A83EF0B08875700ECFDF4 = 853A83EF0B08875700ECFDF4 /* PBXTextBookmark */;
 			854C497F0B05001A00A40FA6 = 854C497F0B05001A00A40FA6 /* PBXTextBookmark */;
-			854C49800B05001A00A40FA6 = 854C49800B05001A00A40FA6 /* PBXTextBookmark */;
-			854C49810B05001A00A40FA6 = 854C49810B05001A00A40FA6 /* PBXTextBookmark */;
-			854C4A2A0B050E9300A40FA6 = 854C4A2A0B050E9300A40FA6 /* PBXTextBookmark */;
 			859674DA0B02797100E90F97 = 859674DA0B02797100E90F97 /* PBXTextBookmark */;
 			859674DB0B02797100E90F97 = 859674DB0B02797100E90F97 /* PBXTextBookmark */;
 			859674DE0B02797100E90F97 = 859674DE0B02797100E90F97 /* PBXTextBookmark */;
+			859D47A70B0B26C4004FE719 = 859D47A70B0B26C4004FE719 /* PBXTextBookmark */;
 			85B817E70B0483C400F5CA86 = 85B817E70B0483C400F5CA86 /* PBXTextBookmark */;
 			85B817E80B0483C400F5CA86 = 85B817E80B0483C400F5CA86 /* PBXTextBookmark */;
 			85BCADBB0B00D2EC00E7C8E7 = 85BCADBB0B00D2EC00E7C8E7 /* PBXTextBookmark */;
@@ -125,6 +124,16 @@
 		userBuildSettings = {
 		};
 	};
+	853A83EF0B08875700ECFDF4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 85BCAD7F0B00CE9400E7C8E7 /* Song.cpp */;
+		name = "Song.cpp: 196";
+		rLen = 0;
+		rLoc = 6137;
+		rType = 0;
+		vrLen = 480;
+		vrLoc = 0;
+	};
 	854C497F0B05001A00A40FA6 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 85BCAD810B00CE9400E7C8E7 /* SongLine.cpp */;
@@ -134,34 +143,6 @@
 		rType = 0;
 		vrLen = 906;
 		vrLoc = 10632;
-	};
-	854C49800B05001A00A40FA6 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		comments = "error: expected `}' before 'else'";
-		fRef = 85BCAD7F0B00CE9400E7C8E7 /* Song.cpp */;
-		rLen = 1;
-		rLoc = 195;
-		rType = 1;
-	};
-	854C49810B05001A00A40FA6 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 85BCAD810B00CE9400E7C8E7 /* SongLine.cpp */;
-		name = "SongLine.cpp: 273";
-		rLen = 0;
-		rLoc = 10992;
-		rType = 0;
-		vrLen = 906;
-		vrLoc = 10632;
-	};
-	854C4A2A0B050E9300A40FA6 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 85BCAD7F0B00CE9400E7C8E7 /* Song.cpp */;
-		name = "Song.cpp: 196";
-		rLen = 0;
-		rLoc = 6137;
-		rType = 0;
-		vrLen = 630;
-		vrLoc = 3825;
 	};
 	859674520B024E5300E90F97 /* XCBreakpointsBucket */ = {
 		isa = XCBreakpointsBucket;
@@ -199,6 +180,16 @@
 		vrLen = 530;
 		vrLoc = 0;
 	};
+	859D47A70B0B26C4004FE719 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 85BCAD7F0B00CE9400E7C8E7 /* Song.cpp */;
+		name = "Song.cpp: 196";
+		rLen = 0;
+		rLoc = 6137;
+		rType = 0;
+		vrLen = 480;
+		vrLoc = 0;
+	};
 	85B817E70B0483C400F5CA86 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 85BCAD840B00CE9400E7C8E7 /* TimeSignature.h */;
@@ -231,9 +222,9 @@
 			NO,
 			NO,
 			NO,
-			NO,
-			NO,
 			YES,
+			NO,
+			NO,
 		);
 		argumentStrings = (
 			"-s",
@@ -326,7 +317,7 @@
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {914, 3808}}";
 			sepNavSelRange = "{6137, 0}";
-			sepNavVisRect = "{{0, 1663}, {553, 351}}";
+			sepNavVisRect = "{{0, 0}, {648, 342}}";
 			sepNavWindowFrame = "{{270, 5}, {1093, 873}}";
 		};
 	};
@@ -340,9 +331,9 @@
 	};
 	85BCAD810B00CE9400E7C8E7 /* SongLine.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1088, 8834}}";
-			sepNavSelRange = "{11836, 29}";
-			sepNavVisRect = "{{0, 4056}, {453, 186}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1088, 8904}}";
+			sepNavSelRange = "{18765, 0}";
+			sepNavVisRect = "{{0, 6691}, {1048, 744}}";
 			sepNavWindowFrame = "{{158, 5}, {1093, 873}}";
 		};
 	};
