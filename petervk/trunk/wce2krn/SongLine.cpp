@@ -13,6 +13,7 @@
 #include<sstream>
 #include<iostream>
 #include<cstdlib>
+#include<cassert>
 using namespace std;
 
 SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int mtempo, int barnumber) :
@@ -396,6 +397,7 @@ SongLine& SongLine::operator=(const SongLine& sl) {
 	}
 	cerr << "Waarschuwing: SongLine& SongLine::operator=(const SongLine& sl) gebruikt!!!!" << endl;
 	cerr.flush();
+	assert(false);
 	return *this;
 }
 
