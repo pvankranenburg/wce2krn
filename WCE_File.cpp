@@ -15,62 +15,72 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename) {
 	string line; //line from wce file
 	string::size_type pos;
 	
-	infile.open(inputfilename.c_str());
-	if (!infile.good() ) {
-		cerr << "Error: Unable to open file: " << inputfilename << endl;
-		cerr.flush();
-		exit(1);
+	if (inputfilename == "-") stdinput = true; else stdinput = false;
+	
+	if ( !stdinput ){
+		infile.open(inputfilename.c_str());
+		if ( !infile.good() ) {
+			cerr << "Error: Unable to open file: " << inputfilename << endl;
+			cerr.flush();
+			exit(1);
+		}
 	}
 	
-	while(getline(infile,line)) {
+	bool good = false;
+	if (stdinput) good = getline(cin,line); else good = getline(infile,line);
+	
+	while(good) {
 		if( pos = line.find("encoderNameTextField") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			encoder = extractStringFromLine(line);
 			continue;
 		}
 		if( pos = line.find("keyTextField") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			key = extractStringFromLine(line);
 			continue;
 		}
 		if( pos = line.find("tempoTextField") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			midiTempo = extractStringFromLine(line);
 			continue;
 		}
 		if( pos = line.find("partialTextField") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			upbeat = extractStringFromLine(line);
 			continue;
 		}
 		if( pos = line.find("timeTextField") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			timeSignature = extractStringFromLine(line);
 			continue;
 		}
 		if( pos = line.find("<key>version</key>") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			WCEVersion = extractStringFromLine(line);
 			continue;
 		}
 		if( pos = line.find("inputTextView") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			contents = extractStringFromMultiLine(line);
 			continue;
 		}
 		if( pos = line.find("endSignatureTextView") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			endSignature = extractStringFromMultiLine(line);
 			continue;
 		}
 		if( pos = line.find("beginSignatureTextView") != string::npos ) {
-			getline(infile,line);
+			if (stdinput) getline(cin,line); else getline(infile,line);
 			beginSignature = extractStringFromMultiLine(line);
 			continue;
 		}
+		// read next line
+		if (stdinput) good = getline(cin,line); else good = getline(infile,line);
 	}
-	infile.close();
+	if (!stdinput) infile.close();
 }
+
 
 string WCE_File::getFilename() const {
 	return filename;
@@ -147,7 +157,7 @@ vector<string> WCE_File::extractStringFromMultiLine(string s)
 
 	//vanaf nu met current
 	while( !foundLast ) {
-		getline(infile, current);
+		if (stdinput) getline(cin,current); else getline(infile,current);
 		if( (pos2 = current.find("</string>")) != string::npos ) {
 			res.push_back(current.substr(0, pos2));
 			foundLast = true;

@@ -131,6 +131,9 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 	string ext = ".ly";
 	string::size_type pos;
 
+	bool stdoutput = false;
+	if ( basename_full == "-" ) stdoutput = true;
+
 	if ( repr == SongLine::KERN ) ext = ".krn";
 
 	if( ( pos = basename_full.find_last_of("/") ) != string::npos ) {
@@ -145,9 +148,9 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 	string outname = path + "all-" + basename + ext;
 	ofstream out;
 	
-	if (!lines && repr != SongLine::TEXT) {
+	if (!lines && repr != SongLine::TEXT && !stdoutput) {
 		out.open(outname.c_str());
-		cout << "Writing " << outname << endl;
+		clog << "Writing " << outname << endl;
 	}
 	
 
@@ -156,13 +159,13 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 		for ( si = songLines.begin(); si != songLines.end(); si++ ) {
 			//preamble
 			if (lines || si == songLines.begin()) {
-				if ( lines ) {
+				if ( lines && !stdoutput) {
 					if (out.is_open()) out.close();
 					ss.clear();
 					ss << path << line << "-" << basename << ext;
 					ss >> s;
 					out.open(s.c_str());
-					cout << "Writing " << s << endl;
+					clog << "Writing " << s << endl;
 				}
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernBeginSignature(); break;
@@ -171,16 +174,19 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					//case SongLine::TEXT: do nothing
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
-					out << *part_it << endl;
+					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
 			}
 			switch (repr) {
 				case SongLine::KERN: part = si->getKernLine(); break;
 				case SongLine::ABSLY: part = si->getLyLine(true); break;
 				case SongLine::RELLY: part = si->getLyLine(false); break;
 			}
-			if (!lines) out << "!! verse " << line << endl;
+			if (stdoutput)
+				if (!lines) cout << "!! verse " << line << endl;
+			else
+				if (!lines) out << "!! verse " << line << endl;
 			for ( part_it = part.begin(); part_it != part.end(); part_it++ )
-				out << *part_it << endl;
+				if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
 			//postamble
 			if (lines || si == (songLines.end()-1) ) {
 				switch(repr) {
@@ -189,7 +195,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					case SongLine::RELLY: part = si->getLyEndSignature(); break;
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
-					out << *part_it << endl;
+					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
 			}
 		line++;
 		}
@@ -198,17 +204,19 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 		ss.clear();
 		ss << path << "lyrics-" << basename << ".txt";
 		ss >> s;
-		out.open(s.c_str());
-		cout << "Writing " << s << endl;
+		if (!stdoutput) {
+			out.open(s.c_str());
+			clog << "Writing " << s << endl;
+		}
 		
 		int stanzas = songLines.begin()->getNumberOfLines()-1; //number of text lines. Assume melody is in line 0, rest is text
 		for ( int s = 1; s < stanzas+1; s++ ) {
 			for ( si = songLines.begin(); si != songLines.end(); si++ ) {
-				out << si->getLyricsLine(s-1) << endl;
+				if (stdoutput) cout << si->getLyricsLine(s-1) << endl; else out << si->getLyricsLine(s-1) << endl;
 			}
-			out << endl;
+			if (stdoutput) cout << endl; else out << endl;
 		}
-		out.close();
+		if (out.is_open()) out.close();
 	}
 		
 
