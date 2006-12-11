@@ -33,6 +33,7 @@ public:
 
 private:
 	ifstream infile;
+	bool stdinput;
 	vector<string> contents;
 	vector<string> beginSignature;
 	vector<string> endSignature;

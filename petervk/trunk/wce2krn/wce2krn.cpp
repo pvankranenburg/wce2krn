@@ -16,9 +16,13 @@ using namespace std;
 #include "SongLine.h"
 
 void usage() {
-	cout << "usage: wce2krn [-s] [-l] wcefile" << endl;
-	cout << " -s: spit in lines." << endl;
-	cout << " -l: generate file(s) with only the lyrics." << endl << endl;
+	cerr << "Usage: wce2krn [-k] [-s] [-l] [wcefile]" << endl;
+	cerr << " -k: generate *kern." << endl;
+	cerr << " -s: spit in lines." << endl;
+	cerr << " -l: generate file(s) with only the lyrics." << endl;
+	cerr << " -h: print this help message" << endl;
+	cerr << "If no filename is given, standard input and output will be used." << endl;
+	cerr << "In this case, '-s' doesn't have any effect and '-k' cancels '-l'." << endl << endl;
 }
 
 int main (int argc, char * const argv[]) {
@@ -45,15 +49,26 @@ int main (int argc, char * const argv[]) {
 	cmd.parse(arg_iter);	
 	*/
 	
-	
+	bool kern = false;
 	bool split = false;
 	bool absolute = true;
 	bool lyrics = false;
 	
-	string filename;
-	string arg1 = "";
-	string arg2 = "";
+	string filename = "-";
+	string arg = "";
+	//string arg1 = "";
+	//string arg2 = "";
 	
+	for (int i = 1; i<argc; i++ ) {
+		arg = string(argv[i]);
+		if ( arg == "-s" ) split = true;
+		else if ( arg == "-l" ) lyrics = true;
+		else if ( arg == "-k" ) kern = true;
+		else if ( arg == "-h" ) { usage(); exit(0); }
+		else filename = arg;
+	}
+	
+	/*
 	if ( argc == 4 ) {
 		filename = string(argv[3]);
 		arg1 = string(argv[1]);
@@ -70,19 +85,26 @@ int main (int argc, char * const argv[]) {
 	
 	if ( arg1 == "-s" || arg2 == "-s" ) split = true;
 	if ( arg1 == "-l" || arg2 == "-l" ) lyrics = true;
+	*/
 	
-	cout << endl;
-	cout << "Processing " << filename << endl;
+	clog << endl;
+	clog << "Processing " << filename << endl;
 	
 	
 	//const std::string filename = std::string(input);
 	string basename = filename;
-	string::size_type pos;	
-	pos = basename.rfind(".wce");
-	basename.erase(pos);
+	
+	if ( basename != "-" ){
+		string::size_type pos;	
+		pos = basename.rfind(".wce");
+		basename.erase(pos);
+	}
+	
 	Song s(filename);
 	
-	s.writeToDisk(basename, SongLine::KERN, split, absolute);
+	if (basename == "-" && kern && lyrics) lyrics = false;
+	if (basename == "-" && split ) split = false;
+	if (kern) s.writeToDisk(basename, SongLine::KERN, split, absolute);
 	if (lyrics) s.writeToDisk(basename, SongLine::TEXT, split, absolute);
 	
 	return 0;
