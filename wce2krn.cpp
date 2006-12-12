@@ -17,12 +17,13 @@ using namespace std;
 
 void usage() {
 	cerr << "Usage: wce2krn [-k] [-s] [-l] [wcefile]" << endl;
-	cerr << " -k: generate *kern." << endl;
+	cerr << "Reads wce-file and generates *kern file" << endl;
+	//cerr << " -k: generate *kern." << endl;
 	cerr << " -s: spit in lines." << endl;
 	cerr << " -l: generate file(s) with only the lyrics." << endl;
 	cerr << " -h: print this help message" << endl;
-	cerr << "If no filename is given, standard input and output will be used." << endl;
-	cerr << "In this case, '-s' doesn't have any effect and '-k' cancels '-l'." << endl << endl;
+	cerr << "If no filename is given, or '-', standard input and output will be used." << endl;
+	cerr << "In this case, '-s' doesn't have any effect and '-l' suppresses *kern output." << endl << endl;
 }
 
 int main (int argc, char * const argv[]) {
@@ -49,7 +50,7 @@ int main (int argc, char * const argv[]) {
 	cmd.parse(arg_iter);	
 	*/
 	
-	bool kern = false;
+	bool kern = true;
 	bool split = false;
 	bool absolute = true;
 	bool lyrics = false;
@@ -63,7 +64,6 @@ int main (int argc, char * const argv[]) {
 		arg = string(argv[i]);
 		if ( arg == "-s" ) split = true;
 		else if ( arg == "-l" ) lyrics = true;
-		else if ( arg == "-k" ) kern = true;
 		else if ( arg == "-h" ) { usage(); exit(0); }
 		else filename = arg;
 	}
@@ -102,7 +102,7 @@ int main (int argc, char * const argv[]) {
 	
 	Song s(filename);
 	
-	if (basename == "-" && kern && lyrics) lyrics = false;
+	if (basename == "-" && kern && lyrics) kern = false;
 	if (basename == "-" && split ) split = false;
 	if (kern) s.writeToDisk(basename, SongLine::KERN, split, absolute);
 	if (lyrics) s.writeToDisk(basename, SongLine::TEXT, split, absolute);
