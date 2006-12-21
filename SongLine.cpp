@@ -331,20 +331,28 @@ void SongLine::translate() {
 				else {
 					if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::TIMES_COMMAND ) {
 						//textstatus:
+
 						bool dash = ( relLyTokens[i][relly_index].getToken().find("--") != string::npos );
-						if ( currentTextStatus == RelLyToken::SINGLE_WORD ) {
-							if (dash) currentTextStatus = RelLyToken::BEGIN_WORD; else currentTextStatus = RelLyToken::SINGLE_WORD;
-						} else if ( currentTextStatus == RelLyToken::IN_WORD ) {
-							if (dash) currentTextStatus = RelLyToken::IN_WORD; else currentTextStatus = RelLyToken::END_WORD;
-						} else if ( currentTextStatus == RelLyToken::BEGIN_WORD ) {
-							if (dash) currentTextStatus = RelLyToken::IN_WORD; else currentTextStatus = RelLyToken::END_WORD;
-						} else if ( currentTextStatus == RelLyToken::END_WORD ) {
-							if (dash) currentTextStatus = RelLyToken::BEGIN_WORD; else currentTextStatus = RelLyToken::SINGLE_WORD;
+						bool underscore = ( relLyTokens[i][relly_index].getToken().find("_") != string::npos );
+						
+						//if "_" and IN_WORD/BEGIN_WORD then "||" should be printed, if "_" and END_WORD/SINGLE WORD then '|' should be prined
+						//so, status should not be changed.
+						if ( !underscore ) {
+							if ( currentTextStatus == RelLyToken::SINGLE_WORD ) {
+								if (dash) currentTextStatus = RelLyToken::BEGIN_WORD;
+								else currentTextStatus = RelLyToken::SINGLE_WORD;
+							} else if ( currentTextStatus == RelLyToken::IN_WORD ) {
+								if (dash) currentTextStatus = RelLyToken::IN_WORD;
+								else currentTextStatus = RelLyToken::END_WORD;
+							} else if ( currentTextStatus == RelLyToken::BEGIN_WORD ) {
+								if (dash) currentTextStatus = RelLyToken::IN_WORD;
+								else currentTextStatus = RelLyToken::END_WORD;
+							} else if ( currentTextStatus == RelLyToken::END_WORD ) {
+								if (dash) currentTextStatus = RelLyToken::BEGIN_WORD;
+								else currentTextStatus = RelLyToken::SINGLE_WORD;
+							}
 						}
-						
-						//in any case, if "_" then continue word.
-						if ( relLyTokens[i][relly_index].getToken().find("_") != string::npos) currentTextStatus = RelLyToken::IN_WORD;
-						
+												
 						// add translated text to appropriate vectors
 						kernTokens[i].push_back( toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, KERN ) );
 						lyricsLines[i-1] = lyricsLines[i-1] + toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, TEXT );
@@ -491,7 +499,12 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 	if ( tok.size() == 0 )
 		if ( repr == KERN ) return "."; else return "";
 	if ( tok == "_" )
-		if ( repr == KERN ) return "."; else return "";
+		if ( repr == KERN ) {
+			if ( ts == RelLyToken::END_WORD || ts == RelLyToken::SINGLE_WORD ) return "|";
+			else if ( ts == RelLyToken::IN_WORD || ts == RelLyToken::BEGIN_WORD ) return "||";
+			else return ".";
+		}
+		else return "";
 		
 	if ( tok.find(" --") != string::npos) tok.erase(tok.find(" --"));
 	
