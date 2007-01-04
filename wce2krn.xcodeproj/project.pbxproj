@@ -61,7 +61,7 @@
 		85BCAD850B00CE9400E7C8E7 /* WCE_File.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WCE_File.cpp; sourceTree = "<group>"; };
 		85BCAD860B00CE9400E7C8E7 /* WCE_File.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WCE_File.h; sourceTree = "<group>"; };
 		85BCAD870B00CE9400E7C8E7 /* wce2krn.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = wce2krn.cpp; sourceTree = "<group>"; };
-		8DD76F6C0486A84900D96B5E /* wce2krn */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = wce2krn; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DD76F6C0486A84900D96B5E /* wce2krn */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = wce2krn; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6859E8B029090EE04C91782 /* wce2krn.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = wce2krn.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
