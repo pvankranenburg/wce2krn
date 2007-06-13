@@ -107,6 +107,11 @@ RationalTime RationalTime::operator+( RationalTime r) const {
 	return res;
 }
 
+RationalTime RationalTime::operator/( RationalTime r) const {
+	RationalTime res(numerator*r.getDenominator(),denominator*r.getNumerator());
+	return res;
+}
+
 RationalTime RationalTime::operator-( RationalTime r) const {
 	int newdenominator = denominator*r.getDenominator();
 	int newnumerator = r.getDenominator()*numerator - r.getNumerator()*denominator;

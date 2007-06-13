@@ -30,8 +30,7 @@ public:
 	
 	void writeToDisk(string basename_full,
 					 SongLine::Representation repr = SongLine::KERN,
-					 bool lines = false,
-					 bool absoulte = false) const;
+					 bool lines = false) const;
 	
 private:
 	WCE_File wcefile;

@@ -172,7 +172,7 @@ string RelLyToken::createKernNote(int octave, int duration, bool dotted, bool tr
 }
 
 int RelLyToken::getDurationBase() const {
-	if (getIdentity() != NOTE ) return 0;
+	if (getIdentity() != NOTE ) return -1;
 	string duration = "";
 	string::size_type pos;
 	string lt = token; //changable

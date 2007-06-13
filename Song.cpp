@@ -120,11 +120,15 @@ RationalTime Song::translateUpbeat(string lyUpbeat) const {
 	return RationalTime(amount,duration);
 }
 
-void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool lines, bool absoulte) const {
+void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool lines) const {
 	vector<string> part;
 	vector<string>::iterator part_it;
 	vector<SongLine>::const_iterator si;
-	
+
+	//to remember the textlines for lilypond output
+	vector<string> textlines;	
+	vector<string>::iterator text_it;
+
 	int line = 0;
 	stringstream ss;
 	string s, basename, path;
@@ -154,6 +158,8 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 	}
 	
 
+	
+
 	if (songLines.size() > 0 && repr != SongLine::TEXT) {
 		//songlines
 		for ( si = songLines.begin(); si != songLines.end(); si++ ) {
@@ -176,17 +182,73 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
 			}
+
+
 			switch (repr) {
-				case SongLine::KERN: part = si->getKernLine(); break;
-				case SongLine::ABSLY: part = si->getLyLine(true); break;
-				case SongLine::RELLY: part = si->getLyLine(false); break;
+				case SongLine::KERN:
+				
+					part = si->getKernLine();
+					
+					if (stdoutput)
+						if (!lines) cout << "!! verse " << line << endl;
+					else
+						if (!lines) out << "!! verse " << line << endl;
+				
+					for ( part_it = part.begin(); part_it != part.end(); part_it++ )
+						if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
+
+					break;
+					
+				case SongLine::RELLY:
+					
+					part = si->getLyLine(false);
+					
+					if ( part.size() == 0 ) { cerr << "Empty line!" << endl; exit(0); }
+					
+					//output lilypond line. first line is music, other lines are txt.
+					if (stdoutput) cout << part[0] << endl; else out << part[0] << endl;
+					
+					//save text into textlines
+					int stanzas = songLines.begin()->getNumberOfLines()-1; //number of text lines. Assume melody is in line 0, rest is text
+					for ( int l = 1; l <= stanzas; l++ ) {
+						if ( l <= part.size() ) textlines.push_back(part[l]); else textlines.push_back("");
+					}
+					
+					//if lines or at end of song, output textblocks: output everything in textlines
+					if (lines || si == (songLines.end()-1)) {
+
+						for ( int s = 0; s < stanzas; s++) {
+							
+							if (stdoutput) cout << "} \\addlyrics {" << endl; else out << "} \\addlyrics {" << endl;
+							
+							int ix = s;
+							while ( ix < textlines.size() ) {
+								
+								if (stdoutput) cout << textlines[ix] << endl; else out << textlines[ix] << endl;
+								ix = ix + stanzas;
+							}
+						}
+						
+						textlines.clear();
+						
+					}
+					
+					break;
+
+				case SongLine::ABSLY:
+					
+					part = si->getLyLine(true);
+				
+				break;
+
 			}
-			if (stdoutput)
-				if (!lines) cout << "!! verse " << line << endl;
-			else
-				if (!lines) out << "!! verse " << line << endl;
-			for ( part_it = part.begin(); part_it != part.end(); part_it++ )
-				if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
+			
+
+			//in case of lilypond: output text lines.
+			if ( repr == SongLine::ABSLY || repr == SongLine::RELLY ) {
+				
+			}
+
 			//postamble
 			if (lines || si == (songLines.end()-1) ) {
 				switch(repr) {
@@ -199,7 +261,9 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 			}
 		line++;
 		}
+	
 	} else { //output lyrics
+	
 		if (out.is_open()) out.close();
 		ss.clear();
 		ss << path << "lyrics-" << basename << ".txt";

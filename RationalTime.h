@@ -31,6 +31,7 @@ public:
 	
 	RationalTime operator+( RationalTime r ) const;
 	RationalTime operator-( RationalTime r ) const;
+	RationalTime operator/( RationalTime r ) const;
 	RationalTime operator-() const; //negation
 	RationalTime& operator=(const RationalTime& r_);
 	bool operator==( RationalTime r ) const;
