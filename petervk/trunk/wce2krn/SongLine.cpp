@@ -14,6 +14,7 @@
 #include<iostream>
 #include<cstdlib>
 #include<cassert>
+#include <locale>
 using namespace std;
 
 SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int mtempo, int barnumber) :
@@ -545,17 +546,76 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 vector<string> SongLine::getLyLine(bool absolute) const{
 	vector<string> res;
 	
+	if (!absolute) {
+		res = wcelines;
+		// add break at end
+		if ( res.size() >0 ) res[0] = res[0] + " \\mBreak";
+		// make sure first note has duration
+		inheritFirstLynoteDuration( res[0], initialDuration);
+	}
+	
 	return res;
 }
 
 vector<string> SongLine::getLyBeginSignature(bool absolute) const {
 	vector<string> res;
 	
+	res.push_back("mBreak = { \\bar \"\" \\break }");
+	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
+	res.push_back("\\let gl=\\glissando");
+	res.push_back("\\version\"2.8.2\"");
+	res.push_back("\\score {{");
+	
+	string key;
+	//guess most probable key (not optimal)
+	switch( keySignature ) {
+		case -4: key = "f \\minor"; break;
+		case -3: key = "es \\major"; break;
+		case -2: key = "g \\minor"; break;
+		case -1: key = "d \\minor"; break;
+		case  0: key = "c \\major"; break;
+		case  1: key = "g \\major"; break;
+		case  2: key = "d \\major"; break;
+		case  3: key = "a \\major"; break;
+		case  4: key = "e \\major"; break;
+	}
+	res.push_back("\\key " + key);
+	
+	if ( !absolute ) {
+		string relative;
+		relative = initialLastPitchClass;
+		int octave = initialOctave;
+		octave = octave - 3;
+		if (octave !=0 ) {
+			for (int i=1; i<=abs(octave); i++) {
+				if (octave<0) relative = relative + ","; else relative = relative + "'";
+			}
+		}
+		res.push_back("\\relative " + relative);
+	}
+	
+	res.push_back("{");
+	res.push_back("\\set melismaBusyProperties = #\'()");
+	
+	string partial = upbeatToString(initialUpbeat);
+	if ( partial != "" ) res.push_back("\\partial " + partial);
+	
+	string meter;
+	stringstream meterss;
+	meterss << initialTimeSignature.getNumerator() << "/" << initialTimeSignature.getDenominator();
+	meterss >> meter;
+	res.push_back("\\time " + meter);
+	
 	return res;
 }
 
 vector<string> SongLine::getLyEndSignature() const {
 	vector<string> res;
+	
+	res.push_back(" }}");
+	res.push_back(" \\midi { \\tempo 4=120 }");
+	res.push_back(" \\layout {}");
+	res.push_back("}");
 	
 	return res;
 }
@@ -644,6 +704,76 @@ vector<string> SongLine::getKernEndSignature() const {
 	res.push_back(s);
 	
 	return res;
+}
+
+string SongLine::upbeatToString(RationalTime t) const {
+	string res;
+	
+	if (initialUpbeat == 0 ) return "";
+	
+	stringstream ss;
+	
+	RationalTime rnum = initialUpbeat / RationalTime(1,32);
+	int num = rnum.getNumerator()/rnum.getDenominator();
+	ss << num;
+	
+	ss >> res;
+	res = "32*" + res;
+	
+	return res;
+
+}
+
+bool SongLine::inheritFirstLynoteDuration( string& lyline, int duration) const {
+	locale loc("");
+	string::size_type pos = 0;
+	stringstream ss;
+	string strduration;
+	
+	
+	int index = 0;
+	if (relLyTokens.size() > 0) {
+
+		while ( index < relLyTokens[0].size() )
+			if ( relLyTokens[0][index].getIdentity() != RelLyToken::NOTE )
+				index++;
+			else
+				break;	
+	}
+	else
+		return false; //no tokens
+		
+	//index passed end?
+	if ( index >= relLyTokens[0].size() ) return false;
+	
+	//firstnote has duration?	
+	if ( relLyTokens[0][index].getDurationBase() != 0 ) return true;
+	
+	//find index of end of first note	
+	while ( index > 0 ) {
+		pos = lyline.find('\t');
+		index--;
+	}
+	
+	if ( (pos = lyline.find_first_of("abcdefgsr",pos)) == string::npos) return false;
+	pos++;
+	while ( pos < lyline.size() )
+		if ( lyline.at(pos) == ',' || lyline.at(pos) == '\'' ) 
+			pos++;
+		else
+			break;
+	
+	//here we should insert the duration
+
+	ss << initialDuration;
+	if ( initialDotted ) ss << '.';
+	ss >> strduration;
+	
+	lyline.insert(pos, strduration);
+	
+	//cout << lyline << endl;
+	
+	return true;
 }
 
 string SongLine::getLyricsLine( int line ) const {

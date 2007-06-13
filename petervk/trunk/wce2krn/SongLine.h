@@ -81,6 +81,8 @@ private:
 	int computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const;
 	RationalTime rationalDuration(int duration, bool dotted, bool triplet) const;
 	string toText(string tok, RelLyToken::TextStatus ts, Representation repr)  const;
+	string upbeatToString(RationalTime t) const;
+	bool inheritFirstLynoteDuration( string& lyline, int duration) const;
 	
 	const RationalTime initialUpbeat;
 	RationalTime finalUpbeat;
