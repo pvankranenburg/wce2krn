@@ -25,6 +25,7 @@ public:
 	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, UNKNOWN };
 	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, IN_SLUR, NO_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
+	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
 	enum Accidental { DOUBLE_FLAT, FLAT, NO_ACCIDENTAL, NATURAL, SHARP, DOUBLE_SHARP };
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
 	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD };
@@ -35,8 +36,10 @@ public:
 	char getPitchClass() const;
 	int getOctaveCorrection() const; // 0 if no octave correction
 	int getDurationBase() const; // 0 if no durations is given
-	bool getDotted() const; // false if no duration is given
+	int getDots() const; // return number of dots
+	bool getInterpretedPitch() const; // true if pitch is interpreted (crossed note head)
 	bool getNotDotted() const; // true if no duration is given
+	bool getGlissandoEnd() const; // true if glissando ends on this note.
 	SlurStatus getSlur() const;
 	TieStatus getTie() const;
 	Accidental getAccidental() const;
@@ -49,8 +52,8 @@ public:
 	TimeSignature getTimeSignature() const; //do only invoke if idenity is TIME_COMMAND
 	
 	//pitchclass, tiestatus, accidental en braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
-	string createKernNote(int octave, int duration, bool dotted, bool triplet, SlurStatus slur, TieStatus tie) const;
-	string createAbsLyNote(int octave, int duration, bool dotted, SlurStatus slur, TieStatus tie) const;
+	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie) const;
+	string createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const;
 						  
 private:
 	const string token;
