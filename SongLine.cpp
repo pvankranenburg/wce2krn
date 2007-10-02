@@ -17,12 +17,12 @@
 #include <locale>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int mtempo, int barnumber) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
 																   initialDuration(duration),
-																   initialDotted(dotted),
+																   initialDots(dots),
 																   initialOctave(octave),
 																   initialLastPitchClass(pitchclass),
 																   initialBarnumber(barnumber),
@@ -30,7 +30,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   finalUpbeat(RationalTime(0,1)),
 																   finalOctave(4),
 																   finalDuration(0),
-																   finalDotted(false),
+																   finalDots(0),
 																   finalLastPitchClass(pitchclass),
 																   finalBarnumber(-1),
 																   keySignature(keysig),
@@ -43,7 +43,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   initialUpbeat(RationalTime(0,1)),
 					   initialTimeSignature(TimeSignature()),
 					   initialDuration(0),
-					   initialDotted(false),
+					   initialDots(0),
 					   initialOctave(4),
 					   initialLastPitchClass('g'),
 					   initialBarnumber(0),
@@ -57,7 +57,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 									     initialUpbeat(sl.getInitialUpbeat()),
 										 initialTimeSignature(sl.getInitialTimeSignature()),
 										 initialDuration(sl.getInitialDuration()),
-										 initialDotted(sl.getInitialDotted()),
+										 initialDots(sl.getInitialDots()),
 										 initialOctave(sl.getInitialOctave()),
 										 initialLastPitchClass(sl.getInitialLastPitchClass()),
 										 initialBarnumber(sl.getInitialBarnumber()),
@@ -66,7 +66,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 finalOctave(sl.getFinalOctave()),
 										 finalDuration(sl.getFinalDuration()),
 										 finalLastPitchClass(sl.getFinalLastPitchClass()),
-										 finalDotted(sl.getFinalDotted()),
+										 finalDots(sl.getFinalDots()),
 										 finalBarnumber(sl.getFinalBarnumber()),
 										 keySignature(sl.getKeySignature()),
 										 midiTempo(sl.getMidiTempo()),
@@ -84,7 +84,7 @@ void SongLine::translate() {
 	int currentOctave = initialOctave;
 	char lastPitchClass = initialLastPitchClass;
 	int currentDuration = initialDuration;
-	bool currentDotted = initialDotted;
+	int currentDots = initialDots;
 	TimeSignature currentTimeSignature = initialTimeSignature;
 	int currentBarnumber = initialBarnumber;
 	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR_INFO;
@@ -154,8 +154,8 @@ void SongLine::translate() {
 				//duration:
 				if ( (*rl_it).getDurationBase() != 0 ) {
 					currentDuration = (*rl_it).getDurationBase();
-					//dotted
-					currentDotted = (*rl_it).getDotted();
+					//dots
+					currentDots = (*rl_it).getDots();
 				}
 				//octave
 				currentOctave = computeOctave( currentOctave, (*rl_it).getPitchClass(), lastPitchClass, (*rl_it).getOctaveCorrection() );
@@ -181,17 +181,24 @@ void SongLine::translate() {
 					if ( currentSlurStatus == RelLyToken::START_SLUR || currentSlurStatus == RelLyToken::IN_SLUR)
 						currentSlurStatus = RelLyToken::IN_SLUR;
 				}
+				// Glissando end? Then previous note should have glissando start.
+				// Glissandi can not cross line breaks (yet?)
+				if ( (*rl_it).getGlissandoEnd() ) {
+					if ( kernTokens[0].size() > 1 ) { // there must be a previous kern note.
+						kernTokens[0][kernTokens[0].size()-1] = kernTokens[0][kernTokens[0].size()-1] + "h";
+					}
+				} 
 				//create note-token
 				token = (*rl_it).createKernNote(currentOctave,
 				                                currentDuration,
-												currentDotted,
+												currentDots,
 												currentTripletStatus,
 												currentSlurStatus,
 												currentTieStatus);
 				kernTokens[0].push_back(token);
 				token = (*rl_it).createAbsLyNote(currentOctave,
 				                                 currentDuration,
-												 currentDotted,
+												 currentDots,
 												 currentSlurStatus,
 												 currentTieStatus);
 				absLyTokens[0].push_back(token);
@@ -202,9 +209,9 @@ void SongLine::translate() {
 				//set LastPitchclass
 				if ((*rl_it).getPitchClass() != 'r' && (*rl_it).getPitchClass() != 's' ) lastPitchClass = (*rl_it).getPitchClass();
 				//set time
-				timeInBar = timeInBar + rationalDuration(currentDuration, currentDotted, currentTripletStatus);
+				timeInBar = timeInBar + rationalDuration(currentDuration, currentDots, currentTripletStatus);
 				// set tripletstatus to false if closingbrace after note
-				RationalTime t = rationalDuration(currentDuration, currentDotted, currentTripletStatus);
+				RationalTime t = rationalDuration(currentDuration, currentDots, currentTripletStatus);
 				//cout << token << " bar:" << currentBarnumber << " " << timeInBar.getNumerator() << "/" << timeInBar.getDenominator() << 
 				//	" " << t.getNumerator() << "/" << t.getDenominator() << endl;
 				if ( currentTripletStatus && (*rl_it).containsClosingBraceAfterNote() ) currentTripletStatus = false;
@@ -243,7 +250,7 @@ void SongLine::translate() {
 				kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
 			} break;
 			
-			case RelLyToken::TIMES_COMMAND: { //for now assume '\times 2/3'
+			case RelLyToken::TIMES_COMMAND: { //for now assume '\times 2/3' (or '\times2/3')
 				//cout << (*rl_it).getToken() << ": times" << endl;
 				currentTripletStatus = true;
 				//first for absLy
@@ -278,7 +285,7 @@ void SongLine::translate() {
 	
 	finalOctave = currentOctave;
 	finalDuration = currentDuration;
-	finalDotted = currentDotted;
+	finalDots = currentDots;
 	finalTimeSignature = currentTimeSignature;
 	if (lastPitchClass != 's' && lastPitchClass != 'r') finalLastPitchClass = lastPitchClass;
 	if (timeInBar == currentTimeSignature.getRationalTime()) {
@@ -486,11 +493,15 @@ int SongLine::computeOctave(int curoct, char pitch, char lastPitch, int octcorre
 	return res;
 }
 
-RationalTime SongLine::rationalDuration(int duration, bool dotted, bool triplet) const {
+RationalTime SongLine::rationalDuration(int duration, int dots, bool triplet) const {
 		int n = 1;
 		int d = duration;
-		if ( dotted ) { n = 3; d = 2*duration; }
+		
+		//dots
+		for( int i=0; i<dots; i++) {n = n*2 + 1; d = d*2; } //if ( dotted ) { n = 3; d = 2*duration; }
+		
 		if ( triplet ) { d = (d/2)*3; }
+		//cout << n << "/" << d << endl;
 		return RationalTime(n,d);
 }
 
@@ -564,6 +575,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute) const {
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
 	res.push_back("\\version\"2.8.2\"");
+	res.push_back("\\header{ tagline = \"\" }");
 	res.push_back("\\score {{");
 	
 	string key;
@@ -614,7 +626,7 @@ vector<string> SongLine::getLyEndSignature() const {
 	
 	res.push_back(" }}");
 	res.push_back(" \\midi { \\tempo 4=120 }");
-	res.push_back(" \\layout {}");
+	res.push_back(" \\layout { indent = 0.0\\cm }");
 	res.push_back("}");
 	
 	return res;
@@ -766,7 +778,7 @@ bool SongLine::inheritFirstLynoteDuration( string& lyline, int duration) const {
 	//here we should insert the duration
 
 	ss << initialDuration;
-	if ( initialDotted ) ss << '.';
+	for(int i=0; i<initialDots; i++) ss << '.';
 	ss >> strduration;
 	
 	lyline.insert(pos, strduration);

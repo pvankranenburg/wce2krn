@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, bool dotted, int octave, char pitchclass, int keysig, int mtempo, int barnumber); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -39,7 +39,7 @@ public:
 	int getInitialOctave() const {return initialOctave;}
 	char getInitialLastPitchClass() const {return initialLastPitchClass;}
 	int getInitialDuration() const {return initialDuration;}
-	bool getInitialDotted() const {return initialDotted;}
+	int getInitialDots() const {return initialDots;}
 	int getInitialBarnumber() const {return initialBarnumber;}
 	
 	TimeSignature getFinalTimeSignature() const {return finalTimeSignature;} 
@@ -47,7 +47,7 @@ public:
 	int getFinalOctave() const {return finalOctave;}
 	char getFinalLastPitchClass() const {return finalLastPitchClass;}
 	int getFinalDuration() const {return finalDuration;}
-	bool getFinalDotted() const {return finalDotted;}
+	int getFinalDots() const {return finalDots;}
 	int getFinalBarnumber() const {return finalBarnumber;}
 	int getKeySignature() const { return keySignature;}
 
@@ -79,7 +79,7 @@ private:
 	//some useful functions
 	void breakWcelines(); //output goes into relLyTokens. Invoked in translate().
 	int computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const;
-	RationalTime rationalDuration(int duration, bool dotted, bool triplet) const;
+	RationalTime rationalDuration(int duration, int dots, bool triplet) const;
 	string toText(string tok, RelLyToken::TextStatus ts, Representation repr)  const;
 	string upbeatToString(RationalTime t) const;
 	bool inheritFirstLynoteDuration( string& lyline, int duration) const;
@@ -94,8 +94,8 @@ private:
 	char finalLastPitchClass;
 	const int initialDuration; //multiples of 2, or multiples of 3 (in case of triplets).
 	int finalDuration;
-	const bool initialDotted;
-	bool finalDotted;
+	const int initialDots;
+	int finalDots;
 	const int keySignature;
 	const int midiTempo;
 	const int initialBarnumber;
