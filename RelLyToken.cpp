@@ -39,18 +39,11 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	
 	string lt = token; //changable copy
 	pvktrim(lt); //to be sure
+
+	//NB first check for 'times' and then for 'time', because 'time' is in 'times'
 	
 	string::size_type pos;
-	if( pos = lt.find("\\time ") != string::npos ) {
-		// make sure there is no note after the time command
-		lt.erase(pos, 6);
-		pvktrim(lt);
-		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
-			res = TIME_COMMAND;
-			return res;
-		}
-	}
-	if( pos = lt.find("\\times 2/3") != string::npos ) {
+	if( ( pos = lt.find("\\times 2/3") != string::npos) || ( pos = lt.find("\\times2/3") != string::npos) ) {
 		//make sure there is only the times command with maybe a brace.
 		lt.erase(pos, 10);
 		pvktrim(lt);
@@ -59,12 +52,24 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 			return res;
 		}
 	}
+	if( pos = lt.find("\\time") != string::npos ) {
+		// make sure there is no note after the time command
+		lt.erase(pos, 6);
+		pvktrim(lt);
+		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
+			res = TIME_COMMAND;
+			return res;
+		}
+	}
 	//now find out if it is a note
 	//remove all allowed nonnote characters so that only the notename remains
+	while( (pos = lt.find("is")) != string::npos ) lt.erase(pos,2);
+	while( (pos = lt.find("es")) != string::npos ) lt.erase(pos,2);
+	while( (pos = lt.find("as")) != string::npos ) lt.erase(pos+1,1);
+	if ( (pos = lt.find("\\x ")) != string::npos ) lt.erase(pos,3);
+	if ( (pos = lt.find("\\gl ")) != string::npos ) lt.erase(pos,4);
 	while( (pos = lt.find_first_of("{}().~0123456789,' ")) != string::npos )
 		{ lt.erase(pos,1); }
-	while( (pos = lt.find("is") != string::npos )) lt.erase(pos,2);
-	while( (pos = lt.find("es") != string::npos )) lt.erase(pos,2);
 	//now there sould be only one pitch, rest ('r') or space ('s') left
 	if ( lt.find_first_of("abcdefgrs") != string::npos && lt.size()==1 ) { res = NOTE; return res; }
 	
@@ -72,7 +77,7 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	return res;
 }
 
-string RelLyToken::createAbsLyNote(int octave, int duration, bool dotted, SlurStatus slur, TieStatus tie) const {
+string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const {
 	stringstream res;
 	//first pitch:
 	res << getPitchClass();
@@ -95,7 +100,7 @@ string RelLyToken::createAbsLyNote(int octave, int duration, bool dotted, SlurSt
 	}
 	//notelength
 	res << duration;
-	if (dotted) res << ".";
+	for (int i=0; i<dots; i++) res << ".";
 	//tie
 	if( tie == START_TIE || tie == CONTINUE_TIE ) res << "~";
 	//slur
@@ -125,7 +130,7 @@ string RelLyToken::createAbsLyNote(int octave, int duration, bool dotted, SlurSt
 	return s;
 }
 
-string RelLyToken::createKernNote(int octave, int duration, bool dotted, bool triplet, SlurStatus slur, TieStatus tie) const {
+string RelLyToken::createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie) const {
 	stringstream res;
 	//open phrase
 	//open slur
@@ -135,7 +140,7 @@ string RelLyToken::createKernNote(int octave, int duration, bool dotted, bool tr
 	//duration
 	if (triplet) duration = duration / 2 * 3;
 	res << duration;
-	if (dotted) res << ".";
+	for (int i=0; i<dots; i++) res << ".";
 	//pitch and octave
 	char pc = getPitchClass();
 	if ( pc == 'r' || pc == 's' )
@@ -158,6 +163,12 @@ string RelLyToken::createKernNote(int octave, int duration, bool dotted, bool tr
 		case SHARP:        res << "#"; break;
 		case DOUBLE_SHARP: res << "##"; break;
 	}
+	//Glissando end?
+	if (getGlissandoEnd()) // yes
+		res << "H";
+	//Interpreted pitch?
+	if (getInterpretedPitch()) // yes
+		res << "x";
 	//tie close
 	if (tie == END_TIE) res << "]";
 	if (tie == CONTINUE_TIE) res << "_";
@@ -180,9 +191,11 @@ int RelLyToken::getDurationBase() const {
 	return atoi( duration.c_str() );
 }
 
-bool RelLyToken::getDotted() const { //return false if no duration is given
-	bool res = false;
-	if (token.find(".") != string::npos ) res = true; //true: dot found
+int RelLyToken::getDots() const { //return number of dots
+	int res = 0;
+	string::size_type pos;
+	string lt = token;
+	while( (pos = lt.find(".")) != string::npos ) { res++; lt.erase(pos,1); }
 	return res;
 }
 
@@ -204,8 +217,12 @@ int RelLyToken::getOctaveCorrection() const {
 char RelLyToken::getPitchClass() const {
 	if (getIdentity() != NOTE) return '.'; //not sure what to return
 	string::size_type pos;
-	if ( (pos = token.find_first_of("abcdefgsr")) == string::npos) return '.';
-	return (char)token[pos];
+	//remove \x or \gl
+	string t = token;
+	if ( (pos = t.find("\\x")) != string::npos ) t.erase(pos,2);
+	if ( (pos = t.find("\\gl")) != string::npos ) t.erase(pos,3); 
+	if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return '.';
+	return (char)t[pos];
 }
 
 RelLyToken::SlurStatus RelLyToken::getSlur() const {
@@ -221,10 +238,14 @@ RelLyToken::TieStatus RelLyToken::getTie() const {
 }
 
 RelLyToken::Accidental RelLyToken::getAccidental() const {
+	
+	//NB special care for as, asas, es and eses
+	
 	int res = 0;
 	string lt = token;
 	string::size_type pos;
 	while( (pos = lt.find("is")) != string::npos ) { res++; lt.erase(pos,2); }
+	while( (pos = lt.find("as")) != string::npos ) { res--; lt.erase(pos,2); } // to find as and ases
 	while( (pos = lt.find("es")) != string::npos ) { res--; lt.erase(pos,2); }
 	switch(res) {
 		case -2: return DOUBLE_FLAT; break;
@@ -236,6 +257,22 @@ RelLyToken::Accidental RelLyToken::getAccidental() const {
 	}
 	return NO_ACCIDENTAL;
 }
+
+bool RelLyToken::getInterpretedPitch() const {
+	bool res = false;
+	if ( token.find("\\x") != string::npos ) // \x found
+		res = true;
+	
+	return res;
+}
+
+bool RelLyToken::getGlissandoEnd() const {
+	bool res = false;
+	string::size_type pos;
+	if ( (pos = token.find("\\gl")) != string::npos ) res = true;
+	return res;	
+}
+
 
 bool RelLyToken::containsClosingBraceBeforeNote() const {
 	bool res = false;

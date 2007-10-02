@@ -22,6 +22,8 @@ TimeSignature::TimeSignature(string ts) {
 	string::size_type pos;
 	if ( pos = ts.find("\\time ") != string::npos ) // time gevonden
 		ts.erase(0,6); //verwijder "\time "
+	if ( pos = ts.find("\\time") != string::npos ) // time gevonden
+		ts.erase(0,5); //verwijder "\time"
 	pos = ts.find("/");
 	numerator = convertToInt(ts.substr(0,pos));
 	denominator = convertToInt(ts.substr(pos+1));

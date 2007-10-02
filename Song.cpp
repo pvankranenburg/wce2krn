@@ -49,7 +49,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 							      translateUpbeat(wcefile.getUpbeat()),
 								  translateTimeSignature(wcefile.getTimeSignature()),
 								  0,
-								  false,
+								  0,
 								  4,
 								  'g',
 								  translateKeySignature(wcefile.getKey()),
@@ -62,7 +62,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 							      (songLines.back()).getFinalUpbeat(), //from previous line
 								  (songLines.back()).getFinalTimeSignature(),
 								  (songLines.back()).getFinalDuration(),
-								  (songLines.back()).getFinalDotted(),
+								  (songLines.back()).getFinalDots(),
 								  (songLines.back()).getFinalOctave(),
 								  (songLines.back()).getFinalLastPitchClass(),
 								  (songLines.back()).getKeySignature(),
