@@ -63,15 +63,12 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	}
 	//now find out if it is a note
 	//remove all allowed nonnote characters so that only the notename remains
-	while( (pos = lt.find("is")) != string::npos ) lt.erase(pos,2);
-	while( (pos = lt.find("es")) != string::npos ) lt.erase(pos,2);
-	while( (pos = lt.find("as")) != string::npos ) lt.erase(pos+1,1);
-	if ( (pos = lt.find("\\x ")) != string::npos ) lt.erase(pos,3);
-	if ( (pos = lt.find("\\gl ")) != string::npos ) lt.erase(pos,4);
 	while( (pos = lt.find_first_of("{}().~0123456789,' ")) != string::npos )
 		{ lt.erase(pos,1); }
+	if ( (pos = lt.find("\\x")) != string::npos ) lt.erase(pos,2);
+	if ( (pos = lt.find("\\gl")) != string::npos ) lt.erase(pos,3);
 	//now there sould be only one pitch, rest ('r') or space ('s') left
-	if ( lt.find_first_of("abcdefgrs") != string::npos && lt.size()==1 ) { res = NOTE; return res; }
+	if ( lt.find_first_of("abcdefgrs") != string::npos ) { res = NOTE; return res; }
 	
 	//unknown
 	return res;
