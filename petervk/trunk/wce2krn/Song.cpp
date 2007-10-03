@@ -48,7 +48,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 					songLines.push_back(SongLine(singleline,
 							      translateUpbeat(wcefile.getUpbeat()),
 								  translateTimeSignature(wcefile.getTimeSignature()),
-								  0,
+								  4,
 								  0,
 								  4,
 								  'g',
