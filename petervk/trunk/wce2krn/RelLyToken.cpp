@@ -45,20 +45,26 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	string::size_type pos;
 	if( ( pos = lt.find("\\times 2/3") != string::npos) || ( pos = lt.find("\\times2/3") != string::npos) ) {
 		//make sure there is only the times command with maybe a brace.
-		lt.erase(pos, 10);
+		//cout << lt << " - " << flush;
+		lt.erase(pos-1, 10);
+		//cout << lt << endl << flush;
 		pvktrim(lt);
 		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
 			res = TIMES_COMMAND;
 			return res;
+		} else {
+			return UNKNOWN;
 		}
 	}
 	if( pos = lt.find("\\time") != string::npos ) {
 		// make sure there is no note after the time command
-		lt.erase(pos, 6);
+		lt.erase(pos-1, 6);
 		pvktrim(lt);
 		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
 			res = TIME_COMMAND;
 			return res;
+		} else {
+			return UNKNOWN;
 		}
 	}
 	//now find out if it is a note
