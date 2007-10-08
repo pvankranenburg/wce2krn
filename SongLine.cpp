@@ -130,6 +130,7 @@ void SongLine::translate() {
 
 		//to note or not to note		
 		id = (*rl_it).getIdentity();
+		//cout << (*rl_it).getToken() << " : " << id << endl;
 		switch(id) {
 			case RelLyToken::NOTE: {
 		
