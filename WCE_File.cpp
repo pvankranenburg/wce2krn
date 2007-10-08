@@ -30,47 +30,47 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename) {
 	if (stdinput) good = getline(cin,line); else good = getline(infile,line);
 	
 	while(good) {
-		if( pos = line.find("encoderNameTextField") != string::npos ) {
+		if( (pos = line.find("encoderNameTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			encoder = extractStringFromLine(line);
 			continue;
 		}
-		if( pos = line.find("keyTextField") != string::npos ) {
+		if( (pos = line.find("keyTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			key = extractStringFromLine(line);
 			continue;
 		}
-		if( pos = line.find("tempoTextField") != string::npos ) {
+		if( (pos = line.find("tempoTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			midiTempo = extractStringFromLine(line);
 			continue;
 		}
-		if( pos = line.find("partialTextField") != string::npos ) {
+		if( (pos = line.find("partialTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			upbeat = extractStringFromLine(line);
 			continue;
 		}
-		if( pos = line.find("timeTextField") != string::npos ) {
+		if( (pos = line.find("timeTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			timeSignature = extractStringFromLine(line);
 			continue;
 		}
-		if( pos = line.find("<key>version</key>") != string::npos ) {
+		if( (pos = line.find("<key>version</key>")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			WCEVersion = extractStringFromLine(line);
 			continue;
 		}
-		if( pos = line.find("inputTextView") != string::npos ) {
+		if( (pos = line.find("inputTextView")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			contents = extractStringFromMultiLine(line);
 			continue;
 		}
-		if( pos = line.find("endSignatureTextView") != string::npos ) {
+		if( (pos = line.find("endSignatureTextView")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			endSignature = extractStringFromMultiLine(line);
 			continue;
 		}
-		if( pos = line.find("beginSignatureTextView") != string::npos ) {
+		if( (pos = line.find("beginSignatureTextView")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			beginSignature = extractStringFromMultiLine(line);
 			continue;
