@@ -43,10 +43,11 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	//NB first check for 'times' and then for 'time', because 'time' is in 'times'
 	
 	string::size_type pos;
-	if( ( pos = lt.find("\\times 2/3") != string::npos) || ( pos = lt.find("\\times2/3") != string::npos) ) {
+	if( ( (pos = lt.find("\\times 2/3")) != string::npos) || ( (pos = lt.find("\\times2/3")) != string::npos) ) {
 		//make sure there is only the times command with maybe a brace.
 		//cout << lt << " - " << flush;
-		lt.erase(pos-1, 10);
+		if ( (pos = lt.find("\\times 2/3")) != string::npos) lt.erase(pos, 10);
+		if ( (pos = lt.find("\\times2/3")) != string::npos) lt.erase(pos, 9);
 		//cout << lt << endl << flush;
 		pvktrim(lt);
 		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
@@ -56,10 +57,12 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 			return UNKNOWN;
 		}
 	}
-	if( pos = lt.find("\\time") != string::npos ) {
+	if( (pos = lt.find("\\time")) != string::npos ) {
 		// make sure there is no note after the time command
-		lt.erase(pos-1, 6);
+		//cout << lt << " - ";
+		lt.erase(pos, 5);
 		pvktrim(lt);
+		//cout << lt << endl;
 		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
 			res = TIME_COMMAND;
 			return res;
@@ -69,10 +72,17 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	}
 	//now find out if it is a note
 	//remove all allowed nonnote characters so that only the notename remains
+	//cout << lt << " - ";
 	while( (pos = lt.find_first_of("{}().~0123456789,' ")) != string::npos )
 		{ lt.erase(pos,1); }
+	//cout << lt << " - ";
 	if ( (pos = lt.find("\\x")) != string::npos ) lt.erase(pos,2);
-	if ( (pos = lt.find("\\gl")) != string::npos ) lt.erase(pos,3);
+	//cout << lt << " - ";
+	if ( (pos = lt.find("\\gl")) != string::npos ) {
+		lt.erase(pos,3);
+		if ( pos != 0 ) cerr << "Warning: \\gl not at beginning of token " << token << endl;
+	}
+	//cout << lt << endl;
 	//now there sould be only one pitch, rest ('r') or space ('s') left
 	if ( lt.find_first_of("abcdefgrs") != string::npos ) { res = NOTE; return res; }
 	
