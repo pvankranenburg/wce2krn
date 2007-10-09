@@ -144,6 +144,10 @@ bool RationalTime::operator>( RationalTime r ) const {
 	return (numerator*r.getDenominator()) > (r.getNumerator()*denominator);
 }
 
+bool RationalTime::operator>=( RationalTime r ) const {
+	return (numerator*r.getDenominator()) >= (r.getNumerator()*denominator);
+}
+
 RationalTime& RationalTime::operator=(const RationalTime& r) {
 	if( &r != this ) {
 		numerator = r.getNumerator();

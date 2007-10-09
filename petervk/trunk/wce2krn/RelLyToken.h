@@ -56,7 +56,10 @@ public:
 	string createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const;
 						  
 private:
+	Identity computeIdentity() const;
+	
 	const string token;
+	Identity id;
 };
 
 #endif
