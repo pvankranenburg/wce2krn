@@ -18,12 +18,15 @@
 using namespace std;
 
 RelLyToken::RelLyToken(string t) : token(t) {
+	id = computeIdentity();
 }
 
-RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()) {
+RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()) {
+	//id = computeIdentity();
 }
 
 RelLyToken::RelLyToken() : token("") {
+	id = UNKNOWN;
 }
 
 RelLyToken& RelLyToken::operator=(const RelLyToken& r) {
@@ -34,7 +37,7 @@ RelLyToken& RelLyToken::operator=(const RelLyToken& r) {
 	return *this;
 }
 
-RelLyToken::Identity RelLyToken::getIdentity() const {
+RelLyToken::Identity RelLyToken::computeIdentity() const {
 	Identity res = UNKNOWN;
 	
 	string lt = token; //changable copy
@@ -73,14 +76,19 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	//now find out if it is a note
 	//remove all allowed nonnote characters so that only the notename remains
 	//cout << lt << " - ";
+	pvktrim(lt);
 	while( (pos = lt.find_first_of("{}().~0123456789,' ")) != string::npos )
 		{ lt.erase(pos,1); }
 	//cout << lt << " - ";
-	if ( (pos = lt.find("\\x")) != string::npos ) lt.erase(pos,2);
+	if ( (pos = lt.find("\\x")) != string::npos ) {
+		lt.erase(pos,2);
+		if ( pos != 0 ) cerr << "Warning: \\x not at beginning of token " << token << endl;
+	}
 	//cout << lt << " - ";
 	if ( (pos = lt.find("\\gl")) != string::npos ) {
 		lt.erase(pos,3);
-		if ( pos != 0 ) cerr << "Warning: \\gl not at beginning of token " << token << endl;
+		if ( pos != 0 )
+			cerr << "Warning: \\gl not at beginning of token " << token << endl;
 	}
 	//cout << lt << endl;
 	//now there sould be only one pitch, rest ('r') or space ('s') left
@@ -88,6 +96,10 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 	
 	//unknown
 	return res;
+}
+
+RelLyToken::Identity RelLyToken::getIdentity() const {
+	return id;
 }
 
 string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const {

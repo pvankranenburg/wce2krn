@@ -54,7 +54,8 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  'g',
 								  translateKeySignature(wcefile.getKey()),
 								  translateMidiTempo(wcefile.getMidiTempo()),
-								  initialBarnumber));
+								  initialBarnumber,
+								  wcefile.getMeterInvisible()));
 					singleline.clear();
 					//songLines.push_back(sl);
 				} else { //not first line of song
@@ -67,7 +68,8 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  (songLines.back()).getFinalLastPitchClass(),
 								  (songLines.back()).getKeySignature(),
 								  (songLines.back()).getMidiTempo(),
-								  (songLines.back()).getFinalBarnumber()));
+								  (songLines.back()).getFinalBarnumber(),
+								  (songLines.back()).getMeterInvisible()));
 					//songLines.push_back(sl);
 					singleline.clear();
 				}
