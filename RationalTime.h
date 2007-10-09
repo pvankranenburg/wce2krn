@@ -39,6 +39,7 @@ public:
 	bool operator==( int i ) const;
 	bool operator!=( int i ) const;	
 	bool operator>( RationalTime r ) const;
+	bool operator>=( RationalTime r ) const;
 
 private:
 	int numerator;

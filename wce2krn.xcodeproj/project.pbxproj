@@ -22,6 +22,7 @@
 		85BCAD940B00CE9400E7C8E7 /* WCE_File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85BCAD850B00CE9400E7C8E7 /* WCE_File.cpp */; };
 		85BCAD950B00CE9400E7C8E7 /* WCE_File.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85BCAD860B00CE9400E7C8E7 /* WCE_File.h */; };
 		85BCAD960B00CE9400E7C8E7 /* wce2krn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85BCAD870B00CE9400E7C8E7 /* wce2krn.cpp */; };
+		85CF35E70CBA7D2F00B1E2FD /* wce2krn.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85CF35E60CBA7D2F00B1E2FD /* wce2krn.h */; };
 		8DD76F6A0486A84900D96B5E /* wce2krn.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6859E8B029090EE04C91782 /* wce2krn.1 */; };
 /* End PBXBuildFile section */
 
@@ -40,6 +41,7 @@
 				85BCAD910B00CE9400E7C8E7 /* SongLine.h in CopyFiles */,
 				85BCAD930B00CE9400E7C8E7 /* TimeSignature.h in CopyFiles */,
 				85BCAD950B00CE9400E7C8E7 /* WCE_File.h in CopyFiles */,
+				85CF35E70CBA7D2F00B1E2FD /* wce2krn.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -61,6 +63,7 @@
 		85BCAD850B00CE9400E7C8E7 /* WCE_File.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WCE_File.cpp; sourceTree = "<group>"; };
 		85BCAD860B00CE9400E7C8E7 /* WCE_File.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WCE_File.h; sourceTree = "<group>"; };
 		85BCAD870B00CE9400E7C8E7 /* wce2krn.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = wce2krn.cpp; sourceTree = "<group>"; };
+		85CF35E60CBA7D2F00B1E2FD /* wce2krn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wce2krn.h; sourceTree = "<group>"; };
 		8DD76F6C0486A84900D96B5E /* wce2krn */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = wce2krn; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6859E8B029090EE04C91782 /* wce2krn.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = wce2krn.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -104,6 +107,7 @@
 				85BCAD850B00CE9400E7C8E7 /* WCE_File.cpp */,
 				85BCAD860B00CE9400E7C8E7 /* WCE_File.h */,
 				85BCAD870B00CE9400E7C8E7 /* wce2krn.cpp */,
+				85CF35E60CBA7D2F00B1E2FD /* wce2krn.h */,
 			);
 			name = Source;
 			sourceTree = "<group>";

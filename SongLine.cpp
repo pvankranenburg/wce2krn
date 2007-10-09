@@ -9,6 +9,7 @@
 
 #include "SongLine.h"
 #include "pvkutilities.h"
+#include "wce2krn.h"
 #include<string>
 #include<sstream>
 #include<iostream>
@@ -17,7 +18,7 @@
 #include <locale>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinv) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -35,7 +36,8 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   finalBarnumber(-1),
 																   keySignature(keysig),
 																   midiTempo(mtempo),
-																   translationMade(false) {
+																   translationMade(false),
+																   meterInvisible(meterinv) {
 	translate();
 }
 
@@ -49,7 +51,8 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   initialBarnumber(0),
 					   keySignature(0),
 					   midiTempo(120),
-					   translationMade(false) {
+					   translationMade(false),
+					   meterInvisible(false) {
 	translate();
 }
 
@@ -70,11 +73,43 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 finalBarnumber(sl.getFinalBarnumber()),
 										 keySignature(sl.getKeySignature()),
 										 midiTempo(sl.getMidiTempo()),
+										 translationMade(sl.translationMade),
+										 relLyTokens(sl.relLyTokens),
+										 absLyTokens(sl.absLyTokens),
+										 kernTokens(sl.kernTokens),
+										 absLyLine(sl.absLyLine),
+										 lyricsLines(sl.lyricsLines),
+										 meterInvisible(sl.meterInvisible) {
+	//translate();
+}
+
+/* old copy constructor
+SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
+									     initialUpbeat(sl.getInitialUpbeat()),
+										 initialTimeSignature(sl.getInitialTimeSignature()),
+										 initialDuration(sl.getInitialDuration()),
+										 initialDots(sl.getInitialDots()),
+										 initialOctave(sl.getInitialOctave()),
+										 initialLastPitchClass(sl.getInitialLastPitchClass()),
+										 initialBarnumber(sl.getInitialBarnumber()),
+										 finalTimeSignature(sl.getFinalTimeSignature()),
+										 finalUpbeat(sl.getFinalUpbeat()),
+										 finalOctave(sl.getFinalOctave()),
+										 finalDuration(sl.getFinalDuration()),
+										 finalLastPitchClass(sl.getFinalLastPitchClass()),
+										 finalDots(sl.getFinalDots()),
+										 finalBarnumber(sl.getFinalBarnumber()),
+										 keySignature(sl.getKeySignature()),
+										 midiTempo(sl.getMidiTempo()),
 										 translationMade(false) {
 	translate();
 }
+*/
 
 void SongLine::translate() {
+	
+	//if ( translationMade ) exit(3);
+	
 	if ( wcelines.size() == 0 ) { translationMade = true; return; } // empty songline: nothing to translate
 
 	//break wcelines into tokens
@@ -110,20 +145,22 @@ void SongLine::translate() {
 	string token = "";
 	absLyTokens.push_back(vector<string>());
 	kernTokens.push_back(vector<string>());
+	
 	//Upbeat and initial barnumber (if no upbeat)
-
 	RationalTime timeInBar = RationalTime(0,1);
-	if ( initialUpbeat != 0 ) {
-		timeInBar = currentTimeSignature.getRationalTime() - initialUpbeat;
-		//cout << "INITIAL " << timeInBar.getNumerator() << "/" << timeInBar.getDenominator() << endl;
-		//cout << "INITIALUPBEAT " << initialUpbeat.getNumerator() << "/" << initialUpbeat.getDenominator() << endl;
-	} else {
-		stringstream ss;
-		ss << "=" << currentBarnumber;
-		string barstr = "";
-		ss >> barstr;
-		kernTokens[0].push_back(barstr);
-		timeInBar = RationalTime(0,1);
+	if ( !meterInvisible ) { // if meter invisible, no barlines at all
+		if ( initialUpbeat != 0 ) {
+			timeInBar = currentTimeSignature.getRationalTime() - initialUpbeat;
+			//cout << "INITIAL " << timeInBar.getNumerator() << "/" << timeInBar.getDenominator() << endl;
+			//cout << "INITIALUPBEAT " << initialUpbeat.getNumerator() << "/" << initialUpbeat.getDenominator() << endl;
+		} else {
+			stringstream ss;
+			ss << "=" << currentBarnumber;
+			string barstr = "";
+			ss >> barstr;
+			kernTokens[0].push_back(barstr);
+			timeInBar = RationalTime(0,1);
+		}
 	}
 	for( rl_it = (relLyTokens[0]).begin(); rl_it != (relLyTokens[0]).end(); rl_it++ ) {
 		//rellytoken = (*rl_it).getToken();
@@ -135,18 +172,20 @@ void SongLine::translate() {
 			case RelLyToken::NOTE: {
 		
 				// new bar? : raise barnumber and write barlines to kern
-				if ( timeInBar > currentTimeSignature.getRationalTime() ) {
-					cerr << "Error: bar to long: " << currentBarnumber << endl;
-				}
-				if ( timeInBar == currentTimeSignature.getRationalTime() ) { // new bar
-					//write in **kern
-					stringstream ss;
-					currentBarnumber++;
-					ss << "=" << currentBarnumber;
-					string barstr = "";
-					ss >> barstr;
-					kernTokens[0].push_back(barstr);
-					timeInBar = RationalTime(0,1);
+				if ( !meterInvisible ) {
+					if ( timeInBar > currentTimeSignature.getRationalTime() ) {
+						cerr << "Error: bar to long: " << currentBarnumber << endl;
+					}
+					if ( timeInBar >= currentTimeSignature.getRationalTime() ) { // new bar
+						//write in **kern
+						stringstream ss;
+						currentBarnumber++;
+						ss << "=" << currentBarnumber;
+						string barstr = "";
+						ss >> barstr;
+						kernTokens[0].push_back(barstr);
+						timeInBar = RationalTime(0,1);
+					}
 				}
 				//cout << (*rl_it).getToken() << ": note" << endl;
 				//now convert to abs ly and convert to kern
@@ -548,7 +587,7 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 		}
 	}
 	
-	//remove "
+	//remove " and &quot;
 	string::size_type pos;
 	while ( (pos = tok.find_first_of("\"")) != string::npos ) tok.erase(pos,1);
 	
@@ -572,10 +611,13 @@ vector<string> SongLine::getLyLine(bool absolute) const{
 vector<string> SongLine::getLyBeginSignature(bool absolute) const {
 	vector<string> res;
 	
+	res.push_back("%");
+	res.push_back("% produced by wce2krn " + version + " (" + releasedate + ")");
+	res.push_back("%");	
+	res.push_back("\\version\"2.8.2\"");
 	res.push_back("mBreak = { \\bar \"\" \\break }");
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
-	res.push_back("\\version\"2.8.2\"");
 	res.push_back("\\header{ tagline = \"\" }");
 	res.push_back("\\score {{");
 	
@@ -627,7 +669,13 @@ vector<string> SongLine::getLyEndSignature() const {
 	
 	res.push_back(" }}");
 	res.push_back(" \\midi { \\tempo 4=120 }");
-	res.push_back(" \\layout { indent = 0.0\\cm }");
+	if ( !meterInvisible )
+		res.push_back(" \\layout { indent = 0.0\\cm }");
+	else {
+		res.push_back(" \\layout { indent = 0.0\\cm");
+		res.push_back("           \\context { \\Staff \\remove \"Bar_engraver\" \\remove \"Time_signature_engraver\" }");
+		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" } }");
+	}
 	res.push_back("}");
 	
 	return res;
@@ -656,7 +704,7 @@ vector<string> SongLine::getKernBeginSignature() const {
 	vector<string> res;
 	string s;
 	if ( kernTokens.size() == 0 ) return res;
-
+		
 	//identify spine
 	s = "";
 	for(int i=0; i < kernTokens.size(); i++ ) {
@@ -715,6 +763,10 @@ vector<string> SongLine::getKernEndSignature() const {
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
+	
+	//comment
+	res.push_back("!! produced by wce2krn " + version + " (" + releasedate + ")");
+
 	
 	return res;
 }

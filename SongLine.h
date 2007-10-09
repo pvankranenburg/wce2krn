@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinvisible); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -52,6 +52,7 @@ public:
 	int getKeySignature() const { return keySignature;}
 
 	int getMidiTempo() const { return midiTempo; }
+	bool getMeterInvisible() const { return meterInvisible; }
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings.
 
@@ -100,6 +101,7 @@ private:
 	const int midiTempo;
 	const int initialBarnumber;
 	int finalBarnumber;
+	bool meterInvisible;
 };
 
 #endif

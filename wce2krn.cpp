@@ -9,23 +9,30 @@
  
 #include <iostream>
 #include <string>
+#include "wce2krn.h"
 #include "Song.h"
 using namespace std;
 
 #include "SongLine.h"
 
-void usage() {
-	cerr << "Usage: wce2krn [-k] [-r] [-s] [-l] [-h] [wcefile]" << endl;
-	cerr << "Reads wce-file and generates *kern file" << endl;
-	cerr << " -k: generate kernfile." << endl;
-	cerr << " -r: generate relative lilypond file." << endl;
-	cerr << " -a: generate absolute lilypond file (not implemented)!" << endl;
-	cerr << " -l: generate file(s) with only the lyrics." << endl;
-	cerr << " -s: spit in lines." << endl;
-	cerr << " -h: print this help message" << endl;
-	cerr << "If no filename is given, or '-', standard input and output will be used." << endl;
-	cerr << "In this case, '-s' doesn't have any effect." << endl << endl;
+void print_usage() {
+	cout << "Usage: wce2krn [-k] [-r] [-s] [-l] [-h] [wcefile]" << endl;
+	cout << "Reads wce-file and generates *kern file" << endl;
+	cout << " -k: generate kernfile." << endl;
+	cout << " -r: generate relative lilypond file." << endl;
+	cout << " -a: generate absolute lilypond file (not implemented)!" << endl;
+	cout << " -l: generate file(s) with only the lyrics." << endl;
+	cout << " -s: spit in lines." << endl;
+	cout << " -v: print version number and exit." << endl;
+	cout << " -h: print this help message and exit." << endl;
+	cout << "If no filename is given, or '-', standard input and output will be used." << endl;
+	cout << "In this case, '-s' doesn't have any effect." << endl << endl;
 }
+
+void print_version() {
+	cout << "wce2krn version " << version << " (" << releasedate << ")" << endl;
+}
+
 
 int main (int argc, char * const argv[]) {
 	
@@ -45,7 +52,8 @@ int main (int argc, char * const argv[]) {
 		else if ( arg == "-l" ) lyrics = true;
 		else if ( arg == "-r" ) relly = true;
 		else if ( arg == "-a" ) absly = true;
-		else if ( arg == "-h" ) { usage(); exit(0); }
+		else if ( arg == "-h" ) { print_usage(); exit(0); }
+		else if ( arg == "-v" ) { print_version(); exit(0); }
 		else filename = arg;
 	}
 	

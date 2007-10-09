@@ -30,6 +30,7 @@ public:
 	string getMidiTempo() const;
 	string getUpbeat() const;
 	string getWCEVersion() const;
+	bool getMeterInvisible() const;
 
 private:
 	ifstream infile;
@@ -44,6 +45,7 @@ private:
 	string midiTempo;
 	string upbeat;
 	string WCEVersion;
+	bool meterInvisible;
 	
 	string extractStringFromLine(string s) const;
 	vector<string> extractStringFromMultiLine(string s); //not const, modifies infile.

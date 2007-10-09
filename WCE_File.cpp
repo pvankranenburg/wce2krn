@@ -10,7 +10,8 @@
 #include "WCE_File.h"
 using namespace std;
 
-WCE_File::WCE_File(string inputfilename) : filename(inputfilename) {
+WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false) {
+	
 	
 	string line; //line from wce file
 	string::size_type pos;
@@ -75,6 +76,12 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename) {
 			beginSignature = extractStringFromMultiLine(line);
 			continue;
 		}
+		if( (pos = line.find("SignatureController-isMeterInvisibleSwitch")) != string::npos ) {
+			if (stdinput) getline(cin,line); else getline(infile,line);
+			if ( line.find("true") != string::npos ) meterInvisible = true;
+			if ( line.find("false") != string::npos ) meterInvisible = false;
+			continue;
+		}
 		// read next line
 		if (stdinput) good = getline(cin,line); else good = getline(infile,line);
 	}
@@ -121,6 +128,10 @@ string WCE_File::getUpbeat() const {
 
 string WCE_File::getWCEVersion() const {
 	return WCEVersion;
+}
+
+bool WCE_File::getMeterInvisible() const {
+	return meterInvisible;
 }
 
 string WCE_File::extractStringFromLine(string s) const
