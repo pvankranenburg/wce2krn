@@ -17,7 +17,7 @@ using namespace std;
 
 class RelLyToken {
 public:
-	RelLyToken(string t);
+	RelLyToken(string t, string loc, bool is_music = true);
 	RelLyToken();
 	RelLyToken(const RelLyToken& r);
 	RelLyToken& RelLyToken::operator=(const RelLyToken& r);
@@ -28,7 +28,12 @@ public:
 	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
 	enum Accidental { DOUBLE_FLAT, FLAT, NO_ACCIDENTAL, NATURAL, SHARP, DOUBLE_SHARP };
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
-	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD };
+	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD, NO_WORD, BEGIN_WORD_CONT, SINGLE_WORD_CONT, END_WORD_CONT, IN_WORD_CONT, DONTKNOW };
+
+	static string printSlurStatus(SlurStatus ss);
+	static string printTieStatus(TieStatus ts);
+	static string printTextStatus(TextStatus ts);
+	static string printIdentity(Identity i);
 
 	string RelLyToken::getToken() const { return token; }
 	
@@ -56,10 +61,11 @@ public:
 	string createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const;
 						  
 private:
-	Identity computeIdentity() const;
+	Identity computeIdentity(bool is_music) const;
 	
 	const string token;
 	Identity id;
+	const string location;
 };
 
 #endif

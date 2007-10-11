@@ -17,8 +17,9 @@
 #include <cctype>
 using namespace std;
 
-RelLyToken::RelLyToken(string t) : token(t) {
-	id = computeIdentity();
+RelLyToken::RelLyToken(string t, string loc, bool is_music) : token(t), location(loc) {
+	id = computeIdentity(is_music);
+	//cout << token << ": " << printIdentity(id) << endl;
 }
 
 RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()) {
@@ -37,8 +38,14 @@ RelLyToken& RelLyToken::operator=(const RelLyToken& r) {
 	return *this;
 }
 
-RelLyToken::Identity RelLyToken::computeIdentity() const {
+RelLyToken::Identity RelLyToken::computeIdentity(bool is_music) const {
+	
+	// if not music (dus text), return TEXT
+	if ( !is_music ) return TEXT;
+		
 	Identity res = UNKNOWN;
+	
+	//cout << token << endl;
 	
 	string lt = token; //changable copy
 	pvktrim(lt); //to be sure
@@ -57,6 +64,7 @@ RelLyToken::Identity RelLyToken::computeIdentity() const {
 			res = TIMES_COMMAND;
 			return res;
 		} else {
+			cerr << location << ": Warning: Unknown token: " << token << endl;
 			return UNKNOWN;
 		}
 	}
@@ -70,6 +78,7 @@ RelLyToken::Identity RelLyToken::computeIdentity() const {
 			res = TIME_COMMAND;
 			return res;
 		} else {
+			cerr << location << ": Warning: Unknown token: " << token << endl;
 			return UNKNOWN;
 		}
 	}
@@ -82,19 +91,25 @@ RelLyToken::Identity RelLyToken::computeIdentity() const {
 	//cout << lt << " - ";
 	if ( (pos = lt.find("\\x")) != string::npos ) {
 		lt.erase(pos,2);
-		if ( pos != 0 ) cerr << "Warning: \\x not at beginning of token " << token << endl;
+		if ( pos != 0 ) cerr << location << ": Warning: \\x not at beginning of token " << token << endl;
 	}
 	//cout << lt << " - ";
 	if ( (pos = lt.find("\\gl")) != string::npos ) {
 		lt.erase(pos,3);
 		if ( pos != 0 )
-			cerr << "Warning: \\gl not at beginning of token " << token << endl;
+			cerr << location << ": Warning: \\gl not at beginning of token " << token << endl;
 	}
 	//cout << lt << endl;
 	//now there sould be only one pitch, rest ('r') or space ('s') left
 	if ( lt.find_first_of("abcdefgrs") != string::npos ) { res = NOTE; return res; }
 	
-	//unknown
+	//warning for empty token // only if in melody
+	//take new trim of token
+	lt = token;
+	pvktrim(lt);
+	if ( is_music && (lt.size() == 0) )
+		cerr << location << ": Warning: empty token " << token << endl;
+	
 	return res;
 }
 
@@ -251,7 +266,8 @@ char RelLyToken::getPitchClass() const {
 }
 
 RelLyToken::SlurStatus RelLyToken::getSlur() const {
-	SlurStatus res = NO_SLUR_INFO;
+	if ( id != NOTE ) return NO_SLUR_INFO;
+	SlurStatus res = NO_SLUR;
 	string::size_type pos;
 	if ( (pos = token.find("(")) != string::npos) res = START_SLUR;
 	if ( (pos = token.find(")")) != string::npos) res = END_SLUR;
@@ -259,7 +275,10 @@ RelLyToken::SlurStatus RelLyToken::getSlur() const {
 }
 
 RelLyToken::TieStatus RelLyToken::getTie() const {
-	if ( token.find("~") != string::npos ) return START_TIE; else return NO_TIE_INFO;
+	if ( id != NOTE ) return NO_TIE_INFO;
+	if ( token.find("~") != string::npos ) return START_TIE; else return NO_TIE;
+	//never used:
+	return NO_TIE_INFO;
 }
 
 RelLyToken::Accidental RelLyToken::getAccidental() const {
@@ -324,3 +343,53 @@ bool RelLyToken::containsClosingBraceAfterNote() const {
 TimeSignature RelLyToken::getTimeSignature() const {
 	return TimeSignature(token);
 }
+
+string RelLyToken::printSlurStatus(SlurStatus ss) {
+	switch ( ss ) {
+		case NO_SLUR_INFO: return "NO_SLUR_INFO";
+		case START_SLUR: return "START_SLUR";
+		case END_SLUR: return "END_SLUR";
+		case IN_SLUR: return "IN_SLUR";
+		case NO_SLUR: return "NO_SLUR";
+	}
+	return "";
+}
+
+string RelLyToken::printTieStatus(TieStatus ts) {
+	switch ( ts ) {
+		case NO_TIE_INFO: return "NO_TIE_INFO";
+		case START_TIE: return "START_TIE";
+		case CONTINUE_TIE: return "CONTINUE_TIE";
+		case END_TIE: return "END_TIE";
+		case NO_TIE: return "NO_TIE";
+	}
+	return "";
+}
+
+string RelLyToken::printTextStatus(TextStatus ts) {
+	switch ( ts ) {
+		case SINGLE_WORD: return "SINGLE_WORD";
+		case SINGLE_WORD_CONT: return "SINGLE_WORD_CONT";
+		case BEGIN_WORD: return "BEGIN_WORD";
+		case BEGIN_WORD_CONT: return "BEGIN_WORD_CONT";
+		case END_WORD: return "END_WORD";
+		case END_WORD_CONT: return "END_WORD_CONT";
+		case IN_WORD: return "IN_WORD";
+		case IN_WORD_CONT: return "IN_WORD_CONT";
+		case NO_WORD: return "NO_WORD";
+		case DONTKNOW: return "DONTKNOW";
+	}
+	return "";
+}
+
+string RelLyToken::printIdentity(Identity i) {
+	switch ( i ) {
+		case NOTE: return "NOTE";
+		case TIME_COMMAND: return "TIME_COMMAND";
+		case TIMES_COMMAND: return "TIMES_COMMAND";
+		case TEXT: return "TEXT";
+		case UNKNOWN: return "UNKNOWN";
+	}
+	return "";
+}
+

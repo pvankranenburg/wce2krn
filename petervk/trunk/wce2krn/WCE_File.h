@@ -31,6 +31,8 @@ public:
 	string getUpbeat() const;
 	string getWCEVersion() const;
 	bool getMeterInvisible() const;
+	string getRecord() const { return record; }
+	string getStrophe() const { return strophe; }
 
 private:
 	ifstream infile;
@@ -46,6 +48,8 @@ private:
 	string upbeat;
 	string WCEVersion;
 	bool meterInvisible;
+	string record;
+	string strophe;
 	
 	string extractStringFromLine(string s) const;
 	vector<string> extractStringFromMultiLine(string s); //not const, modifies infile.
