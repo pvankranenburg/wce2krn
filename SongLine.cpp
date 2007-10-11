@@ -11,14 +11,15 @@
 #include "pvkutilities.h"
 #include "wce2krn.h"
 #include<string>
-#include<sstream>
 #include<iostream>
+#include<iomanip>
+#include<sstream>
 #include<cstdlib>
 #include<cassert>
 #include <locale>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinv) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinv, int phraseno, string recordno, string stropheno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -37,7 +38,10 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   keySignature(keysig),
 																   midiTempo(mtempo),
 																   translationMade(false),
-																   meterInvisible(meterinv) {
+																   meterInvisible(meterinv),
+																   phraseNo(phraseno),
+																   record(recordno),
+																   strophe(stropheno) {
 	translate();
 }
 
@@ -52,7 +56,10 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   keySignature(0),
 					   midiTempo(120),
 					   translationMade(false),
-					   meterInvisible(false) {
+					   meterInvisible(false),
+					   phraseNo(0),
+					   record("unknown"),
+					   strophe("0") {
 	translate();
 }
 
@@ -79,7 +86,14 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 kernTokens(sl.kernTokens),
 										 absLyLine(sl.absLyLine),
 										 lyricsLines(sl.lyricsLines),
-										 meterInvisible(sl.meterInvisible) {
+										 meterInvisible(sl.meterInvisible),
+										 text_ann(sl.text_ann),
+										 ties_ann(sl.ties_ann),
+										 slurs_ann(sl.slurs_ann),
+										 phraseNo(sl.phraseNo),
+										 record(sl.record),
+										 strophe(sl.strophe),
+										 annotations(sl.annotations) {
 	//translate();
 }
 
@@ -112,6 +126,8 @@ void SongLine::translate() {
 	
 	if ( wcelines.size() == 0 ) { translationMade = true; return; } // empty songline: nothing to translate
 
+	//clog << getLocation() << endl;
+
 	//break wcelines into tokens
 	breakWcelines();
 
@@ -122,7 +138,7 @@ void SongLine::translate() {
 	int currentDots = initialDots;
 	TimeSignature currentTimeSignature = initialTimeSignature;
 	int currentBarnumber = initialBarnumber;
-	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR_INFO;
+	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR;
 	RelLyToken::TieStatus  currentTieStatus = RelLyToken::NO_TIE;
 	bool currentTripletStatus = false;
 	int indexFirstKernNote = -1;
@@ -165,7 +181,8 @@ void SongLine::translate() {
 	for( rl_it = (relLyTokens[0]).begin(); rl_it != (relLyTokens[0]).end(); rl_it++ ) {
 		//rellytoken = (*rl_it).getToken();
 
-		//to note or not to note		
+		//to note or not to note
+		//in each case the slur and tie annotation has to be updated, for keeping the ananotations in sync with the melody.		
 		id = (*rl_it).getIdentity();
 		//cout << (*rl_it).getToken() << " : " << id << endl;
 		switch(id) {
@@ -174,7 +191,7 @@ void SongLine::translate() {
 				// new bar? : raise barnumber and write barlines to kern
 				if ( !meterInvisible ) {
 					if ( timeInBar > currentTimeSignature.getRationalTime() ) {
-						cerr << "Error: bar to long: " << currentBarnumber << endl;
+						cerr << getLocation() << ": Error: bar to long: " << currentBarnumber << endl;
 					}
 					if ( timeInBar >= currentTimeSignature.getRationalTime() ) { // new bar
 						//write in **kern
@@ -212,8 +229,8 @@ void SongLine::translate() {
 					else
 						currentTieStatus = RelLyToken::NO_TIE;				
 				//slur
-				if (currentSlurStatus == RelLyToken::END_SLUR) currentSlurStatus = RelLyToken::NO_SLUR_INFO;
-				if ( (*rl_it).getSlur() != RelLyToken::NO_SLUR_INFO ) //there is slurinfo, just copy
+				if (currentSlurStatus == RelLyToken::END_SLUR) currentSlurStatus = RelLyToken::NO_SLUR;
+				if ( (*rl_it).getSlur() != RelLyToken::NO_SLUR ) //there is slurinfo, just copy
 					currentSlurStatus = (*rl_it).getSlur();
 				else {
 					//so, no slur info
@@ -221,6 +238,10 @@ void SongLine::translate() {
 					if ( currentSlurStatus == RelLyToken::START_SLUR || currentSlurStatus == RelLyToken::IN_SLUR)
 						currentSlurStatus = RelLyToken::IN_SLUR;
 				}
+				// make annotation
+				slurs_ann.push_back(currentSlurStatus);
+				ties_ann.push_back(currentTieStatus);
+				
 				// Glissando end? Then previous note should have glissando start.
 				// Glissandi can not cross line breaks (yet?)
 				if ( (*rl_it).getGlissandoEnd() ) {
@@ -269,7 +290,7 @@ void SongLine::translate() {
 				}
 				//do this barline here
 				if ( timeInBar != currentTimeSignature.getRationalTime() && timeInBar != RationalTime(0,1) ) {
-					cerr << "Error: meter change out of place in bar: " << currentBarnumber << endl;
+					cerr << getLocation() << ": Error: meter change out of place in bar: " << currentBarnumber << endl;
 				}
 				if ( timeInBar == currentTimeSignature.getRationalTime() ) { // new bar
 					//write in **kern
@@ -288,6 +309,9 @@ void SongLine::translate() {
 				//firstOfLine gaat mis als hele song wordt geconverteerd. Dan is er geen preamble voor elke regel.
 				//if (!firstOfLine) kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
 				kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
+				//annotation has also to be done here
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
 			} break;
 			
 			case RelLyToken::TIMES_COMMAND: { //for now assume '\times 2/3' (or '\times2/3')
@@ -297,21 +321,27 @@ void SongLine::translate() {
 				token = (*rl_it).getToken(); //just copy, then also opening brace is copied.
 				absLyTokens[0].push_back((*rl_it).getToken());
 				//kern: nothing to add, only adjust durations (is done in RelLyToken::createKernNote)
+
+				//annotation has also to be done here
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
 			} break;
 			
 			case RelLyToken::TEXT: {
-				cerr << "Error: Tekst in melody line: \"" << (*rl_it).getToken() << "\"" << endl;
+				cerr << getLocation() << ": Error: Tekst in melody line: \"" << (*rl_it).getToken() << "\"" << endl;
 				exit(1);
 			} break;
 			
 			case RelLyToken::UNKNOWN: {
 				if ( (*rl_it).getToken().size() > 0 )
-					cerr << "Warning: Unknown token: \"" << (*rl_it).getToken() << "\"" << endl;
+					cerr << getLocation() << ": Warning: Unknown token: \"" << (*rl_it).getToken() << "\"" << endl;
+					ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+					slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
 				//exit(1);
 			} break;
 			
 			default: {
-				cerr << "Error: Unrecognized token: \"" << (*rl_it).getToken() << "\" This should not happen." << endl;
+				cerr << getLocation() << ": Error: Unrecognized token: \"" << (*rl_it).getToken() << "\" This should not happen." << endl;
 				exit(1);
 			} break;
 		}
@@ -336,17 +366,20 @@ void SongLine::translate() {
 		finalBarnumber = currentBarnumber;
 	}
 
-	//now do text lines (if any). Take kern as reference.
+	//now do text lines (if any). Take kern as reference. (10-10-2007: was wrong decision. ly shoud be taken as ref because it is the input...
 	string str;
 	vector<string>::iterator krn_it;
 	int numLines = wcelines.size();
+	vector<RelLyToken::TextStatus> vrt;
 	for( int i = 1; i<numLines; i++ ) {
 		absLyTokens.push_back(vector<string>());
 		kernTokens.push_back(vector<string>());
 		lyricsLines.push_back("");
+		text_ann.push_back(vrt);
 	}
 	int relly_index = 0;
 	RelLyToken::TextStatus currentTextStatus = RelLyToken::SINGLE_WORD;
+	//RelLyToken::Identity correspondingIdentity = RelLyToken::UNKNOWN;
 	
 	for ( krn_it = kernTokens[0].begin(); krn_it != kernTokens[0].end(); krn_it++) {
 		//now do the krn
@@ -360,52 +393,84 @@ void SongLine::translate() {
 			else
 				for ( int i = 1; i<numLines; i++ ) {
 					kernTokens[i].push_back( (*krn_it) );
-				} 
-			
-			//it can be possible that there is a corresponding rel ly token (time). If so, add that to absLy
+				}
+						
+			//it can be possible that there is a corresponding rel ly token (time / unknown). If so, add that to absLy
 			if ( relly_index < relLyTokens[0].size() ) {
 				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE ) {
 					for (int i = 1; i<numLines; i++ ) {
 						absLyTokens[i].push_back("");
+						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
+							text_ann[i-1].push_back( RelLyToken::DONTKNOW );
+						else
+							text_ann[i-1].push_back( RelLyToken::NO_WORD );
 					}
 					relly_index++;
 				}
 			}
-		} else { // text
+		} else { // text or TIMES or UNKNOWN with corresponding kern token
 			for ( int i = 1; i<numLines; i++ ) {
 				
-				if ( relly_index >= relLyTokens[i].size() )
+				if ( relly_index >= relLyTokens[i].size() ) {
 					kernTokens[i].push_back( "." );
-				else {
-					if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::TIMES_COMMAND ) {
+					// rest at end of line could be tolerated
+					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", getLocation(), false) );
+					// any case: annotate
+					text_ann[i-1].push_back( RelLyToken::NO_WORD );
+				} else {
+					if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::NOTE ) {
 						//textstatus:
 
 						bool dash = ( relLyTokens[i][relly_index].getToken().find("--") != string::npos );
 						bool underscore = ( relLyTokens[i][relly_index].getToken().find("_") != string::npos );
 						
 						//if "_" and IN_WORD/BEGIN_WORD then "||" should be printed, if "_" and END_WORD/SINGLE WORD then '|' should be prined
-						//so, status should not be changed.
+						//"_" means continuation
 						if ( !underscore ) {
-							if ( currentTextStatus == RelLyToken::SINGLE_WORD ) {
+							if ( currentTextStatus == RelLyToken::SINGLE_WORD || currentTextStatus == RelLyToken::SINGLE_WORD_CONT ) {
 								if (dash) currentTextStatus = RelLyToken::BEGIN_WORD;
 								else currentTextStatus = RelLyToken::SINGLE_WORD;
-							} else if ( currentTextStatus == RelLyToken::IN_WORD ) {
+							} else if ( currentTextStatus == RelLyToken::IN_WORD || currentTextStatus == RelLyToken::IN_WORD_CONT ) {
 								if (dash) currentTextStatus = RelLyToken::IN_WORD;
 								else currentTextStatus = RelLyToken::END_WORD;
-							} else if ( currentTextStatus == RelLyToken::BEGIN_WORD ) {
+							} else if ( currentTextStatus == RelLyToken::BEGIN_WORD || currentTextStatus == RelLyToken::BEGIN_WORD_CONT ) {
 								if (dash) currentTextStatus = RelLyToken::IN_WORD;
 								else currentTextStatus = RelLyToken::END_WORD;
-							} else if ( currentTextStatus == RelLyToken::END_WORD ) {
+							} else if ( currentTextStatus == RelLyToken::END_WORD || currentTextStatus == RelLyToken::END_WORD_CONT ) {
 								if (dash) currentTextStatus = RelLyToken::BEGIN_WORD;
 								else currentTextStatus = RelLyToken::SINGLE_WORD;
 							}
+						} else { //underscore
+							if ( currentTextStatus == RelLyToken::SINGLE_WORD )
+								currentTextStatus = RelLyToken::SINGLE_WORD_CONT;
+							if ( currentTextStatus == RelLyToken::END_WORD )
+								currentTextStatus = RelLyToken::END_WORD_CONT;
+							if ( currentTextStatus == RelLyToken::IN_WORD )
+								currentTextStatus = RelLyToken::IN_WORD_CONT;
+							if ( currentTextStatus == RelLyToken::BEGIN_WORD )
+								currentTextStatus = RelLyToken::BEGIN_WORD_CONT;
 						}
 												
 						// add translated text to appropriate vectors
 						kernTokens[i].push_back( toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, KERN ) );
 						lyricsLines[i-1] = lyricsLines[i-1] + toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, TEXT );
-					} else
+						// annotation
+						//if rest or empty: NO_WORD
+						if ( relLyTokens[0][relly_index].getPitchClass() == 'r' )
+							text_ann[i-1].push_back(RelLyToken::NO_WORD);
+						else if ( relLyTokens[i][relly_index].getToken().size() == 0 )
+							text_ann[i-1].push_back(RelLyToken::NO_WORD);
+						else
+							text_ann[i-1].push_back(currentTextStatus);
+						
+					} else { //TIMES or UNKNOWN
+						//if UNKNOWN: DONTKNOW
+						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
+							text_ann[i-1].push_back(RelLyToken::DONTKNOW);
+						else
+							text_ann[i-1].push_back( RelLyToken::NO_WORD );
 						krn_it--; // Same Token again. DO NOT USE krn_it AFTER THIS.
+					}
 				}
 
 				//for absLy: just copy:
@@ -420,6 +485,7 @@ void SongLine::translate() {
 			relly_index++;
 		}
 	}
+	//tokens left in 
 	
 	//debug
 	/*
@@ -446,6 +512,30 @@ void SongLine::translate() {
 	cout << endl;
 	*/
 	translationMade = true;
+
+	//some checks
+	
+	int length = relLyTokens[0].size();
+	//check lengths.
+	for ( int i=1; i<relLyTokens.size(); i++ ) {
+		if ( relLyTokens[i].size() < length ) {
+			if ( wcelines.size() > i ) {
+				cerr << getLocation() << ": Warning: textline to short: " << endl;
+				cerr << wcelines[0] << endl;
+				cerr << wcelines[i] << endl;
+			}
+		}
+	}
+	
+	//for debuging
+	createAnnotations();
+	//printAnnotations(); // now done with command line switch
+	
+	//chedk melismas
+	checkMelisma();
+	//check ties
+	checkTies();
+	
 }
 
 SongLine& SongLine::operator=(const SongLine& sl) {
@@ -469,6 +559,7 @@ void SongLine::breakWcelines() {
 	string line;
 	string token;
 	vector<RelLyToken> emptyline;
+	bool is_music = true;
 
 	string::size_type pos;
 	vector<string>::const_iterator it;
@@ -478,16 +569,17 @@ void SongLine::breakWcelines() {
 		while ( line.size() > 0 ) {
 			if ( ( pos=line.find_first_of("\t") ) == string::npos) { // not found => last token
 				pvktrim(line);
-				(relLyTokens.back()).push_back(RelLyToken(line));
+				(relLyTokens.back()).push_back(RelLyToken(line, getLocation(), is_music));
 				line.clear();
 			} else { //found -> extract token and add to 'matrix'
 				token = line.substr(0, pos);
 				pvktrim(token);
-				(relLyTokens.back()).push_back(RelLyToken(token));
+				(relLyTokens.back()).push_back(RelLyToken(token, getLocation(), is_music));
 				line.erase(0, pos+1); //also erase tab
-				//if (line.size() == 0) line = "r";
+				if (line.size() == 0) (relLyTokens.back()).push_back(RelLyToken("", getLocation(), is_music)); // if last token is empty, nothing remains, but token has to be added.
 			}
 		}
+		is_music = false;
 	}
 	//now check wether all lines have the same number of tokens
 	/*
@@ -552,8 +644,8 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 		if ( repr == KERN ) return "."; else return "";
 	if ( tok == "_" )
 		if ( repr == KERN ) {
-			if ( ts == RelLyToken::END_WORD || ts == RelLyToken::SINGLE_WORD ) return "|";
-			else if ( ts == RelLyToken::IN_WORD || ts == RelLyToken::BEGIN_WORD ) return "||";
+			if ( ts == RelLyToken::END_WORD || ts == RelLyToken::SINGLE_WORD || ts == RelLyToken::END_WORD_CONT || ts == RelLyToken::SINGLE_WORD_CONT ) return "|";
+			else if ( ts == RelLyToken::IN_WORD || ts == RelLyToken::BEGIN_WORD || ts == RelLyToken::IN_WORD_CONT || ts == RelLyToken::BEGIN_WORD_CONT ) return "||";
 			else return ".";
 		}
 		else return "";
@@ -562,7 +654,7 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 	
 	//if only a dash, print a warning. Should be an underscore.
 	if ( tok.find_first_not_of("-") == string::npos ) {
-		cerr << "Warning: only a \"-\" under a note. Should be an \"_\"?" << endl;
+		cerr << getLocation() << ": Warning: only a \"-\" under a note. Should be an \"_\"?" << endl;
 	}
 	
 	switch (ts) {
@@ -843,4 +935,163 @@ bool SongLine::inheritFirstLynoteDuration( string& lyline, int duration) const {
 
 string SongLine::getLyricsLine( int line ) const {
 	return lyricsLines[line];
+}
+
+bool SongLine::checkMelisma() const {
+	bool res = true;
+		
+	if ( relLyTokens.size() < 2 ) { cerr << getLocation() << ": Error: not enough lines" << endl; return false; }
+	if ( text_ann.size() < 1 ) { cerr << getLocation() << ": Error: no annotations" << endl; return false; }
+			
+	//walk through the text annotation.
+	//if continuation, either tie or slur should be present.
+	//only check first text line
+
+	for( int i=0; i<text_ann[0].size(); i++ ) {
+		if ( ( text_ann[0][i] == RelLyToken::BEGIN_WORD_CONT ) ||
+		     ( text_ann[0][i] == RelLyToken::SINGLE_WORD_CONT ) ||
+		     ( text_ann[0][i] == RelLyToken::END_WORD_CONT ) ||
+			 ( text_ann[0][i] == RelLyToken::IN_WORD_CONT ) ) {
+			if ( relLyTokens[0][i].getIdentity() == RelLyToken::NOTE ) {
+				if ( ( slurs_ann[i] != RelLyToken::START_SLUR ) &&
+				     ( slurs_ann[i] != RelLyToken::IN_SLUR ) &&
+					 ( slurs_ann[i] != RelLyToken::END_SLUR ) &&
+					 ( ties_ann[i] != RelLyToken::START_TIE ) &&
+					 ( ties_ann[i] != RelLyToken::CONTINUE_TIE ) &&
+					 ( ties_ann[i] != RelLyToken::END_TIE ) ) {
+						cerr << getLocation() << ": Error: slur or tie missing at note: " << relLyTokens[0][i].getToken() << endl;
+						res = false;
+				}
+			}
+		}
+	}
+
+	return res;
+
+}
+
+void SongLine::createAnnotations() {
+	//stringstream ss;
+	string st = "";
+	string part;
+	
+	//STRINGSTREAM DOESNT WORK
+	
+	int field_width = 15;
+		
+	for ( int i=0; i<relLyTokens[0].size(); i++ ) {
+		part = (relLyTokens[0][i].getToken() + "*");
+		columnize(part, field_width); st = st + part;
+		part = RelLyToken::printIdentity(relLyTokens[0][i].getIdentity());
+		columnize(part, field_width); st = st + part;
+		part = RelLyToken::printSlurStatus(slurs_ann[i]);
+		columnize(part, field_width); st = st + part;
+		part = RelLyToken::printTieStatus(ties_ann[i]);
+		columnize(part, field_width); st = st + part;
+		for ( int j=1; j<relLyTokens.size(); j++ ) {
+			if ( i<relLyTokens[j].size() ) {
+				part = (relLyTokens[j][i].getToken() + "*");
+				columnize(part, field_width); st = st + part;
+				if ( i<text_ann[j-1].size() ) {
+					part = RelLyToken::printTextStatus(text_ann[j-1][i]);
+					columnize(part, field_width); st = st + part;
+				} else {
+					part = "**ERROR**";
+					columnize(part, field_width); st = st + part;
+				}
+			} else {
+				part = "**ERROR**";
+				columnize(part, field_width); st = st + part;
+				part = "**ERROR**";
+				columnize(part, field_width); st = st + part;
+			}
+		}
+		annotations.push_back(st); st = "";
+	}
+	
+}
+
+void SongLine::printAnnotations() const {
+	
+	clog << getLocation() << endl;
+	for (int i=0; i<annotations.size(); i++)
+		clog << annotations[i] << endl;
+		
+	/*
+	int field_width = 15;
+	//clog << setw(field_width) << left << relLyTokens[0].size();
+	//clog << setw(field_width) << left << relLyTokens[0].size();
+	//clog << setw(field_width) << left << slurs_ann.size();
+	//clog << setw(field_width) << left << ties_ann.size();
+	//clog << setw(field_width) << left << relLyTokens[1].size();
+	//clog << setw(field_width) << left << text_ann[0].size() << endl;
+	//
+	//clog << setw(field_width) << left << "Token";
+	//clog << setw(field_width) << left << "Type";
+	//clog << setw(field_width) << left << "Slurs";
+	//clog << setw(field_width) << left << "Ties";
+	//clog << setw(field_width) << left << "Text";
+	//clog << setw(field_width) << left << "Type" << endl;
+
+	for ( int i=0; i<relLyTokens[0].size(); i++ ) {
+		clog << setw(field_width) << left << relLyTokens[0][i].getToken() + "*";
+		clog << setw(field_width) << left << RelLyToken::printIdentity(relLyTokens[0][i].getIdentity());
+		clog << setw(field_width) << left << RelLyToken::printSlurStatus(slurs_ann[i]);
+		clog << setw(field_width) << left << RelLyToken::printTieStatus(ties_ann[i]);
+		clog << flush;
+		for ( int j=1; j<relLyTokens.size(); j++ ) {
+			if ( i<relLyTokens[j].size() ) {
+				clog << setw(field_width) << left << relLyTokens[j][i].getToken() + "*";
+				if ( i<text_ann[j-1].size() )
+					clog << setw(field_width) << left << RelLyToken::printTextStatus(text_ann[j-1][i]);
+				else
+					clog << setw(field_width) << left << "**ERROR**";
+			} else {
+				clog << setw(field_width) << left << "**ERROR**";
+				clog << setw(field_width) << left << "**ERROR**";
+			}
+		}
+		clog << endl;
+	}
+	*/
+
+}
+
+string SongLine::getLocation() const {
+	stringstream ss;
+	ss << phraseNo;
+	string phr;
+	ss >> phr;
+	return "Record " + record + " - Strophe " + strophe + " - Phrase " + phr;
+}
+
+bool SongLine::checkTies() const {
+	bool res = true;
+	
+	if ( relLyTokens.size() < 1 ) { cerr << getLocation() << ": Error: not enough lines" << endl; return false; }
+	if ( relLyTokens[0].size() < 2 ) return true; //apparently one note on the line
+
+	//walk trough note sequence. If slur end and previous note has slur start or in slur, and pitches are the same: should be a tie
+	for( int i=1; i<relLyTokens[0].size(); i++ ) { //starting from the second token
+		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) continue; //only notes
+		if ( slurs_ann[i] == RelLyToken::END_SLUR ) {
+			//search previous NOTE
+			int p = i-1;
+			while ( p>=0 && slurs_ann[p] != RelLyToken::START_SLUR && slurs_ann[p] != RelLyToken::IN_SLUR ) p--;
+			if ( p == -1 ) {
+				cerr << getLocation() << ": Error: slur ends at note: " << relLyTokens[0][i].getToken() << ", but no start" << endl;
+				continue; //no previous note
+			}
+			//now p has index of previous note
+			//
+			if ( slurs_ann[p] == RelLyToken::START_SLUR || slurs_ann[p] == RelLyToken::IN_SLUR )
+				if ( relLyTokens[0][p].getPitchClass() == relLyTokens[0][i].getPitchClass() ) {
+					cerr << getLocation() << ": Warning: Slur should probably be a tie at notes: " << relLyTokens[0][p].getToken()
+					     << " and " << relLyTokens[0][i].getToken() << endl;
+					res = false;
+				}
+		}
+	}
+	
+	return res;
 }

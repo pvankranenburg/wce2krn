@@ -29,6 +29,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 	vector<string>::iterator str_it;
 	vector<string> singleline;
 	bool emptyline = false;
+	int phraseno = 1;
 	SongLine sl;
 	for( str_it=wcelines.begin(); str_it!=wcelines.end(); str_it++) {
 		emptyline = false;
@@ -55,8 +56,12 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  translateKeySignature(wcefile.getKey()),
 								  translateMidiTempo(wcefile.getMidiTempo()),
 								  initialBarnumber,
-								  wcefile.getMeterInvisible()));
+								  wcefile.getMeterInvisible(),
+								  phraseno,
+								  wcefile.getRecord(),
+								  wcefile.getStrophe()));
 					singleline.clear();
+					phraseno++;
 					//songLines.push_back(sl);
 				} else { //not first line of song
 					songLines.push_back(SongLine(singleline,
@@ -69,9 +74,13 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  (songLines.back()).getKeySignature(),
 								  (songLines.back()).getMidiTempo(),
 								  (songLines.back()).getFinalBarnumber(),
-								  (songLines.back()).getMeterInvisible()));
+								  (songLines.back()).getMeterInvisible(),
+								  phraseno,
+								  wcefile.getRecord(),
+								  wcefile.getStrophe()));
 					//songLines.push_back(sl);
 					singleline.clear();
+					phraseno++;
 				}
 			}
 		}
@@ -88,7 +97,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 	//vector<SongLine>::iterator it_sl;
 	for(it_sl=songLines.begin()+1; it_sl != songLines.end(); it_sl++) {
 		if ( (*it_sl).getWceLines().size() != (*(it_sl-1)).getWceLines().size() ) {
-			cerr << "Error: all songlines should have the same number of textlines." << endl;
+			cerr << getLocation() << ": Error: all songlines should have the same number of textlines." << endl;
 			exit(1);
 		}
 	}
@@ -342,4 +351,18 @@ int Song::translateMidiTempo(string lymtempo) const {
 	res = (int)(tempo / factor);
 	
 	return res;
+}
+
+string Song::getLocation() const {
+	return "Record " + wcefile.getRecord() + " - Strophe " + wcefile.getStrophe();
+}
+
+void Song::printContents() const {
+	vector<SongLine>::const_iterator si;
+	clog << "----- Annotations -----" << endl;
+	for ( si = songLines.begin(); si != songLines.end(); si++ ) {
+		si->printAnnotations();
+	}
+	clog << "-----------------------" << endl;
+
 }

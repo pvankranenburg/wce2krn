@@ -14,3 +14,8 @@ string& pvktrim(string& s, string drop) {
     s.erase(0,s.find_first_not_of(drop));
 	return s;
 }
+
+string& columnize(string& s, int length, char fill) {
+	while ( s.size() < length ) s = s + fill;
+	return s;
+}
