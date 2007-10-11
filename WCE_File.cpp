@@ -10,7 +10,7 @@
 #include "WCE_File.h"
 using namespace std;
 
-WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false) {
+WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), record("unknown") {
 	
 	
 	string line; //line from wce file
@@ -76,6 +76,16 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 			beginSignature = extractStringFromMultiLine(line);
 			continue;
 		}
+		if( (pos = line.find("NLBController-recordIDTextField")) != string::npos ) {
+			if (stdinput) getline(cin,line); else getline(infile,line);
+			record = extractStringFromLine(line);
+			continue;
+		}
+		if( (pos = line.find("SignatureController-stropheNumberTextField")) != string::npos ) {
+			if (stdinput) getline(cin,line); else getline(infile,line);
+			strophe = extractStringFromLine(line);
+			continue;
+		}
 		if( (pos = line.find("SignatureController-isMeterInvisibleSwitch")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			if ( line.find("true") != string::npos ) meterInvisible = true;
@@ -87,7 +97,6 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 	}
 	if (!stdinput) infile.close();
 }
-
 
 string WCE_File::getFilename() const {
 	return filename;

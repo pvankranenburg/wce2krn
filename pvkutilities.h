@@ -31,4 +31,6 @@ inline int convertToInt(const std::string& s) {
 
 string& pvktrim(string& s, string drop = "\t ");
 
+string& columnize(string& s, int length, char fill = ' ');
+
 #endif

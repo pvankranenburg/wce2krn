@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinvisible); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinvisible, int phraseno, string recordno, string stropheno); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -33,6 +33,9 @@ public:
 	//RationalTime getUpbeat() const { return upbeat; }
 	
 	int getNumberOfLines() const { return relLyTokens.size(); }
+	
+	bool checkMelisma() const; // ties ok? slurs ok? text ok (-- or _)?
+	bool checkTies() const; // slur where a tie should be?
 	
 	TimeSignature getInitialTimeSignature() const {return initialTimeSignature;}
 	RationalTime getInitialUpbeat() const {return initialUpbeat;}
@@ -53,8 +56,16 @@ public:
 
 	int getMidiTempo() const { return midiTempo; }
 	bool getMeterInvisible() const { return meterInvisible; }
+	int getPhraseNo() const { return phraseNo; }
+	string getRecord() const { return record; }
+	string getStrophe() const { return strophe; }
 
-	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings.
+	void createAnnotations();
+	vector<string> getAnnotations() { return annotations; }
+	void printAnnotations() const;
+	string getLocation() const;
+
+	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
 	vector<string> getLyLine(bool absolute) const;
 	vector<string> getLyBeginSignature(bool absolute) const;
@@ -75,7 +86,13 @@ private:
 	vector<string> absLyLine; //lilypond line with absolute pitch and explicit note durations
 	//vector<Spine> KernLine; //kern representation of the line .
 	vector<string> lyricsLines; //lyrics in normal text representation.
-	bool translationMade; //true if absLyLine and KernLine are made. 
+	bool translationMade; //true if absLyLine and KernLine are made.
+	
+	//for check
+	vector<RelLyToken::SlurStatus> slurs_ann; //annotation for slurs
+	vector<RelLyToken::TieStatus> ties_ann; // annotation for ties
+	vector< vector<RelLyToken::TextStatus> > text_ann; // annotation for text
+	vector<string> annotations;
 	
 	//some useful functions
 	void breakWcelines(); //output goes into relLyTokens. Invoked in translate().
@@ -102,6 +119,10 @@ private:
 	const int initialBarnumber;
 	int finalBarnumber;
 	bool meterInvisible;
+	int phraseNo;
+	string record;
+	string strophe;
+	
 };
 
 #endif
