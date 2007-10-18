@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinvisible, int phraseno, string recordno, string stropheno); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, string recordno, string stropheno); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -36,6 +36,7 @@ public:
 	
 	bool checkMelisma() const; // ties ok? slurs ok? text ok (-- or _)?
 	bool checkTies() const; // slur where a tie should be?
+	bool checkTextPlacing() const;
 	
 	TimeSignature getInitialTimeSignature() const {return initialTimeSignature;}
 	RationalTime getInitialUpbeat() const {return initialUpbeat;}
@@ -119,6 +120,7 @@ private:
 	const int initialBarnumber;
 	int finalBarnumber;
 	bool meterInvisible;
+	string fileName;
 	int phraseNo;
 	string record;
 	string strophe;

@@ -1,0 +1,7 @@
+Version 1.6
+- line with '===...' shorter to fit in terminal window
+- filename added to error and warning messages
+- added error message if \time or \times has text
+
+Version 1.4
+...
