@@ -19,7 +19,7 @@
 #include <locale>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinv, int phraseno, string recordno, string stropheno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, string recordno, string stropheno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -39,6 +39,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   midiTempo(mtempo),
 																   translationMade(false),
 																   meterInvisible(meterinv),
+																   fileName(filename),
 																   phraseNo(phraseno),
 																   record(recordno),
 																   strophe(stropheno) {
@@ -57,6 +58,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   midiTempo(120),
 					   translationMade(false),
 					   meterInvisible(false),
+					   fileName("[noname]"),
 					   phraseNo(0),
 					   record("unknown"),
 					   strophe("0") {
@@ -90,6 +92,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 text_ann(sl.text_ann),
 										 ties_ann(sl.ties_ann),
 										 slurs_ann(sl.slurs_ann),
+										 fileName(sl.fileName),
 										 phraseNo(sl.phraseNo),
 										 record(sl.record),
 										 strophe(sl.strophe),
@@ -535,6 +538,8 @@ void SongLine::translate() {
 	checkMelisma();
 	//check ties
 	checkTies();
+	//check whether syllable under \time or \times
+	checkTextPlacing();
 	
 }
 
@@ -970,6 +975,36 @@ bool SongLine::checkMelisma() const {
 
 }
 
+bool SongLine::checkTextPlacing() const {
+	bool res = true;
+	string syl = "*";
+		
+	if ( relLyTokens.size() < 2 ) { cerr << getLocation() << ": Error: not enough lines" << endl; return false; }
+	if ( text_ann.size() < 1 ) { cerr << getLocation() << ": Error: no annotations" << endl; return false; }
+			
+	//walk through the music annotation
+	//if \time or \times, no text should be in the lyrics
+	//only check first text line
+
+	for ( int i=0; i<relLyTokens[0].size(); i++ ) {
+		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) {
+			if ( i<text_ann[0].size() )
+				if ( text_ann[0][i] == RelLyToken::NO_WORD ) {
+					if ( i<relLyTokens[1].size() ) syl = relLyTokens[1][i].getToken();
+					pvktrim(syl);
+					if ( syl.size() != 0 )
+						cerr << getLocation() << ": Error: \\time or \\times should not have lyrics: " << syl << endl;
+				}
+			//else
+				//
+		}
+	}
+
+	return res;
+
+}
+
+
 void SongLine::createAnnotations() {
 	//stringstream ss;
 	string st = "";
@@ -1062,7 +1097,11 @@ string SongLine::getLocation() const {
 	ss << phraseNo;
 	string phr;
 	ss >> phr;
-	return "Record " + record + " - Strophe " + strophe + " - Phrase " + phr;
+
+	string fn = fileName;
+	string::size_type pos;
+	if ( (pos = fn.find_last_of("/")) != string::npos ) fn = fn.substr(pos+1);
+	return fn + ": Record " + record + " - Strophe " + strophe + " - Phrase " + phr;
 }
 
 bool SongLine::checkTies() const {

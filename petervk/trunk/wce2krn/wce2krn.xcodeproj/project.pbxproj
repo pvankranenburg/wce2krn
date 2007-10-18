@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		85060DDF0CBE72370094D25D /* CHANGELOG in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85060DDE0CBE72370094D25D /* CHANGELOG */; };
 		85BCAD880B00CE9400E7C8E7 /* pvkutilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85BCAD790B00CE9400E7C8E7 /* pvkutilities.cpp */; };
 		85BCAD890B00CE9400E7C8E7 /* pvkutilities.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85BCAD7A0B00CE9400E7C8E7 /* pvkutilities.h */; };
 		85BCAD8A0B00CE9400E7C8E7 /* RationalTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85BCAD7B0B00CE9400E7C8E7 /* RationalTime.cpp */; };
@@ -42,12 +43,14 @@
 				85BCAD930B00CE9400E7C8E7 /* TimeSignature.h in CopyFiles */,
 				85BCAD950B00CE9400E7C8E7 /* WCE_File.h in CopyFiles */,
 				85CF35E70CBA7D2F00B1E2FD /* wce2krn.h in CopyFiles */,
+				85060DDF0CBE72370094D25D /* CHANGELOG in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		85060DDE0CBE72370094D25D /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
 		85BCAD790B00CE9400E7C8E7 /* pvkutilities.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = pvkutilities.cpp; sourceTree = "<group>"; };
 		85BCAD7A0B00CE9400E7C8E7 /* pvkutilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = pvkutilities.h; sourceTree = "<group>"; };
 		85BCAD7B0B00CE9400E7C8E7 /* RationalTime.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = RationalTime.cpp; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 				85BCAD860B00CE9400E7C8E7 /* WCE_File.h */,
 				85BCAD870B00CE9400E7C8E7 /* wce2krn.cpp */,
 				85CF35E60CBA7D2F00B1E2FD /* wce2krn.h */,
+				85060DDE0CBE72370094D25D /* CHANGELOG */,
 			);
 			name = Source;
 			sourceTree = "<group>";

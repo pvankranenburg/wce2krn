@@ -61,7 +61,7 @@ int main (int argc, char * const argv[]) {
 	}
 	
 	clog << endl;
-	clog << "=========================================================================================" << endl;
+	clog << "===============================================================================" << endl;
 	clog << "Processing " << filename << endl;
 	
 	string basename = filename;
@@ -81,7 +81,7 @@ int main (int argc, char * const argv[]) {
 	if (lyrics) s.writeToDisk(basename, SongLine::TEXT, split);
 	if (relly) s.writeToDisk(basename, SongLine::RELLY, split);
 	//if (absly) s.writeToDisk(basename, SongLine::ABSLY, split);
-	//clog << "=========================================================================================" << endl;
+	clog << "===============================================================================" << endl;
 
 
 	return 0;
