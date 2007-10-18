@@ -57,6 +57,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  translateMidiTempo(wcefile.getMidiTempo()),
 								  initialBarnumber,
 								  wcefile.getMeterInvisible(),
+								  wcefile.getFilename(),
 								  phraseno,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe()));
@@ -75,6 +76,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  (songLines.back()).getMidiTempo(),
 								  (songLines.back()).getFinalBarnumber(),
 								  (songLines.back()).getMeterInvisible(),
+								  wcefile.getFilename(),
 								  phraseno,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe()));
@@ -354,7 +356,10 @@ int Song::translateMidiTempo(string lymtempo) const {
 }
 
 string Song::getLocation() const {
-	return "Record " + wcefile.getRecord() + " - Strophe " + wcefile.getStrophe();
+	string fn = wcefile.getFilename();
+	string::size_type pos;
+	if ( (pos = fn.find_last_of("/")) != string::npos ) fn = fn.substr(pos+1);
+	return fn + ": Record " + wcefile.getRecord() + " - Strophe " + wcefile.getStrophe();
 }
 
 void Song::printContents() const {
