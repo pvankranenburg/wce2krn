@@ -103,12 +103,12 @@ RelLyToken::Identity RelLyToken::computeIdentity(bool is_music) const {
 	//now there sould be only one pitch, rest ('r') or space ('s') left
 	if ( lt.find_first_of("abcdefgrs") != string::npos ) { res = NOTE; return res; }
 	
-	//warning for empty token // only if in melody
+	//warning for empty token // only if in melody ---> moved to SongLine::breakWcelines()
 	//take new trim of token
-	lt = token;
-	pvktrim(lt);
-	if ( is_music && (lt.size() == 0) )
-		cerr << location << ": Warning: empty token " << token << endl;
+	//lt = token;
+	//pvktrim(lt);
+	//if ( is_music && (lt.size() == 0) )
+	//	cerr << location << ": Warning: empty token " << token << endl;
 	
 	return res;
 }
@@ -391,5 +391,15 @@ string RelLyToken::printIdentity(Identity i) {
 		case UNKNOWN: return "UNKNOWN";
 	}
 	return "";
+}
+
+bool RelLyToken::isRest() const {
+	bool res = false;
+	
+	if ( getIdentity() == NOTE ) {
+		if ( token.find_first_of("r") != string::npos ) { res = true; }
+	}
+	
+	return res;
 }
 

@@ -53,6 +53,7 @@ public:
 	bool containsClosingBrace() const {return (token.find("}") != string::npos); }
 	bool containsClosingBraceBeforeNote() const;
 	bool containsClosingBraceAfterNote() const;
+	bool isRest() const;
 		
 	TimeSignature getTimeSignature() const; //do only invoke if idenity is TIME_COMMAND
 	
