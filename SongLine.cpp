@@ -518,23 +518,14 @@ void SongLine::translate() {
 
 	//some checks
 	
-	int length = relLyTokens[0].size();
-	//check lengths.
-	for ( int i=1; i<relLyTokens.size(); i++ ) {
-		if ( relLyTokens[i].size() < length ) {
-			if ( wcelines.size() > i ) {
-				cerr << getLocation() << ": Warning: textline to short: " << endl;
-				cerr << wcelines[0] << endl;
-				cerr << wcelines[i] << endl;
-			}
-		}
-	}
+	// 
+	checkLengths();
 	
 	//for debuging
 	createAnnotations();
 	//printAnnotations(); // now done with command line switch
 	
-	//chedk melismas
+	//check melismas
 	checkMelisma();
 	//check ties
 	checkTies();
@@ -586,16 +577,33 @@ void SongLine::breakWcelines() {
 		}
 		is_music = false;
 	}
-	//now check wether all lines have the same number of tokens
-	/*
-	vector<vector<RelLyToken> >::iterator rlit;
-	for ( rlit = relLyTokens.begin(); rlit != relLyTokens.end(); rlit++ ) {
-		if ((*rlit).size() != (*relLyTokens.begin()).size() ) {
-			int size2 = (*rlit).size();
-			int size1 = (*relLyTokens.begin()).size();
-			cerr << "Warning: not the same number of tokens on each line: " << size1 << ", " << size2 << endl;
-			writeToStdout();
+	
+	//now remove empty tokens that are at the end of the music line
+	//and remove the last tokens from text lines that are longer than music line.
+	
+	int ti = relLyTokens[0].size()-1;
+	int empty = 0;
+	while ( relLyTokens[0][ti].getToken() == "" ) {empty++; ti--;}
+	//cout << "empty: " << empty << endl;
+	//cout << "size before: " << relLyTokens[0].size() << endl;
+	//now empty contains the number of empty tokens at the end of the music line.
+	relLyTokens[0].erase(relLyTokens[0].end()-empty, relLyTokens[0].end());
+	for ( int i=0; i<wcelines.size(); i++ ) {
+		int diff = relLyTokens[i].size() - relLyTokens[0].size();
+		if ( diff > 0 ) relLyTokens[i].erase(relLyTokens[i].end()-diff, relLyTokens[i].end());
+	}
+	//cout << "size after: " << relLyTokens[0].size() << endl;
+	
+	//still do a check whether there are empty token in the middle of a melodyline
+	for ( int i=0; i<relLyTokens[0].size(); i++ )
+		if ( relLyTokens[0][i].getToken() == "" ) {
+			cerr << getLocation() << ": Warning: empty token" << endl;
 		}
+	
+	
+	/*
+	for ( int i = 0; i < wcelines.size(); i++ ) {
+		cout << "length " << i << " : " << relLyTokens[i].size() << endl;
 	}
 	*/
 }
@@ -1132,5 +1140,59 @@ bool SongLine::checkTies() const {
 		}
 	}
 	
+	return res;
+}
+
+bool SongLine::checkLengths() const {
+	bool res = true;
+	int length = relLyTokens[0].size();
+	//check lengths.
+	for ( int i=1; i<relLyTokens.size(); i++ ) {
+		//cout << "length: " << length << endl;
+		//cout << "txt_" << i << " : " << relLyTokens[i].size() << endl;
+		if ( relLyTokens[i].size() < length ) {
+			if ( wcelines.size() > i ) {
+				//no error if last token is not a note or an END_TIE.
+				
+				//is it because of ties?
+				//count number of ties at end of line
+				int ti = ties_ann.size()-1;
+				int ties = 0;
+				while ( ties_ann[ti] == RelLyToken::START_TIE || 
+						ties_ann[ti] == RelLyToken::CONTINUE_TIE ||
+						ties_ann[ti] == RelLyToken::END_TIE ) {
+					ties = ties + 1;
+					ti = ti - 1;
+				}
+				ties = ties-1; //END_TIE doesn't count.
+				//cout << "ties  : " << ties << endl;
+				//cout << "length: " << length << endl;
+				//cout << "txt   : " << relLyTokens[i].size() << endl; 
+				if ( relLyTokens[i].size()+ties >= length ) { 
+					res = true;
+					continue;
+				}
+				
+				/* THIS IS HANDLED SOMEWHERE ELSE
+				//is it because of rests?
+				int rests = 0;
+				int ri = length-1;
+				while ( relLyTokens[0][ri].isRest() ) {
+					ri = ri - 1;
+					rests = rests + 1;
+				}
+				if ( relLyTokens[i].size()+rests >= length ) {
+					res = true;
+					continue;
+				}
+				*/
+				
+				cerr << getLocation() << ": Warning: textline to short: " << endl;
+				cerr << wcelines[0] << endl;
+				cerr << wcelines[i] << endl;
+				res = false;
+			}
+		}
+	}
 	return res;
 }
