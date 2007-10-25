@@ -37,6 +37,7 @@ public:
 	bool checkMelisma() const; // ties ok? slurs ok? text ok (-- or _)?
 	bool checkTies() const; // slur where a tie should be?
 	bool checkTextPlacing() const;
+	bool checkLengths() const;
 	
 	TimeSignature getInitialTimeSignature() const {return initialTimeSignature;}
 	RationalTime getInitialUpbeat() const {return initialUpbeat;}
