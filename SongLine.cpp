@@ -959,7 +959,11 @@ bool SongLine::checkMelisma() const {
 	//walk through the text annotation.
 	//if continuation, either tie or slur should be present.
 	//only check first text line
-
+	
+	char lastPC; //remember last pitch class to compare -> slur or tie
+	lastPC = relLyTokens[0][0].getPitchClass();
+	int lastNoteIndex = 0;
+	
 	for( int i=0; i<text_ann[0].size(); i++ ) {
 		if ( ( text_ann[0][i] == RelLyToken::BEGIN_WORD_CONT ) ||
 		     ( text_ann[0][i] == RelLyToken::SINGLE_WORD_CONT ) ||
@@ -972,11 +976,22 @@ bool SongLine::checkMelisma() const {
 					 ( ties_ann[i] != RelLyToken::START_TIE ) &&
 					 ( ties_ann[i] != RelLyToken::CONTINUE_TIE ) &&
 					 ( ties_ann[i] != RelLyToken::END_TIE ) ) {
-						cerr << getLocation() << ": Error: slur or tie missing at note: " << relLyTokens[0][i].getToken() << endl;
+						if ( relLyTokens[0][i].getPitchClass() != lastPC )
+							cerr << getLocation() << ": Error: slur missing at notes: " << relLyTokens[0][lastNoteIndex].getToken()
+							     << " - " << relLyTokens[0][i].getToken() << endl;
+						else
+							cerr << getLocation() << ": Error: tie missing at notes: " << relLyTokens[0][lastNoteIndex].getToken()
+							     << " - " << relLyTokens[0][i].getToken() << endl;
 						res = false;
 				}
 			}
 		}
+		if ( i < relLyTokens[0].size() )
+			if (relLyTokens[0][i].getIdentity() == RelLyToken::NOTE ) {
+				lastPC = relLyTokens[0][i].getPitchClass(); //remember current pitch.
+				lastNoteIndex = i; //also remember index of last note
+			}
+
 	}
 
 	return res;
@@ -1132,7 +1147,7 @@ bool SongLine::checkTies() const {
 			//now p has index of previous note
 			//
 			if ( slurs_ann[p] == RelLyToken::START_SLUR || slurs_ann[p] == RelLyToken::IN_SLUR )
-				if ( relLyTokens[0][p].getPitchClass() == relLyTokens[0][i].getPitchClass() ) {
+				if ( relLyTokens[0][p].getPitchClass() == relLyTokens[0][i].getPitchClass() && relLyTokens[0][i].getOctaveCorrection() == 0 ) {
 					cerr << getLocation() << ": Warning: Slur should probably be a tie at notes: " << relLyTokens[0][p].getToken()
 					     << " and " << relLyTokens[0][i].getToken() << endl;
 					res = false;
