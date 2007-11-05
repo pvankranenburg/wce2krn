@@ -24,6 +24,7 @@ void print_usage() {
 	cout << " -l: generate file(s) with only the lyrics." << endl;
 	cout << " -s: spit in lines." << endl;
 	cout << " -p: print the contents of the music to stdout with annotations" << endl;
+	cout << " -e: suppress log messages." << endl;
 	cout << " -v: print version number and exit." << endl;
 	cout << " -h: print this help message and exit." << endl;
 	cout << "If no filename is given, or '-', standard input and output will be used." << endl;
@@ -42,6 +43,7 @@ int main (int argc, char * const argv[]) {
 	bool lyrics = false;
 	bool absly = false;
 	bool relly = false;
+	bool suppresslog = false;
 	bool printContents = false;
 	
 	string filename = "-";
@@ -55,9 +57,17 @@ int main (int argc, char * const argv[]) {
 		else if ( arg == "-r" ) relly = true;
 		else if ( arg == "-a" ) absly = true;
 		else if ( arg == "-p" ) printContents = true;
+		else if ( arg == "-e" ) suppresslog = true;
 		else if ( arg == "-h" ) { print_usage(); exit(0); }
 		else if ( arg == "-v" ) { print_version(); exit(0); }
+		
 		else filename = arg;
+	}
+	
+	ofstream out;
+	if(suppresslog) {
+		out.open("/dev/null");
+		clog.rdbuf(out.rdbuf());
 	}
 	
 	clog << endl;

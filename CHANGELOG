@@ -1,3 +1,6 @@
+Version 1.12
+- added command line option to suppress log messages (redirect clog to /dev/null)
+
 Version 1.10
 - separate warning messages for tie missing and slur missing
 
