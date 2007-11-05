@@ -65,8 +65,10 @@ int main (int argc, char * const argv[]) {
 	}
 	
 	ofstream out;
+	streambuf* clogbuf;
 	if(suppresslog) {
 		out.open("/dev/null");
+		clogbuf = clog.rdbuf();
 		clog.rdbuf(out.rdbuf());
 	}
 	
@@ -93,6 +95,10 @@ int main (int argc, char * const argv[]) {
 	//if (absly) s.writeToDisk(basename, SongLine::ABSLY, split);
 	clog << "===============================================================================" << endl;
 
+	if(suppresslog) {
+		out.close();
+		clog.rdbuf(clogbuf);
+	}
 
 	return 0;
 }
