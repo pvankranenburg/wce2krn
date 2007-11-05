@@ -262,9 +262,7 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>16</integer>
-									<integer>1</integer>
-									<integer>0</integer>
+									<integer>23</integer>
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
@@ -317,15 +315,13 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>8538DA560CDF564700F25084</string>
+										<string>8538DA7A0CDF5ABD00F25084</string>
 										<key>history</key>
 										<array>
 											<string>85385D8E0C20808000ECBA31</string>
 											<string>850CF8620C75C85C00DBDF90</string>
 											<string>85B85F5A0CBBC31600653DA8</string>
-											<string>8515A6BF0CBD04AE001E9020</string>
 											<string>853ECA200CBE611E009E1046</string>
-											<string>85060E1A0CBEDDBD0094D25D</string>
 											<string>85060E1E0CBEDDBD0094D25D</string>
 											<string>85060E1F0CBEDDBD0094D25D</string>
 											<string>85BF732F0CCFEFC60028CBE2</string>
@@ -334,11 +330,13 @@
 											<string>85B3E9280CD23CA30084F6A5</string>
 											<string>85452C7A0CD78F67002DBB8A</string>
 											<string>85C5F0A40CDA22D400CA2EAB</string>
-											<string>85C5F0BE0CDA278A00CA2EAB</string>
-											<string>85C8EB580CDBEC7900FB6B1C</string>
 											<string>8538DA270CDF549200F25084</string>
 											<string>8538DA280CDF549200F25084</string>
-											<string>85B3E9290CD23CA30084F6A5</string>
+											<string>8538DA600CDF598900F25084</string>
+											<string>8538DA610CDF598900F25084</string>
+											<string>8538DA620CDF598900F25084</string>
+											<string>8538DA630CDF598900F25084</string>
+											<string>8538DA640CDF598900F25084</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -366,6 +364,13 @@
 											<string>8538DA2B0CDF549200F25084</string>
 											<string>8538DA2C0CDF549200F25084</string>
 											<string>8538DA2D0CDF549200F25084</string>
+											<string>8538DA650CDF598900F25084</string>
+											<string>8538DA660CDF598900F25084</string>
+											<string>8538DA670CDF598900F25084</string>
+											<string>8538DA680CDF598900F25084</string>
+											<string>8538DA690CDF598900F25084</string>
+											<string>8538DA6A0CDF598900F25084</string>
+											<string>8538DA6B0CDF598900F25084</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -559,8 +564,6 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>8538DA420CDF54C900F25084</string>
-		<string>8538DA430CDF54C900F25084</string>
 		<string>8538DA440CDF54C900F25084</string>
 		<string>8538DA450CDF54C900F25084</string>
 		<string>85E752E70B01D462004FE07E</string>
