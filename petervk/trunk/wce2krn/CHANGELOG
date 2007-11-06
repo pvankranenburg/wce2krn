@@ -1,3 +1,8 @@
+Version 1.14
+- triplet across line break now possible
+- no missing tie error message when only pitch classes are same (e.g. fis and f)
+- no missing tie error message when slur and tie end at the same note
+
 Version 1.12.1
 - bugfix
 

@@ -19,7 +19,7 @@
 #include <locale>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, string recordno, string stropheno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool triplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, string recordno, string stropheno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -27,6 +27,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   initialDots(dots),
 																   initialOctave(octave),
 																   initialLastPitchClass(pitchclass),
+																   currentTripletStatus(triplet),
 																   initialBarnumber(barnumber),
 																   finalTimeSignature(timesig),
 																   finalUpbeat(RationalTime(0,1)),
@@ -53,6 +54,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   initialDots(0),
 					   initialOctave(4),
 					   initialLastPitchClass('g'),
+					   currentTripletStatus(false),
 					   initialBarnumber(0),
 					   keySignature(0),
 					   midiTempo(120),
@@ -72,6 +74,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 initialDots(sl.getInitialDots()),
 										 initialOctave(sl.getInitialOctave()),
 										 initialLastPitchClass(sl.getInitialLastPitchClass()),
+										 currentTripletStatus(sl.getCurrentTripletStatus()),
 										 initialBarnumber(sl.getInitialBarnumber()),
 										 finalTimeSignature(sl.getFinalTimeSignature()),
 										 finalUpbeat(sl.getFinalUpbeat()),
@@ -143,7 +146,7 @@ void SongLine::translate() {
 	int currentBarnumber = initialBarnumber;
 	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR;
 	RelLyToken::TieStatus  currentTieStatus = RelLyToken::NO_TIE;
-	bool currentTripletStatus = false;
+	//bool currentTripletStatus = false;
 	int indexFirstKernNote = -1;
 	int indexLastKernNote = -1;
 		
@@ -1133,7 +1136,7 @@ bool SongLine::checkTies() const {
 	if ( relLyTokens.size() < 1 ) { cerr << getLocation() << ": Error: not enough lines" << endl; return false; }
 	if ( relLyTokens[0].size() < 2 ) return true; //apparently one note on the line
 
-	//walk trough note sequence. If slur end and previous note has slur start or in slur, and pitches are the same: should be a tie
+	//walk trough note sequence. If slur end and previous note has slur start or in slur, and pitches are the same: should be a tie. Unless a slur and a tie end at the same note
 	for( int i=1; i<relLyTokens[0].size(); i++ ) { //starting from the second token
 		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) continue; //only notes
 		if ( slurs_ann[i] == RelLyToken::END_SLUR ) {
@@ -1147,9 +1150,12 @@ bool SongLine::checkTies() const {
 			//now p has index of previous note
 			//
 			if ( slurs_ann[p] == RelLyToken::START_SLUR || slurs_ann[p] == RelLyToken::IN_SLUR )
-				if ( relLyTokens[0][p].getPitchClass() == relLyTokens[0][i].getPitchClass() && relLyTokens[0][i].getOctaveCorrection() == 0 ) {
-					cerr << getLocation() << ": Warning: Slur should probably be a tie at notes: " << relLyTokens[0][p].getToken()
-					     << " and " << relLyTokens[0][i].getToken() << endl;
+				if ( relLyTokens[0][p].getPitchClass() == relLyTokens[0][i].getPitchClass() &&
+				     relLyTokens[0][p].getAccidental() == relLyTokens[0][i].getAccidental() &&
+					 relLyTokens[0][i].getOctaveCorrection() == 0 ) {
+					if ( ties_ann[i] != RelLyToken::END_TIE )
+						cerr << getLocation() << ": Warning: Slur should probably be a tie at notes: " << relLyTokens[0][p].getToken()
+							<< " and " << relLyTokens[0][i].getToken() << endl;
 					res = false;
 				}
 		}
