@@ -33,6 +33,9 @@ public:
 	bool getMeterInvisible() const;
 	string getRecord() const { return record; }
 	string getStrophe() const { return strophe; }
+	int getFirstNoteRelativeToOctave() const;
+	char getFirstNoteRelativeToPitchClass() const;
+	string getFirstNoteRelativeTo() const { return firstNoteRelativeTo; }
 
 private:
 	ifstream infile;
@@ -47,6 +50,7 @@ private:
 	string midiTempo;
 	string upbeat;
 	string WCEVersion;
+	string firstNoteRelativeTo;
 	bool meterInvisible;
 	string record;
 	string strophe;

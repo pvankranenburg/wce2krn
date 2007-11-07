@@ -18,6 +18,7 @@
 using namespace std;
 
 RelLyToken::RelLyToken(string t, string loc, bool is_music) : token(t), location(loc) {
+	
 	id = computeIdentity(is_music);
 	//cout << token << ": " << printIdentity(id) << endl;
 }

@@ -8,6 +8,7 @@
  */
 
 #include "WCE_File.h"
+#include "pvkutilities.h"
 using namespace std;
 
 WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), record("unknown") {
@@ -90,6 +91,11 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			if ( line.find("true") != string::npos ) meterInvisible = true;
 			if ( line.find("false") != string::npos ) meterInvisible = false;
+			continue;
+		}
+		if( (pos = line.find("SignatureController-relativeTextField")) != string::npos ) {
+			if (stdinput) getline(cin,line); else getline(infile,line);
+			firstNoteRelativeTo = extractStringFromLine(line);
 			continue;
 		}
 		// read next line
@@ -186,5 +192,34 @@ vector<string> WCE_File::extractStringFromMultiLine(string s)
 		}
 	}
 	
+	//translate &quot; to "
+	string::size_type pos;
+	for ( int i = 0; i < res.size(); i++ ) {
+		while ( (pos = res[i].find("&quot;")) != string::npos ) res[i].replace(pos,6,"\"");
+	}
+	
 	return res;
 }
+
+int WCE_File::getFirstNoteRelativeToOctave() const {
+	string tmp = firstNoteRelativeTo;
+	int res = 3; //without ' or , it is octave 3
+	string::size_type pos;
+	while( (pos = tmp.find("'")) != string::npos ) { res++; tmp.erase(pos,1); }
+	while( (pos = tmp.find(",")) != string::npos ) { res--; tmp.erase(pos,1); }
+	return res;
+}
+
+char WCE_File::getFirstNoteRelativeToPitchClass() const {
+
+	string tmp = firstNoteRelativeTo;
+	pvktrim(tmp);
+	
+	string::size_type pos;
+	
+	if ( (pos = tmp.find_first_of("abcdefg")) == string::npos) return 'x';
+	
+	return tmp[pos];
+
+}
+	

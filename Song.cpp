@@ -46,13 +46,14 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 				if( songLines.empty() ) { //first line of song
 					int initialBarnumber = 0;
 					if ( translateUpbeat(wcefile.getUpbeat()) == RationalTime(0,1) ) initialBarnumber = 1;
+					//cout << wcefile.getFirstNoteRelativeTo() << " " << wcefile.getFirstNoteRelativeToPitchClass() << endl;
 					songLines.push_back(SongLine(singleline,
 							      translateUpbeat(wcefile.getUpbeat()),
 								  translateTimeSignature(wcefile.getTimeSignature()),
 								  4,
 								  0,
-								  4,
-								  'g',
+								  wcefile.getFirstNoteRelativeToOctave(),
+								  wcefile.getFirstNoteRelativeToPitchClass(),
 								  false,
 								  translateKeySignature(wcefile.getKey()),
 								  translateMidiTempo(wcefile.getMidiTempo()),
@@ -315,26 +316,31 @@ int Song::translateKeySignature(string lykey) const {
 	string root = lykey.erase(lykey.find("\\"));
 	pvktrim (root);
 	
+	if (root == "ces") { res = -7; }
 	if (root == "c") { res = 0; }
 	if (root == "cis") { res = 7; }
 	if (root == "des") { res = -5; }
 	if (root == "d") { res = 2; }
 	if (root == "dis") { res = 9; }
 	if (root == "es") { res = -3; }
+	if (root == "ees") { res = -3; }
 	if (root == "e") { res = 4;  }
 	if (root == "f") { res = -1; }
 	if (root == "fis") { res = 6; }
-	if (root == "ges") { res = 6; }
+	if (root == "ges") { res = -6; }
 	if (root == "g") { res = 1; }
 	if (root == "gis") { res = 8; }	
 	if (root == "as") { res = -4; }	
+	if (root == "aes") { res = -4; }	
 	if (root == "a") { res = 3; }
 	if (root == "ais") { res = 10; }
 	if (root == "bes") { res = -2; }
 	if (root == "b") { res = 5; }
 		
-	if (minor) res = res - 3;
-	
+	if (minor) res = res - 3 + 30;
+
+	//cout << "ROOT " << root << " " << res << endl;
+
 	return res;
 }
 
