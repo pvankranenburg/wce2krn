@@ -1,3 +1,9 @@
+Version 1.16
+- relative to first note now can be other note than g'
+- duration at beginning of line now inserted after 'is', 'es', 'isis' or 'eses'
+- all minor and major keys up to 7 sharps or 7 flats are now possible
+- &quot; in inputfile is converted to "
+
 Version 1.14
 - triplet across line break now possible
 - no missing tie error message when only pitch classes are same (e.g. fis and f)

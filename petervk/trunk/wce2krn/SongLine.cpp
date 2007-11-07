@@ -730,18 +730,44 @@ vector<string> SongLine::getLyBeginSignature(bool absolute) const {
 	res.push_back("\\score {{");
 	
 	string key;
+	string mode;
 	//guess most probable key (not optimal)
 	switch( keySignature ) {
-		case -4: key = "f \\minor"; break;
+		case 7: key = "cis \\major"; break;
+		case 6: key = "fis \\major"; break;
+		case 5: key = "b \\major"; break;
+		case 4: key = "e \\major"; break;
+		case 3: key = "a \\major"; break;
+		case 2: key = "d \\major"; break;
+		case 1: key = "g \\major"; break;
+		case 0: key = "c \\major"; break;
+		case -1: key = "f \\major"; break;
+		case -2: key = "bes \\major"; break;
 		case -3: key = "es \\major"; break;
-		case -2: key = "g \\minor"; break;
-		case -1: key = "d \\minor"; break;
-		case  0: key = "c \\major"; break;
-		case  1: key = "g \\major"; break;
-		case  2: key = "d \\major"; break;
-		case  3: key = "a \\major"; break;
-		case  4: key = "e \\major"; break;
+		case -4: key = "as \\major"; break;
+		case -5: key = "des \\major"; break;
+		case -6: key = "ges \\major"; break;
+		case -7: key = "ces \\major"; break;
+
+		case 37: key = "ais \\minor"; break;
+		case 36: key = "dis \\minor"; break;
+		case 35: key = "gis \\minor"; break;
+		case 34: key = "cis \\minor"; break;
+		case 33: key = "fis \\minor"; break;
+		case 32: key = "b \\minor"; break;
+		case 31: key = "e \\minor"; break;
+		case 30: key = "a \\minor"; break;
+		case 29: key = "d \\minor"; break;
+		case 28: key = "g \\minor"; break;
+		case 27: key = "c \\minor"; break;
+		case 26: key = "f \\minor"; break;
+		case 25: key = "bes \\minor"; break;
+		case 24: key = "es \\minor"; break;
+		case 23: key = "as \\minor"; break;
 	}
+	
+	//cout << "KEY " << key << endl;
+	
 	res.push_back("\\key " + key);
 	
 	if ( !absolute ) {
@@ -830,10 +856,6 @@ vector<string> SongLine::getKernBeginSignature() const {
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
 
-	string keys = "";
-	if (keySignature < 0) keys = "b-e-a-d-g-c-f-";
-	if (keySignature > 0) keys = "f#c#g#d#a#e#b#";
-
 	//midi tempo
 	stringstream ss;
 	ss << midiTempo;
@@ -847,7 +869,14 @@ vector<string> SongLine::getKernBeginSignature() const {
 	res.push_back(s);
 	
 	//key signature
-	int ks = abs(keySignature);
+	int tempkey = keySignature;
+	if ( tempkey > 20 ) tempkey = tempkey - 30; //from minor to major
+	
+	string keys = "";
+	if (tempkey < 0) keys = "b-e-a-d-g-c-f-";
+	if (tempkey > 0) keys = "f#c#g#d#a#e#b#";
+
+	int ks = abs(tempkey);
 	s = "";
 	for( int i=0; i< kernTokens.size(); i++ ) {
 		if ( i == 0) s = s + "*k[" + keys.substr(0,2*ks) + "]\t"; else s = s + "*\t";
@@ -897,12 +926,11 @@ string SongLine::upbeatToString(RationalTime t) const {
 
 }
 
-bool SongLine::inheritFirstLynoteDuration( string& lyline, int duration) const {
+bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const {
 	locale loc("");
 	string::size_type pos = 0;
 	stringstream ss;
 	string strduration;
-	
 	
 	int index = 0;
 	if (relLyTokens.size() > 0) {
@@ -922,14 +950,65 @@ bool SongLine::inheritFirstLynoteDuration( string& lyline, int duration) const {
 	//firstnote has duration?	
 	if ( relLyTokens[0][index].getDurationBase() != 0 ) return true;
 	
+	RelLyToken::Accidental ac = relLyTokens[0][index].getAccidental();
+	
 	//find index of end of first note	
 	while ( index > 0 ) {
 		pos = lyline.find('\t');
 		index--;
 	}
 	
-	if ( (pos = lyline.find_first_of("abcdefgsr",pos)) == string::npos) return false;
-	pos++;
+	//ptichclass
+	if ( (pos = lyline.find_first_of("abcdefgsr", pos)) == string::npos) return false;
+		pos++;
+
+/*
+-is
+-isis
+-es
+-eses
+es
+as
+eses
+ases
+*/
+
+	//alterations
+	/*
+	if ( pos+1 < lyline.size() { //not past line end
+	
+		if ( lyline[pos+1] == 's' ) { //es, as, eses, asas
+			if ( substr
+		}
+	
+		if ( lyline[pos+1] == 'i' || lyline[pos+1] == 'e') { //-is -isis
+		}
+	}
+	*/
+	
+	string s = "s";
+	
+	switch( ac ) {
+		case RelLyToken::DOUBLE_FLAT:
+			if ( lyline[pos] == 's' ) // eses or ases
+				pos = pos + 3;
+			else
+				pos = pos + 4;
+			break;
+		case RelLyToken::FLAT:
+			if ( lyline[pos] == 's' ) // es or as
+				pos = pos + 1;
+			else
+				pos = pos + 2;
+			break;
+		case RelLyToken::SHARP:
+			pos = pos + 2;
+			break;
+		case RelLyToken::DOUBLE_SHARP:
+			pos = pos + 4;
+			break;
+	}
+
 	while ( pos < lyline.size() )
 		if ( lyline.at(pos) == ',' || lyline.at(pos) == '\'' ) 
 			pos++;
