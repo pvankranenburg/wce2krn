@@ -262,7 +262,7 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>11</integer>
+									<integer>18</integer>
 									<integer>1</integer>
 									<integer>0</integer>
 								</array>
@@ -305,7 +305,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>SongLine.h</string>
+								<string>CHANGELOG</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -313,11 +313,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>SongLine.h</string>
+										<string>CHANGELOG</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>850E38F50CE0BE3300897365</string>
+										<string>850E390E0CE0C68700897365</string>
 										<key>history</key>
 										<array>
 											<string>85385D8E0C20808000ECBA31</string>
@@ -329,8 +329,6 @@
 											<string>8538DA610CDF598900F25084</string>
 											<string>8538DA630CDF598900F25084</string>
 											<string>8538DA850CDF5B8600F25084</string>
-											<string>850E38B20CE0B10D00897365</string>
-											<string>850E38B80CE0BA3D00897365</string>
 											<string>850E38C80CE0BBE500897365</string>
 											<string>850E38C90CE0BBE500897365</string>
 											<string>850E38CA0CE0BBE500897365</string>
@@ -338,7 +336,9 @@
 											<string>850E38E00CE0BE3300897365</string>
 											<string>850E38E10CE0BE3300897365</string>
 											<string>850E38E20CE0BE3300897365</string>
-											<string>850E38E30CE0BE3300897365</string>
+											<string>850E38FB0CE0BF1D00897365</string>
+											<string>850E390B0CE0C68700897365</string>
+											<string>850E390C0CE0C68700897365</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -389,6 +389,12 @@
 											<string>850E38F20CE0BE3300897365</string>
 											<string>850E38F30CE0BE3300897365</string>
 											<string>850E38F40CE0BE3300897365</string>
+											<string>850E38FE0CE0BF1D00897365</string>
+											<string>850E38FF0CE0BF1D00897365</string>
+											<string>850E39000CE0BF1D00897365</string>
+											<string>850E39010CE0BF1D00897365</string>
+											<string>850E39090CE0C49E00897365</string>
+											<string>850E390D0CE0C68700897365</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -582,8 +588,8 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>85BCAD9B0B00CF0900E7C8E7</string>
 		<string>1C0AD2B3069F1EA900FABCE6</string>
+		<string>85BCAD9B0B00CF0900E7C8E7</string>
 		<string>/Users/pvk/SVN/music/petervk/trunk/wce2krn/wce2krn.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
