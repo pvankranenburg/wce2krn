@@ -1,3 +1,8 @@
+Version 1.18
+- added identifier of song (record number + strophe number) to lilypond output.
+- if no FirstNoteRelativeTo in input, g' is assumed.
+- removed 'locale loc("")' from SongLine::inheritFirstLynoteDuration (?)
+
 Version 1.16
 - relative to first note now can be other note than g'
 - duration at beginning of line now inserted after 'is', 'es', 'isis' or 'eses'
@@ -28,4 +33,4 @@ Version 1.6
 - added error message if \time or \times has text
 
 Version 1.4
-...
+... lost in history ...
