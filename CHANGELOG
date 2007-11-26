@@ -1,3 +1,7 @@
+Version 1.20
+- option for lilypond on the web (-w command line option). Suitable for conversion to png
+- now barlines are printed at line breaks. And an ending barline is added to the last line of the song
+
 Version 1.18
 - added identifier of song (record number + strophe number) to lilypond output.
 - if no FirstNoteRelativeTo in input, g' is assumed.

@@ -20,6 +20,7 @@ void print_usage() {
 	cout << "Reads wce-file and generates *kern file" << endl;
 	cout << " -k: generate kernfile." << endl;
 	cout << " -r: generate relative lilypond file." << endl;
+	cout << " -w: generate lilypond for presentation on the web." << endl;
 	//cout << " -a: generate absolute lilypond file (not implemented)!" << endl;
 	cout << " -l: generate file(s) with only the lyrics." << endl;
 	cout << " -s: spit in lines." << endl;
@@ -43,6 +44,7 @@ int main (int argc, char * const argv[]) {
 	bool lyrics = false;
 	bool absly = false;
 	bool relly = false;
+	bool weblily = false;
 	bool suppresslog = false;
 	bool printContents = false;
 	
@@ -56,6 +58,7 @@ int main (int argc, char * const argv[]) {
 		else if ( arg == "-l" ) lyrics = true;
 		else if ( arg == "-r" ) relly = true;
 		else if ( arg == "-a" ) absly = true;
+		else if ( arg == "-w" ) weblily = true;
 		else if ( arg == "-p" ) printContents = true;
 		else if ( arg == "-e" ) suppresslog = true;
 		else if ( arg == "-h" ) { print_usage(); exit(0); }
@@ -84,7 +87,7 @@ int main (int argc, char * const argv[]) {
 		basename.erase(pos);
 	}
 	
-	Song s(filename);
+	Song s(filename, weblily);
 	if (printContents) s.printContents();
 			
 	if (basename == "-" && kern && lyrics) kern = false;

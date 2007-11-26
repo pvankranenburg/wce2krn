@@ -21,7 +21,7 @@ using namespace std;
 
 class Song {
 public:
-	Song(string inputfilename);
+	Song(string inputfilename, bool weblilypond);
 	
 	TimeSignature translateTimeSignature(string lyTimeSignature) const;
 	RationalTime translateUpbeat(string lyUpbeat) const;
@@ -37,6 +37,7 @@ public:
 private:
 	WCE_File wcefile;
 	vector<SongLine> songLines;
+	bool weblily;
 };
 
 #endif

@@ -36,6 +36,7 @@ public:
 	int getFirstNoteRelativeToOctave() const;
 	char getFirstNoteRelativeToPitchClass() const;
 	string getFirstNoteRelativeTo() const { return firstNoteRelativeTo; }
+	string getLocation() const;
 
 private:
 	ifstream infile;

@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool triplet, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, string recordno, string stropheno); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool triplet, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, int numphrases, string recordno, string stropheno); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -71,7 +71,7 @@ public:
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
 	vector<string> getLyLine(bool absolute) const;
-	vector<string> getLyBeginSignature(bool absolute) const;
+	vector<string> getLyBeginSignature(bool absolute, bool weblily) const;
 	vector<string> getLyEndSignature() const;
 	
 	vector<string> getKernLine() const;
@@ -125,6 +125,7 @@ private:
 	bool currentTripletStatus;
 	string fileName;
 	int phraseNo;
+	int numPhrases;
 	string record;
 	string strophe;
 	
