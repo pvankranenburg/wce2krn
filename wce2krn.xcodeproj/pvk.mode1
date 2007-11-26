@@ -262,7 +262,7 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>18</integer>
+									<integer>17</integer>
 									<integer>1</integer>
 									<integer>0</integer>
 								</array>
@@ -305,7 +305,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>CHANGELOG</string>
+								<string>wce2krn.h</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -313,11 +313,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>CHANGELOG</string>
+										<string>wce2krn.h</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>8512AD5D0CFAE2060003AC01</string>
+										<string>8512AD660CFB1C820003AC01</string>
 										<key>history</key>
 										<array>
 											<string>85385D8E0C20808000ECBA31</string>
@@ -329,7 +329,6 @@
 											<string>8571D0630CEB08C400F82F46</string>
 											<string>8571D0660CEB08C400F82F46</string>
 											<string>8571D0680CEB08C400F82F46</string>
-											<string>8512AC540CF5E3830003AC01</string>
 											<string>8512AC580CF5E3830003AC01</string>
 											<string>8512ACA70CFAC1D00003AC01</string>
 											<string>8512ACCC0CFAC2730003AC01</string>
@@ -339,7 +338,8 @@
 											<string>8512AD2E0CFACFA40003AC01</string>
 											<string>8512AD2F0CFACFA40003AC01</string>
 											<string>8512AD5A0CFAE2060003AC01</string>
-											<string>8512AD5B0CFAE2060003AC01</string>
+											<string>8512AD630CFB1C820003AC01</string>
+											<string>8512AD640CFB1C820003AC01</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -408,6 +408,7 @@
 											<string>8512AD320CFACFA40003AC01</string>
 											<string>8512AD330CFACFA40003AC01</string>
 											<string>8512AD5C0CFAE2060003AC01</string>
+											<string>8512AD650CFB1C820003AC01</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>

@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool triplet, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, int numphrases, string recordno, string stropheno); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, int numphrases, string recordno, string stropheno); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -46,7 +46,7 @@ public:
 	int getInitialDuration() const {return initialDuration;}
 	int getInitialDots() const {return initialDots;}
 	int getInitialBarnumber() const {return initialBarnumber;}
-	bool getCurrentTripletStatus() const {return currentTripletStatus; }
+	bool getInitialTripletStatus() const {return initialTripletStatus; }
 	
 	TimeSignature getFinalTimeSignature() const {return finalTimeSignature;} 
 	RationalTime getFinalUpbeat() const {return finalUpbeat;}
@@ -56,6 +56,7 @@ public:
 	int getFinalDots() const {return finalDots;}
 	int getFinalBarnumber() const {return finalBarnumber;}
 	int getKeySignature() const { return keySignature;}
+	bool getFinalTripletStatus() const { return finalTripletStatus; }
 
 	int getMidiTempo() const { return midiTempo; }
 	bool getMeterInvisible() const { return meterInvisible; }
@@ -70,7 +71,7 @@ public:
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
-	vector<string> getLyLine(bool absolute) const;
+	vector<string> getLyLine(bool absolute, bool lines) const;
 	vector<string> getLyBeginSignature(bool absolute, bool weblily) const;
 	vector<string> getLyEndSignature() const;
 	
@@ -122,7 +123,8 @@ private:
 	const int initialBarnumber;
 	int finalBarnumber;
 	bool meterInvisible;
-	bool currentTripletStatus;
+	bool initialTripletStatus;
+	bool finalTripletStatus;
 	string fileName;
 	int phraseNo;
 	int numPhrases;

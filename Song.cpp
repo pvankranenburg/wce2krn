@@ -91,7 +91,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  (songLines.back()).getFinalDots(),
 								  (songLines.back()).getFinalOctave(),
 								  (songLines.back()).getFinalLastPitchClass(),
-								  (songLines.back()).getCurrentTripletStatus(),
+								  (songLines.back()).getFinalTripletStatus(),
 								  (songLines.back()).getKeySignature(),
 								  (songLines.back()).getMidiTempo(),
 								  (songLines.back()).getFinalBarnumber(),
@@ -235,7 +235,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					
 				case SongLine::RELLY:
 					
-					part = si->getLyLine(false);
+					part = si->getLyLine(false, lines);
 					
 					if ( part.size() == 0 ) { cerr << "Empty line!" << endl; exit(0); }
 					
@@ -271,7 +271,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 				case SongLine::ABSLY:
 					
-					part = si->getLyLine(true);
+					part = si->getLyLine(true, lines);
 				
 				break;
 

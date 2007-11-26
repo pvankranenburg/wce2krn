@@ -19,7 +19,7 @@
 //#include <locale>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool triplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -27,7 +27,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   initialDots(dots),
 																   initialOctave(octave),
 																   initialLastPitchClass(pitchclass),
-																   currentTripletStatus(triplet),
+																   initialTripletStatus(initialtriplet),
 																   initialBarnumber(barnumber),
 																   finalTimeSignature(timesig),
 																   finalUpbeat(RationalTime(0,1)),
@@ -36,6 +36,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   finalDots(0),
 																   finalLastPitchClass(pitchclass),
 																   finalBarnumber(-1),
+																   finalTripletStatus(false),
 																   keySignature(keysig),
 																   midiTempo(mtempo),
 																   translationMade(false),
@@ -55,7 +56,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   initialDots(0),
 					   initialOctave(4),
 					   initialLastPitchClass('g'),
-					   currentTripletStatus(false),
+					   initialTripletStatus(false),
 					   initialBarnumber(0),
 					   keySignature(0),
 					   midiTempo(120),
@@ -76,7 +77,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 initialDots(sl.getInitialDots()),
 										 initialOctave(sl.getInitialOctave()),
 										 initialLastPitchClass(sl.getInitialLastPitchClass()),
-										 currentTripletStatus(sl.getCurrentTripletStatus()),
+										 initialTripletStatus(sl.initialTripletStatus),
 										 initialBarnumber(sl.getInitialBarnumber()),
 										 finalTimeSignature(sl.getFinalTimeSignature()),
 										 finalUpbeat(sl.getFinalUpbeat()),
@@ -85,6 +86,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 finalLastPitchClass(sl.getFinalLastPitchClass()),
 										 finalDots(sl.getFinalDots()),
 										 finalBarnumber(sl.getFinalBarnumber()),
+										 finalTripletStatus(sl.finalTripletStatus),
 										 keySignature(sl.getKeySignature()),
 										 midiTempo(sl.getMidiTempo()),
 										 translationMade(sl.translationMade),
@@ -149,7 +151,7 @@ void SongLine::translate() {
 	int currentBarnumber = initialBarnumber;
 	RelLyToken::SlurStatus currentSlurStatus = RelLyToken::NO_SLUR;
 	RelLyToken::TieStatus  currentTieStatus = RelLyToken::NO_TIE;
-	//bool currentTripletStatus = false;
+	bool currentTripletStatus = initialTripletStatus;
 	int indexFirstKernNote = -1;
 	int indexLastKernNote = -1;
 		
@@ -366,6 +368,7 @@ void SongLine::translate() {
 	finalDuration = currentDuration;
 	finalDots = currentDots;
 	finalTimeSignature = currentTimeSignature;
+	finalTripletStatus = currentTripletStatus;
 	if (lastPitchClass != 's' && lastPitchClass != 'r') finalLastPitchClass = lastPitchClass;
 	if (timeInBar == currentTimeSignature.getRationalTime()) {
 		finalUpbeat = RationalTime(0,1);
@@ -705,11 +708,28 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 	return tok;
 }
 
-vector<string> SongLine::getLyLine(bool absolute) const{
-	vector<string> res;
+vector<string> SongLine::getLyLine(bool absolute, bool lines) const{
+	// if lines:
+	// take care of triples that are across line breaks.
 	
+	vector<string> res;
+		
 	if (!absolute) {
 		res = wcelines;
+		
+		// make sure first note has duration
+		// do this before changing the line (like adding \times 2/3 at the beginning)
+		inheritFirstLynoteDuration( res[0], initialDuration);
+
+		if ( lines ) {
+			if ( initialTripletStatus ) {
+				if ( res.size() > 0 ) res[0] = "\\times 2/3 { " + res[0];
+			}
+			if ( finalTripletStatus ) {
+				if ( res.size() > 0 ) res[0] = res[0] + "}";
+			}
+		}
+
 		// add break at end
 		// if there is a baline, don't add the empty bar.
 		if ( phraseNo == numPhrases ) {
@@ -723,8 +743,6 @@ vector<string> SongLine::getLyLine(bool absolute) const{
 			}
 		}
 		
-		// make sure first note has duration
-		inheritFirstLynoteDuration( res[0], initialDuration);
 	}
 	
 	//cout << phraseNo << " of " << numPhrases << endl;
