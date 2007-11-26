@@ -16,7 +16,7 @@
 #include <sstream>
 using namespace std;
 
-Song::Song(string inputfilename) : wcefile(inputfilename) {
+Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), weblily(weblilypond) {
 
 	int i; //index
 	
@@ -30,7 +30,9 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 	vector<string> singleline;
 	bool emptyline = false;
 	int phraseno = 1;
+	int numberOfPhrases = 0;
 	SongLine sl;
+	
 	for( str_it=wcelines.begin(); str_it!=wcelines.end(); str_it++) {
 		emptyline = false;
 		if ((*str_it).empty()) emptyline = true;
@@ -38,6 +40,20 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 		if ( emptyline ) lineprofile.push_back(false); else lineprofile.push_back(true);
 	}
 	//nu staan in lineprofile de dataregels op true
+	
+	//compute number of lines
+	//is there at least 1 phrase?
+	for( int i = 0; i < lineprofile.size(); i++ ) {
+		if ( lineprofile[i] ) numberOfPhrases = 1;
+	}
+	//but if the first line is empty, the counter should be set to 0
+	if ( !lineprofile[0] ) numberOfPhrases = 0;
+	
+	// now count the number of false -> true
+	for( int i = 0; i < lineprofile.size(); i++ ) {
+		if ( i < lineprofile.size()+1 ) if ( !lineprofile[i] && lineprofile[i+1] ) numberOfPhrases++;
+	}
+	
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
 		if (lineprofile[i] && i<lineprofile.size()) { // dataline
 			singleline.push_back(wcelines[i]); // is cleared after adding to songLines
@@ -61,6 +77,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  wcefile.getMeterInvisible(),
 								  wcefile.getFilename(),
 								  phraseno,
+								  numberOfPhrases,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe()));
 					singleline.clear();
@@ -81,6 +98,7 @@ Song::Song(string inputfilename) : wcefile(inputfilename) {
 								  (songLines.back()).getMeterInvisible(),
 								  wcefile.getFilename(),
 								  phraseno,
+								  numberOfPhrases,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe()));
 					//songLines.push_back(sl);
@@ -191,8 +209,8 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				}
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernBeginSignature(); break;
-					case SongLine::ABSLY: part = si->getLyBeginSignature(true); break;
-					case SongLine::RELLY: part = si->getLyBeginSignature(false); break;
+					case SongLine::ABSLY: part = si->getLyBeginSignature(true, weblily); break;
+					case SongLine::RELLY: part = si->getLyBeginSignature(false, weblily); break;
 					//case SongLine::TEXT: do nothing
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )

@@ -16,10 +16,10 @@
 #include<sstream>
 #include<cstdlib>
 #include<cassert>
-#include <locale>
+//#include <locale>
 using namespace std;
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool triplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, string recordno, string stropheno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool triplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -42,6 +42,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   meterInvisible(meterinv),
 																   fileName(filename),
 																   phraseNo(phraseno),
+																   numPhrases(numphrases),
 																   record(recordno),
 																   strophe(stropheno) {
 	translate();
@@ -62,6 +63,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   meterInvisible(false),
 					   fileName("[noname]"),
 					   phraseNo(0),
+					   numPhrases(0),
 					   record("unknown"),
 					   strophe("0") {
 	translate();
@@ -97,6 +99,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 slurs_ann(sl.slurs_ann),
 										 fileName(sl.fileName),
 										 phraseNo(sl.phraseNo),
+										 numPhrases(sl.numPhrases),
 										 record(sl.record),
 										 strophe(sl.strophe),
 										 annotations(sl.annotations) {
@@ -708,25 +711,52 @@ vector<string> SongLine::getLyLine(bool absolute) const{
 	if (!absolute) {
 		res = wcelines;
 		// add break at end
-		if ( res.size() >0 ) res[0] = res[0] + " \\mBreak";
+		// if there is a baline, don't add the empty bar.
+		if ( phraseNo == numPhrases ) {
+			if ( res.size() >0 ) res[0] = res[0] + " \\bar \"|.\"";
+		} else {
+			if ( finalUpbeat.getNumerator() == 0 ) {
+				if ( res.size() >0 ) res[0] = res[0] + " \\mBreak \\bar \"|\"";
+				}
+			else {
+				if ( res.size() >0 ) res[0] = res[0] + " \\mBreak";
+			}
+		}
+		
 		// make sure first note has duration
 		inheritFirstLynoteDuration( res[0], initialDuration);
 	}
 	
+	//cout << phraseNo << " of " << numPhrases << endl;
+	
 	return res;
 }
 
-vector<string> SongLine::getLyBeginSignature(bool absolute) const {
+vector<string> SongLine::getLyBeginSignature(bool absolute, bool weblily) const {
 	vector<string> res;
 	
 	res.push_back("%");
 	res.push_back("% produced by wce2krn " + version + " (" + releasedate + ")");
 	res.push_back("%");	
 	res.push_back("\\version\"2.8.2\"");
+	if ( weblily ) {
+		res.push_back("#(append! paper-alist '((\"long\" . (cons (* 210 mm) (* 2000 mm)))))");
+		res.push_back("#(set-default-paper-size \"long\")");
+		//res.push_back("#(set-global-staff-size 10)");
+		//res.push_back("\\paper {");
+		//res.push_back("  line-width = 3.5 \\in");
+		//res.push_back("  between-system-space = 1 \\mm");
+		//res.push_back("  between-system-padding = 2 \\mm");
+		//res.push_back("  top-margin = 1 \\mm");
+		//res.push_back("  bottom-margin = 1 \\mm");
+		//res.push_back("}");
+	}
 	res.push_back("mBreak = { \\bar \"\" \\break }");
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
-	res.push_back("\\header{ tagline = \"\" }");
+	res.push_back("\\header{ tagline = \"\"");
+	if ( !weblily ) res.push_back("piece = \"Record " + record + " - Strophe " + strophe + "\"");
+	res.push_back("}");
 	res.push_back("\\score {{");
 	
 	string key;
@@ -927,7 +957,7 @@ string SongLine::upbeatToString(RationalTime t) const {
 }
 
 bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const {
-	locale loc("");
+	//locale loc("");
 	string::size_type pos = 0;
 	stringstream ss;
 	string strduration;
@@ -962,16 +992,16 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 	if ( (pos = lyline.find_first_of("abcdefgsr", pos)) == string::npos) return false;
 		pos++;
 
-/*
--is
--isis
--es
--eses
-es
-as
-eses
-ases
-*/
+	/*
+	-is
+	-isis
+	-es
+	-eses
+	es
+	as
+	eses
+	ases
+	*/
 
 	//alterations
 	/*
@@ -1052,10 +1082,10 @@ bool SongLine::checkMelisma() const {
 		     ( text_ann[0][i] == RelLyToken::END_WORD_CONT ) ||
 			 ( text_ann[0][i] == RelLyToken::IN_WORD_CONT ) ) {
 			if ( relLyTokens[0][i].getIdentity() == RelLyToken::NOTE ) {
-				if ( ( slurs_ann[i] != RelLyToken::START_SLUR ) &&
+				if ( //( slurs_ann[i] != RelLyToken::START_SLUR ) &&
 				     ( slurs_ann[i] != RelLyToken::IN_SLUR ) &&
 					 ( slurs_ann[i] != RelLyToken::END_SLUR ) &&
-					 ( ties_ann[i] != RelLyToken::START_TIE ) &&
+					 //( ties_ann[i] != RelLyToken::START_TIE ) &&
 					 ( ties_ann[i] != RelLyToken::CONTINUE_TIE ) &&
 					 ( ties_ann[i] != RelLyToken::END_TIE ) ) {
 						if ( relLyTokens[0][i].getPitchClass() != lastPC )
@@ -1209,6 +1239,7 @@ string SongLine::getLocation() const {
 	return fn + ": Record " + record + " - Strophe " + strophe + " - Phrase " + phr;
 }
 
+
 bool SongLine::checkTies() const {
 	bool res = true;
 	
@@ -1221,6 +1252,7 @@ bool SongLine::checkTies() const {
 		if ( slurs_ann[i] == RelLyToken::END_SLUR ) {
 			//search previous NOTE
 			int p = i-1;
+			
 			while ( p>=0 && slurs_ann[p] != RelLyToken::START_SLUR && slurs_ann[p] != RelLyToken::IN_SLUR ) p--;
 			if ( p == -1 ) {
 				cerr << getLocation() << ": Error: slur ends at note: " << relLyTokens[0][i].getToken() << ", but no start" << endl;
