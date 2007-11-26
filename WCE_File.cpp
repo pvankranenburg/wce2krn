@@ -207,6 +207,10 @@ int WCE_File::getFirstNoteRelativeToOctave() const {
 	string::size_type pos;
 	while( (pos = tmp.find("'")) != string::npos ) { res++; tmp.erase(pos,1); }
 	while( (pos = tmp.find(",")) != string::npos ) { res--; tmp.erase(pos,1); }
+	
+	//in case not given, assume g'
+	if ( tmp.size() == 0 ) res = 4;
+
 	return res;
 }
 
@@ -215,11 +219,20 @@ char WCE_File::getFirstNoteRelativeToPitchClass() const {
 	string tmp = firstNoteRelativeTo;
 	pvktrim(tmp);
 	
+	if ( tmp.size() == 0 ) cerr << getLocation() << ": Warning: Initial 'relative to' pitch not given. Assuming g'" << endl;
+	
 	string::size_type pos;
 	
-	if ( (pos = tmp.find_first_of("abcdefg")) == string::npos) return 'x';
+	if ( (pos = tmp.find_first_of("abcdefg")) == string::npos) return 'g';
 	
 	return tmp[pos];
 
+}
+
+string WCE_File::getLocation() const {
+	string fn = getFilename();
+	string::size_type pos;
+	if ( (pos = fn.find_last_of("/")) != string::npos ) fn = fn.substr(pos+1);
+	return fn + ": Record " + getRecord() + " - Strophe " + getStrophe();
 }
 	
