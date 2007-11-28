@@ -732,6 +732,7 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines) const{
 
 		// add break at end
 		// if there is a baline, don't add the empty bar.
+
 		if ( phraseNo == numPhrases ) {
 			if ( res.size() >0 ) res[0] = res[0] + " \\bar \"|.\"";
 		} else {
