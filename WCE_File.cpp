@@ -235,4 +235,3 @@ string WCE_File::getLocation() const {
 	if ( (pos = fn.find_last_of("/")) != string::npos ) fn = fn.substr(pos+1);
 	return fn + ": Record " + getRecord() + " - Strophe " + getStrophe();
 }
-	

@@ -1,3 +1,8 @@
+Version 1.24
+- added newlines at the end of all files to prevent warning of linux g++
+- removed extra tokens at end of #include directive in RelLyToken.cpp
+- fixed bug in counting of lines
+
 Version 1.22
 - handle triples across linebreaks in lilypond.
 
@@ -22,7 +27,7 @@ Version 1.14
 - no missing tie error message when slur and tie end at the same note
 
 Version 1.12.1
-- bugfix
+- bugfix for clog buffer
 
 Version 1.12
 - added command line option to suppress log messages (redirect clog to /dev/null)
