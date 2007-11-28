@@ -51,7 +51,10 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	
 	// now count the number of false -> true
 	for( int i = 0; i < lineprofile.size(); i++ ) {
-		if ( i < lineprofile.size()+1 ) if ( !lineprofile[i] && lineprofile[i+1] ) numberOfPhrases++;
+		if ( i < lineprofile.size()-1 ) {
+			if ( !lineprofile[i] && lineprofile[i+1] )
+				numberOfPhrases++;
+		}
 	}
 	
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
