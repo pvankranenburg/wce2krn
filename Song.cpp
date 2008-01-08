@@ -211,9 +211,9 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					clog << "Writing " << s << endl;
 				}
 				switch(repr) {
-					case SongLine::KERN: part = si->getKernBeginSignature(); break;
-					case SongLine::ABSLY: part = si->getLyBeginSignature(true, weblily); break;
-					case SongLine::RELLY: part = si->getLyBeginSignature(false, weblily); break;
+					case SongLine::KERN: part = si->getKernBeginSignature(lines); break;
+					case SongLine::ABSLY: part = si->getLyBeginSignature(true, lines, weblily); break;
+					case SongLine::RELLY: part = si->getLyBeginSignature(false, lines, weblily); break;
 					//case SongLine::TEXT: do nothing
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
@@ -333,6 +333,13 @@ int Song::translateKeySignature(string lykey) const {
 	if ( lykey.size() == 0 ) return res;
 	
 	bool minor = ( lykey.find("minor") != string::npos );
+	bool ionian = ( lykey.find("ionian") != string::npos );
+	bool locrian = ( lykey.find("locrian") != string::npos );
+	bool aeolian = ( lykey.find("aeolian") != string::npos );
+	bool mixolydian = ( lykey.find("mixolydian") != string::npos );
+	bool lydian = ( lykey.find("lydian") != string::npos );
+	bool phrygian = ( lykey.find("phrygian") != string::npos );
+	bool dorian = ( lykey.find("dorian") != string::npos );
 
 	string root = lykey.erase(lykey.find("\\"));
 	pvktrim (root);
@@ -359,6 +366,13 @@ int Song::translateKeySignature(string lykey) const {
 	if (root == "b") { res = 5; }
 		
 	if (minor) res = res - 3 + 30;
+	if (ionian) res = res + 60;
+	if (dorian) res = res - 2 + 90;
+	if (phrygian) res = res -4 + 120;
+	if (lydian) res = res +1 + 150;
+	if (mixolydian) res = res -1 + 180;
+	if (aeolian) res = res -3 + 210;
+	if (locrian) res = res -5 + 240;
 
 	//cout << "ROOT " << root << " " << res << endl;
 

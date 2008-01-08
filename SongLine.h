@@ -72,11 +72,11 @@ public:
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
 	vector<string> getLyLine(bool absolute, bool lines) const;
-	vector<string> getLyBeginSignature(bool absolute, bool weblily) const;
+	vector<string> getLyBeginSignature(bool absolute, bool lines, bool weblily) const;
 	vector<string> getLyEndSignature() const;
 	
 	vector<string> getKernLine() const;
-	vector<string> getKernBeginSignature() const;
+	vector<string> getKernBeginSignature(bool lines) const;
 	vector<string> getKernEndSignature() const;
 	
 	string getLyricsLine(int line) const; //line 0 is first text line

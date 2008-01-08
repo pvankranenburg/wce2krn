@@ -751,8 +751,162 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines) const{
 	return res;
 }
 
-vector<string> SongLine::getLyBeginSignature(bool absolute, bool weblily) const {
+vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool weblily) const {
 	vector<string> res;
+
+	string key;
+	string mode;
+	//guess most probable key (not optimal)
+	switch( keySignature ) {
+		//major 0
+		case 7: key = "cis \\major"; break;
+		case 6: key = "fis \\major"; break;
+		case 5: key = "b \\major"; break;
+		case 4: key = "e \\major"; break;
+		case 3: key = "a \\major"; break;
+		case 2: key = "d \\major"; break;
+		case 1: key = "g \\major"; break;
+		case 0: key = "c \\major"; break;
+		case -1: key = "f \\major"; break;
+		case -2: key = "bes \\major"; break;
+		case -3: key = "es \\major"; break;
+		case -4: key = "as \\major"; break;
+		case -5: key = "des \\major"; break;
+		case -6: key = "ges \\major"; break;
+		case -7: key = "ces \\major"; break;
+		//minor 30
+		case 37: key = "ais \\minor"; break;
+		case 36: key = "dis \\minor"; break;
+		case 35: key = "gis \\minor"; break;
+		case 34: key = "cis \\minor"; break;
+		case 33: key = "fis \\minor"; break;
+		case 32: key = "b \\minor"; break;
+		case 31: key = "e \\minor"; break;
+		case 30: key = "a \\minor"; break;
+		case 29: key = "d \\minor"; break;
+		case 28: key = "g \\minor"; break;
+		case 27: key = "c \\minor"; break;
+		case 26: key = "f \\minor"; break;
+		case 25: key = "bes \\minor"; break;
+		case 24: key = "es \\minor"; break;
+		case 23: key = "as \\minor"; break;
+		//ionian 60
+		case 67: key = "cis \\ionian"; break;
+		case 66: key = "fis \\ionian"; break;
+		case 65: key = "b \\ionian"; break;
+		case 64: key = "e \\ionian"; break;
+		case 63: key = "a \\ionian"; break;
+		case 62: key = "d \\ionian"; break;
+		case 61: key = "g \\ionian"; break;
+		case 60: key = "c \\ionian"; break;
+		case 59: key = "f \\ionian"; break;
+		case 58: key = "bes \\ionian"; break;
+		case 57: key = "es \\ionian"; break;
+		case 56: key = "as \\ionian"; break;
+		case 55: key = "des \\ionian"; break;
+		case 54: key = "ges \\ionian"; break;
+		case 53: key = "ces \\ionian"; break;
+		//dorian 90
+		case 97: key = "dis \\dorian"; break;
+		case 96: key = "gis \\dorian"; break;
+		case 95: key = "cis \\dorian"; break;
+		case 94: key = "fis \\dorian"; break;
+		case 93: key = "b \\dorian"; break;
+		case 92: key = "e \\dorian"; break;
+		case 91: key = "a \\dorian"; break;
+		case 90: key = "d \\dorian"; break;
+		case 89: key = "g \\dorian"; break;
+		case 88: key = "c \\dorian"; break;
+		case 87: key = "f \\dorian"; break;
+		case 86: key = "bes \\dorian"; break;
+		case 85: key = "es \\dorian"; break;
+		case 84: key = "as \\dorian"; break;
+		case 83: key = "des \\dorian"; break;
+		//phrygian 120
+		case 127: key = "eis \\phyrigian"; break;
+		case 126: key = "ais \\phyrigian"; break;
+		case 125: key = "dis \\phyrigian"; break;
+		case 124: key = "gis \\phyrigian"; break;
+		case 123: key = "cis \\phyrigian"; break;
+		case 122: key = "fis \\phyrigian"; break;
+		case 121: key = "b \\phyrigian"; break;
+		case 120: key = "e \\phyrigian"; break;
+		case 119: key = "a \\phyrigian"; break;
+		case 118: key = "d \\phyrigian"; break;
+		case 117: key = "g \\phyrigian"; break;
+		case 116: key = "c \\phyrigian"; break;
+		case 115: key = "f \\phyrigian"; break;
+		case 114: key = "bes \\phyrigian"; break;
+		case 113: key = "es \\phyrigian"; break;
+		//lydian 150
+		case 157: key = "fis \\lydian"; break;
+		case 156: key = "b \\lydian"; break;
+		case 155: key = "e \\lydian"; break;
+		case 154: key = "a \\lydian"; break;
+		case 153: key = "d \\lydian"; break;
+		case 152: key = "g \\lydian"; break;
+		case 151: key = "c \\lydian"; break;
+		case 150: key = "f \\lydian"; break;
+		case 149: key = "bes \\lydian"; break;
+		case 148: key = "es \\lydian"; break;
+		case 147: key = "as \\lydian"; break;
+		case 146: key = "des \\lydian"; break;
+		case 145: key = "ges \\lydian"; break;
+		case 144: key = "ces \\lydian"; break;
+		case 143: key = "ces \\lydian"; break;
+		//mixolydian 180
+		case 187: key = "gis \\mixolydian"; break;
+		case 186: key = "cis \\mixolydian"; break;
+		case 185: key = "fis \\mixolydian"; break;
+		case 184: key = "b \\mixolydian"; break;
+		case 183: key = "e \\mixolydian"; break;
+		case 182: key = "a \\mixolydian"; break;
+		case 181: key = "d \\mixolydian"; break;
+		case 180: key = "g \\mixolydian"; break;
+		case 179: key = "c \\mixolydian"; break;
+		case 178: key = "f \\mixolydian"; break;
+		case 177: key = "bes \\mixolydian"; break;
+		case 176: key = "es \\mixolydian"; break;
+		case 175: key = "as \\mixolydian"; break;
+		case 174: key = "des \\mixolydian"; break;
+		case 173: key = "ges \\mixolydian"; break;
+		//aeolian 210
+		case 217: key = "ais \\aeolian"; break;
+		case 216: key = "dis \\aeolian"; break;
+		case 215: key = "gis \\aeolian"; break;
+		case 214: key = "cis \\aeolian"; break;
+		case 213: key = "fis \\aeolian"; break;
+		case 212: key = "b \\aeolian"; break;
+		case 211: key = "e \\aeolian"; break;
+		case 210: key = "a \\aeolian"; break;
+		case 209: key = "d \\aeolian"; break;
+		case 208: key = "g \\aeolian"; break;
+		case 207: key = "c \\aeolian"; break;
+		case 206: key = "f \\aeolian"; break;
+		case 205: key = "bes \\aeolian"; break;
+		case 204: key = "es \\aeolian"; break;
+		case 203: key = "as \\aeolian"; break;		
+		//locrian 240
+		case 247: key = "bis \\locrian"; break;
+		case 246: key = "eis \\locrian"; break;
+		case 245: key = "ais \\locrian"; break;
+		case 244: key = "dis \\locrian"; break;
+		case 243: key = "gis \\locrian"; break;
+		case 242: key = "cis \\locrian"; break;
+		case 241: key = "fis \\locrian"; break;
+		case 240: key = "b \\locrian"; break;
+		case 239: key = "e \\locrian"; break;
+		case 238: key = "a \\locrian"; break;
+		case 237: key = "d \\locrian"; break;
+		case 236: key = "g \\locrian"; break;
+		case 235: key = "c \\locrian"; break;
+		case 234: key = "f \\locrian"; break;
+		case 233: key = "bes \\locrian"; break;
+		
+	}
+	
+	//cout << "KEY " << key << endl;
+
 	
 	res.push_back("%");
 	res.push_back("% produced by wce2krn " + version + " (" + releasedate + ")");
@@ -774,49 +928,20 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool weblily) const 
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
 	res.push_back("\\header{ tagline = \"\"");
-	if ( !weblily ) res.push_back("piece = \"Record " + record + " - Strophe " + strophe + "\"");
+	string songtitle = "piece = \"Record " + record + " - Strophe " + strophe;
+	if ( lines ) {
+		stringstream s;
+		s << phraseNo;
+		string str_phraseNo = "";
+		s >> str_phraseNo;
+		songtitle = songtitle + " - Phrase " + str_phraseNo;
+	}
+	songtitle = songtitle + "\"";
+	if ( !weblily ) res.push_back(songtitle);
 	res.push_back("}");
 	res.push_back("\\score {{");
 	
-	string key;
-	string mode;
-	//guess most probable key (not optimal)
-	switch( keySignature ) {
-		case 7: key = "cis \\major"; break;
-		case 6: key = "fis \\major"; break;
-		case 5: key = "b \\major"; break;
-		case 4: key = "e \\major"; break;
-		case 3: key = "a \\major"; break;
-		case 2: key = "d \\major"; break;
-		case 1: key = "g \\major"; break;
-		case 0: key = "c \\major"; break;
-		case -1: key = "f \\major"; break;
-		case -2: key = "bes \\major"; break;
-		case -3: key = "es \\major"; break;
-		case -4: key = "as \\major"; break;
-		case -5: key = "des \\major"; break;
-		case -6: key = "ges \\major"; break;
-		case -7: key = "ces \\major"; break;
-
-		case 37: key = "ais \\minor"; break;
-		case 36: key = "dis \\minor"; break;
-		case 35: key = "gis \\minor"; break;
-		case 34: key = "cis \\minor"; break;
-		case 33: key = "fis \\minor"; break;
-		case 32: key = "b \\minor"; break;
-		case 31: key = "e \\minor"; break;
-		case 30: key = "a \\minor"; break;
-		case 29: key = "d \\minor"; break;
-		case 28: key = "g \\minor"; break;
-		case 27: key = "c \\minor"; break;
-		case 26: key = "f \\minor"; break;
-		case 25: key = "bes \\minor"; break;
-		case 24: key = "es \\minor"; break;
-		case 23: key = "as \\minor"; break;
-	}
-	
-	//cout << "KEY " << key << endl;
-	
+	//now write key
 	res.push_back("\\key " + key);
 	
 	if ( !absolute ) {
@@ -883,7 +1008,7 @@ vector<string> SongLine::getKernLine() const {
 	return res;
 }
 
-vector<string> SongLine::getKernBeginSignature() const {
+vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	vector<string> res;
 	string s;
 	if ( kernTokens.size() == 0 ) return res;
@@ -919,8 +1044,9 @@ vector<string> SongLine::getKernBeginSignature() const {
 	
 	//key signature
 	int tempkey = keySignature;
-	if ( tempkey > 20 ) tempkey = tempkey - 30; //from minor to major
 	
+	tempkey = ((tempkey+15)%30)-15;
+		
 	string keys = "";
 	if (tempkey < 0) keys = "b-e-a-d-g-c-f-";
 	if (tempkey > 0) keys = "f#c#g#d#a#e#b#";
