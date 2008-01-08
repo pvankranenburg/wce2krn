@@ -1,3 +1,8 @@
+Version 1.26
+- All modes are now supported (ionian, dorian, ..., locrian)
+- When splitting the phrases, the phrase number is in the printed title in lilypond
+- if no record number is provided, extract it from the file name
+
 Version 1.24
 - added newlines at the end of all files to prevent warning of linux g++
 - removed extra tokens at end of #include directive in RelLyToken.cpp

@@ -102,6 +102,24 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 		if (stdinput) good = getline(cin,line); else good = getline(infile,line);
 	}
 	if (!stdinput) infile.close();
+	
+	//record?
+	pvktrim(record);
+	if ( record == "unknown" || record.size() == 0 ) {
+		//see if we can get it from the file name
+		string fn = filename;
+		if ( (pos = fn.find_last_of("/")) != string::npos ) fn = fn.substr(pos+1);
+		//cout << fn << endl;
+		if ( fn.size() == 16 ) //do some tests
+			if ( fn.substr(0,3) == "NLB" )
+				if ( fn.substr(12,4) == ".wce" ) {
+					record = fn.substr(3,6);
+					//remove leading zeros
+					while ( record.at(0) == '0' )
+						record = record.substr(1);
+				}
+	}
+	
 }
 
 string WCE_File::getFilename() const {
