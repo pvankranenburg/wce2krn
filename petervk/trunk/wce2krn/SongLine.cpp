@@ -905,9 +905,6 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 		
 	}
 	
-	//cout << "KEY " << key << endl;
-
-	
 	res.push_back("%");
 	res.push_back("% produced by wce2krn " + version + " (" + releasedate + ")");
 	res.push_back("%");	
