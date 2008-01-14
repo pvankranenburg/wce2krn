@@ -1084,6 +1084,7 @@ string SongLine::upbeatToString(RationalTime t) const {
 	string res;
 	
 	if (initialUpbeat == 0 ) return "";
+	if (meterInvisible) return "";
 	
 	stringstream ss;
 	
