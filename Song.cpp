@@ -332,14 +332,14 @@ int Song::translateKeySignature(string lykey) const {
 	pvktrim(lykey);
 	if ( lykey.size() == 0 ) return res;
 	
-	bool minor = ( lykey.find("minor") != string::npos );
-	bool ionian = ( lykey.find("ionian") != string::npos );
-	bool locrian = ( lykey.find("locrian") != string::npos );
-	bool aeolian = ( lykey.find("aeolian") != string::npos );
-	bool mixolydian = ( lykey.find("mixolydian") != string::npos );
-	bool lydian = ( lykey.find("lydian") != string::npos );
-	bool phrygian = ( lykey.find("phrygian") != string::npos );
-	bool dorian = ( lykey.find("dorian") != string::npos );
+	bool minor = ( lykey.find("\\minor") != string::npos );
+	bool ionian = ( lykey.find("\\ionian") != string::npos );
+	bool locrian = ( lykey.find("\\locrian") != string::npos );
+	bool aeolian = ( lykey.find("\\aeolian") != string::npos );
+	bool mixolydian = ( lykey.find("\\mixolydian") != string::npos );
+	bool lydian = ( lykey.find("\\lydian") != string::npos );
+	bool phrygian = ( lykey.find("\\phrygian") != string::npos );
+	bool dorian = ( lykey.find("\\dorian") != string::npos );
 
 	string root = lykey.erase(lykey.find("\\"));
 	pvktrim (root);

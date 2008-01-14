@@ -1,3 +1,6 @@
+Version 1.26.1
+- Bugfix: mixolydian didn't work.
+
 Version 1.26
 - All modes are now supported (ionian, dorian, ..., locrian)
 - When splitting the phrases, the phrase number is in the printed title in lilypond
