@@ -1,3 +1,6 @@
+Version 1.26.2
+- Bugfix: when meterInvisible, individual lines should not have upbeat
+
 Version 1.26.1
 - Bugfix: mixolydian didn't work.
 
