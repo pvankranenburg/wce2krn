@@ -377,6 +377,7 @@ void SongLine::translate() {
 		finalUpbeat = currentTimeSignature.getRationalTime() - timeInBar;
 		finalBarnumber = currentBarnumber;
 	}
+	if (meterInvisible) finalUpbeat = RationalTime(0,1);
 
 	//now do text lines (if any). Take kern as reference. (10-10-2007: was wrong decision. ly shoud be taken as ref because it is the input...
 	string str;
@@ -823,21 +824,21 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 		case 84: key = "as \\dorian"; break;
 		case 83: key = "des \\dorian"; break;
 		//phrygian 120
-		case 127: key = "eis \\phyrigian"; break;
-		case 126: key = "ais \\phyrigian"; break;
-		case 125: key = "dis \\phyrigian"; break;
-		case 124: key = "gis \\phyrigian"; break;
-		case 123: key = "cis \\phyrigian"; break;
-		case 122: key = "fis \\phyrigian"; break;
-		case 121: key = "b \\phyrigian"; break;
-		case 120: key = "e \\phyrigian"; break;
-		case 119: key = "a \\phyrigian"; break;
-		case 118: key = "d \\phyrigian"; break;
-		case 117: key = "g \\phyrigian"; break;
-		case 116: key = "c \\phyrigian"; break;
-		case 115: key = "f \\phyrigian"; break;
-		case 114: key = "bes \\phyrigian"; break;
-		case 113: key = "es \\phyrigian"; break;
+		case 127: key = "eis \\phrygian"; break;
+		case 126: key = "ais \\phrygian"; break;
+		case 125: key = "dis \\phrygian"; break;
+		case 124: key = "gis \\phrygian"; break;
+		case 123: key = "cis \\phrygian"; break;
+		case 122: key = "fis \\phrygian"; break;
+		case 121: key = "b \\phrygian"; break;
+		case 120: key = "e \\phrygian"; break;
+		case 119: key = "a \\phrygian"; break;
+		case 118: key = "d \\phrygian"; break;
+		case 117: key = "g \\phrygian"; break;
+		case 116: key = "c \\phrygian"; break;
+		case 115: key = "f \\phrygian"; break;
+		case 114: key = "bes \\phrygian"; break;
+		case 113: key = "es \\phrygian"; break;
 		//lydian 150
 		case 157: key = "fis \\lydian"; break;
 		case 156: key = "b \\lydian"; break;

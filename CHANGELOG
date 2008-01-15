@@ -1,3 +1,6 @@
+Version 1.26.3
+- Bugfix: typo pyrigian -> phrygian
+
 Version 1.26.2
 - Bugfix: when meterInvisible, individual lines should not have upbeat
 
