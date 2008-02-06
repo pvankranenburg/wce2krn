@@ -1,3 +1,6 @@
+Version 1.28
+- Added flex analyzer for tabless (instrumental) input.
+
 Version 1.26.3
 - Bugfix: typo pyrigian -> phrygian
 
