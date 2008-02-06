@@ -91,7 +91,7 @@ RelLyToken::Identity RelLyToken::computeIdentity(bool is_music) const {
 	//cout << lt << " - ";
 	if ( (pos = lt.find("\\x")) != string::npos ) {
 		lt.erase(pos,2);
-		if ( pos != 0 ) cerr << location << ": Warning: \\x not at beginning of token " << token << endl;
+		//if ( pos != 0 ) cerr << location << ": Warning: \\x not at beginning of token " << token << endl; //not good in case of \gl\x or { \x
 	}
 	//cout << lt << " - ";
 	if ( (pos = lt.find("\\gl")) != string::npos ) {
