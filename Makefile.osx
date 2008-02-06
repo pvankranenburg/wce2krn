@@ -25,7 +25,8 @@ wce2krn_i386 : RationalTime_i386.o \
 						pvkutilities_i386.o \
 						wce2krn_i386.o \
 						-arch i386
-
+	strip wce2krn_i386
+	
 wce2krn_ppc : RationalTime_ppc.o \
               RelLyToken_ppc.o \
 			  Song_ppc.o \
@@ -45,7 +46,8 @@ wce2krn_ppc : RationalTime_ppc.o \
 					   pvkutilities_ppc.o \
 					   wce2krn_ppc.o \
 					   -arch ppc
-
+	strip wce2krn_ppc
+	
 ##########################################
 #
 # i386 OBJECT FILES
