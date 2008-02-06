@@ -19,6 +19,15 @@
 //#include <locale>
 using namespace std;
 
+#undef yyFlexLexer
+#define yyFlexLexer LilyFlexLexer
+#include <FlexLexer.h>
+
+//#undef yyFlexLexer
+//#define yyFlexLexer TextFlexLexer
+//#include <FlexLexer.h>
+
+
 SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
@@ -562,6 +571,7 @@ void SongLine::writeToStdout() const {
 
 
 void SongLine::breakWcelines() {
+	
 	string line;
 	string token;
 	vector<RelLyToken> emptyline;
@@ -572,6 +582,37 @@ void SongLine::breakWcelines() {
 	for( it = wcelines.begin(); it != wcelines.end(); it++) {
 		relLyTokens.push_back(emptyline);
 		line = *it;
+		
+
+		//do the flex test
+		string flexline = line + " ";
+		istringstream iss(flexline);
+		FlexLexer* lexer;
+		
+		string lexline = "";
+		
+		if ( is_music ) {
+		  lexer = new LilyFlexLexer(&iss);
+
+		  int tok = lexer->yylex();
+		  bool eerste = true;
+		  while(tok != 0){
+			if ( tok == -1 )
+			  cerr << getLocation() << ": Warning: Unrecognized token: " << lexer->YYText() << endl;
+			else {
+			  string ctoken = lexer->YYText();
+			  if ( eerste )
+				lexline = lexline + pvktrim(ctoken);
+			  else
+				lexline = lexline + "\t" + pvktrim(ctoken); 
+			} 
+			tok = lexer->yylex();
+			eerste = false;
+		  }		  
+		  delete lexer;
+		  line = lexline;
+		}
+				
 		while ( line.size() > 0 ) {
 			if ( ( pos=line.find_first_of("\t") ) == string::npos) { // not found => last token
 				pvktrim(line);
@@ -1002,7 +1043,7 @@ vector<string> SongLine::getKernLine() const {
 		s = s.substr(0,s.size()-1);
 		res.push_back(s);
 	}
-	
+		
 	return res;
 }
 
@@ -1208,8 +1249,8 @@ string SongLine::getLyricsLine( int line ) const {
 
 bool SongLine::checkMelisma() const {
 	bool res = true;
-		
-	if ( relLyTokens.size() < 2 ) { cerr << getLocation() << ": Error: not enough lines" << endl; return false; }
+	
+	if ( relLyTokens.size() < 2 ) { return true; } //no text. check not needed
 	if ( text_ann.size() < 1 ) { cerr << getLocation() << ": Error: no annotations" << endl; return false; }
 			
 	//walk through the text annotation.
@@ -1258,7 +1299,7 @@ bool SongLine::checkTextPlacing() const {
 	bool res = true;
 	string syl = "*";
 		
-	if ( relLyTokens.size() < 2 ) { cerr << getLocation() << ": Error: not enough lines" << endl; return false; }
+	if ( relLyTokens.size() < 2 ) { return true; } //no text. check not needed
 	if ( text_ann.size() < 1 ) { cerr << getLocation() << ": Error: no annotations" << endl; return false; }
 			
 	//walk through the music annotation
@@ -1387,7 +1428,6 @@ string SongLine::getLocation() const {
 bool SongLine::checkTies() const {
 	bool res = true;
 	
-	if ( relLyTokens.size() < 1 ) { cerr << getLocation() << ": Error: not enough lines" << endl; return false; }
 	if ( relLyTokens[0].size() < 2 ) return true; //apparently one note on the line
 
 	//walk trough note sequence. If slur end and previous note has slur start or in slur, and pitches are the same: should be a tie. Unless a slur and a tie end at the same note

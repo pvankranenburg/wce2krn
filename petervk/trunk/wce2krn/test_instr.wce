@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ExcelProcessingDefaults-beginSignatureRangeTextField</key>
+	<string></string>
+	<key>ExcelProcessingDefaults-beginSignatureScriptTextView</key>
+	<string></string>
+	<key>ExcelProcessingDefaults-endSignatureRangeTextField</key>
+	<string></string>
+	<key>ExcelProcessingDefaults-endSignatureScriptTextView</key>
+	<string></string>
+	<key>ExcelProcessingDefaults-fileNameTextField</key>
+	<string></string>
+	<key>ExcelProcessingDefaults-scoreLeftEdgeTextField</key>
+	<string>A1</string>
+	<key>ExcelProcessingDefaults-scoreRangeTextField</key>
+	<string>A1:Z100</string>
+	<key>ExcelProcessingDefaults-scoreScriptTextView</key>
+	<string></string>
+	<key>NLBController-incipitNormTextField</key>
+	<string></string>
+	<key>NLBController-melodyNormTextField</key>
+	<string></string>
+	<key>NLBController-recordIDTextField</key>
+	<string></string>
+	<key>NLBController-tagsTextField</key>
+	<string></string>
+	<key>SignatureController-encoderNameTextField</key>
+	<string>peterk</string>
+	<key>SignatureController-hasChangesWithRespectToTranscriptionSwitch</key>
+	<false/>
+	<key>SignatureController-isEachPhraseNewStaffSwitch</key>
+	<true/>
+	<key>SignatureController-isMeterInvisibleSwitch</key>
+	<false/>
+	<key>SignatureController-isMultiVoiceDocumentSwitch</key>
+	<false/>
+	<key>SignatureController-keyTextField</key>
+	<string>g \major</string>
+	<key>SignatureController-partialTextField</key>
+	<string></string>
+	<key>SignatureController-relativeTextField</key>
+	<string>g'</string>
+	<key>SignatureController-stropheNumberTextField</key>
+	<string>1</string>
+	<key>SignatureController-tempoTextField</key>
+	<string>4=120</string>
+	<key>SignatureController-timeTextField</key>
+	<string>3/4</string>
+	<key>SignatureController-updateTextViewsWhenFieldChangedSwitch</key>
+	<true/>
+	<key>TextProcessingDefaults-beginSignatureTextView</key>
+	<string>\version "2.8.2"
+mBreak = { \bar "" \break }
+x = {\once\override NoteHead #'style = #'cross }
+\let gl=\glissando
+\score { { 
+\key g \major 
+\relative g'
+{ 
+\set melismaBusyProperties = #'()
+ 
+\time 3/4</string>
+	<key>TextProcessingDefaults-commentTextView</key>
+	<string></string>
+	<key>TextProcessingDefaults-endSignatureTextView</key>
+	<string> } }
+ \midi { \tempo 4=120 }
+ \layout {  }
+}</string>
+	<key>TextProcessingDefaults-inputTextView</key>
+	<string>g4	a	b(	\time 4/4	\times 2/3	{ a	b)	a }	c	\x\gl d~	d~	d~	\times 2/3	{ \x d	e	\x d }	g,
+
+
+g4	a	b(	\time 4/4	\times 2/3	{ a	b)	a }	c	d~	d~	d~	\times 2/3	{ d	e	d }	g,
+
+
+
+g4	a	b(	\time 4/4	\times 2/3	{ a	b)	a }	c	d~	d~	d~	\times 2/3	{ d	e	d }	g,
+</string>
+	<key>version</key>
+	<string>1.10</string>
+</dict>
+</plist>
