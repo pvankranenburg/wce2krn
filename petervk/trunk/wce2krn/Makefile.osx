@@ -132,10 +132,10 @@ lex.Lily.cc : lilylexer.ll
 
 ##########################################
 #
-# INSTALL
+# UPDATE 
 #
 
-install: wce2krn
+update: wce2krn
 	cp *.cpp ../wce2krn
 	cp *.h ../wce2krn
 	cp *.ll ../wce2krn
