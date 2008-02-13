@@ -16,7 +16,7 @@
 #include <cctype>
 using namespace std;
 
-RelLyToken::RelLyToken(string t, string loc, bool is_music) : token(t), location(loc) {
+RelLyToken::RelLyToken(string t, string loc, string wcepos, bool is_music) : token(t), location(loc), WCEPosition(wcepos) {
 	
 	id = computeIdentity(is_music);
 	//cout << token << ": " << printIdentity(id) << endl;

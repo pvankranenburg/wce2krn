@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, int numphrases, string recordno, string stropheno); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, int numphrases, string recordno, string stropheno, string wcelineno); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -68,6 +68,7 @@ public:
 	vector<string> getAnnotations() { return annotations; }
 	void printAnnotations() const;
 	string getLocation() const;
+	string getWCELineNumber() const { return WCELineNumber; }
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
@@ -130,6 +131,7 @@ private:
 	int numPhrases;
 	string record;
 	string strophe;
+	string WCELineNumber;
 	
 };
 

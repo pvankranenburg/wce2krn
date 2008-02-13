@@ -25,8 +25,15 @@ inline int convertToInt(const std::string& s) {
 	std::istringstream i(s);
 	int x;
 	if (!(i >> x))
-	throw BadConversion("convertToInt(\"" + s + "\")");
+	  throw BadConversion("convertToInt(\"" + s + "\")");
 	return x;
+}
+
+inline string convertToString(const int i) {
+	std::ostringstream o;
+	if (!(o << i))
+	  throw BadConversion("convertToString(...)");
+	return o.str();
 }
 
 string& pvktrim(string& s, string drop = "\t ");

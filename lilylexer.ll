@@ -6,7 +6,7 @@ digit			[0-9]
 pitchbase		[a-grs]|(as)|(es)
 alteration		[(is)|(es)]
 octave			[',]
-ws				[ \t\n]+
+ws				[| \t\n]+
 time_command	\\time
 times_command	\\times
 glis			\\gl
