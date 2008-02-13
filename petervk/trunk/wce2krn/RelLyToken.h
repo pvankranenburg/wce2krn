@@ -17,7 +17,7 @@ using namespace std;
 
 class RelLyToken {
 public:
-	RelLyToken(string t, string loc, bool is_music = true);
+	RelLyToken(string t, string loc, string wcepos, bool is_music = true);
 	RelLyToken();
 	RelLyToken(const RelLyToken& r);
 	RelLyToken& RelLyToken::operator=(const RelLyToken& r);
@@ -37,6 +37,8 @@ public:
 
 	string RelLyToken::getToken() const { return token; }
 	
+	string getWCEPosition() const { return WCEPosition; }
+	
 	Identity getIdentity() const;
 	char getPitchClass() const;
 	int getOctaveCorrection() const; // 0 if no octave correction
@@ -54,7 +56,8 @@ public:
 	bool containsClosingBraceBeforeNote() const;
 	bool containsClosingBraceAfterNote() const;
 	bool isRest() const;
-		
+	
+	
 	TimeSignature getTimeSignature() const; //do only invoke if idenity is TIME_COMMAND
 	
 	//pitchclass, tiestatus, accidental en braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
@@ -67,6 +70,7 @@ private:
 	const string token;
 	Identity id;
 	const string location;
+	const string WCEPosition; //store the 
 };
 
 #endif

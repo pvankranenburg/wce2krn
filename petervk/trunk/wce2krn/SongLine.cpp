@@ -28,7 +28,7 @@ using namespace std;
 //#include <FlexLexer.h>
 
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string wcelineno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -54,7 +54,8 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   phraseNo(phraseno),
 																   numPhrases(numphrases),
 																   record(recordno),
-																   strophe(stropheno) {
+																   strophe(stropheno),
+																   WCELineNumber(wcelineno) {
 	translate();
 }
 
@@ -75,7 +76,8 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   phraseNo(0),
 					   numPhrases(0),
 					   record("unknown"),
-					   strophe("0") {
+					   strophe("0"),
+					   WCELineNumber("0") {
 	translate();
 }
 
@@ -113,7 +115,8 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 numPhrases(sl.numPhrases),
 										 record(sl.record),
 										 strophe(sl.strophe),
-										 annotations(sl.annotations) {
+										 annotations(sl.annotations),
+										 WCELineNumber(sl.WCELineNumber) {
 	//translate();
 }
 
@@ -147,7 +150,8 @@ void SongLine::translate() {
 	if ( wcelines.size() == 0 ) { translationMade = true; return; } // empty songline: nothing to translate
 
 	//clog << getLocation() << endl;
-
+	//clog << getWCELineNumber() << endl;
+	
 	//break wcelines into tokens
 	breakWcelines();
 
@@ -612,18 +616,20 @@ void SongLine::breakWcelines() {
 		  delete lexer;
 		  line = lexline;
 		}
-				
+		
+		int linepos = 0; //position of token in line
+		
 		while ( line.size() > 0 ) {
 			if ( ( pos=line.find_first_of("\t") ) == string::npos) { // not found => last token
 				pvktrim(line);
-				(relLyTokens.back()).push_back(RelLyToken(line, getLocation(), is_music));
+				(relLyTokens.back()).push_back(RelLyToken(line, getLocation(), WCELineNumber + ":0:0", is_music));
 				line.clear();
 			} else { //found -> extract token and add to 'matrix'
 				token = line.substr(0, pos);
 				pvktrim(token);
-				(relLyTokens.back()).push_back(RelLyToken(token, getLocation(), is_music));
+				(relLyTokens.back()).push_back(RelLyToken(token, getLocation(), WCELineNumber + ":0:0", is_music));
 				line.erase(0, pos+1); //also erase tab
-				if (line.size() == 0) (relLyTokens.back()).push_back(RelLyToken("", getLocation(), is_music)); // if last token is empty, nothing remains, but token has to be added.
+				if (line.size() == 0) (relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber + ":0:0", is_music)); // if last token is empty, nothing remains, but token has to be added.
 			}
 		}
 		is_music = false;

@@ -60,7 +60,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
 		if (lineprofile[i] && i<lineprofile.size()) { // dataline
 			singleline.push_back(wcelines[i]); // is cleared after adding to songLines
-		} else { //empty line
+		} else { //empty line -> this means that the line that has just been passed can be added to songLines
 			if( !singleline.empty() ) { //don't add empty lines to songLines
 				if( songLines.empty() ) { //first line of song
 					int initialBarnumber = 0;
@@ -82,7 +82,8 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  phraseno,
 								  numberOfPhrases,
 								  wcefile.getRecord(),
-								  wcefile.getStrophe()));
+								  wcefile.getStrophe(),
+								  convertToString(i-singleline.size())));
 					singleline.clear();
 					phraseno++;
 					//songLines.push_back(sl);
@@ -103,7 +104,8 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  phraseno,
 								  numberOfPhrases,
 								  wcefile.getRecord(),
-								  wcefile.getStrophe()));
+								  wcefile.getStrophe(),
+								  convertToString(i-singleline.size())));
 					//songLines.push_back(sl);
 					singleline.clear();
 					phraseno++;
