@@ -71,6 +71,23 @@ lex.Lily.cc : lilylexer.ll
 
 ##########################################
 #
+# INSTALL
+#
+
+install: wce2krn
+	cp *.cpp ../wce2krn
+	cp *.h ../wce2krn
+	cp *.ll ../wce2krn
+	cp Makefile Makefile.osx Makefile.linux build.sh ../wce2krn
+	cp CHANGELOG TODO ../wce2krn
+	cp wce2krn ~/SVN/music/binary/linux/intel/bin
+	cd ../wce2krn; svn update
+	cd ../wce2krn; svn commit -m "wce2krn update"
+	cd ~/SVN/music/binary/linux/intel/bin; svn update wcek2rn
+	cd ~/SVN/music/binary/linux/intel/bin; svn commit -m "wce2krn mac binary" wce2krn
+
+##########################################
+#
 # CLEAN
 #
 

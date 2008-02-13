@@ -142,7 +142,9 @@ install: wce2krn
 	cp Makefile Makefile.osx Makefile.linux build.sh ../wce2krn
 	cp CHANGELOG TODO ../wce2krn
 	cp wce2krn ~/SVN/music/binary/mac/universal/bin
+	cd ../wce2krn; svn update
 	cd ../wce2krn; svn commit -m "wce2krn update"
+	cd ~/SVN/music/binary/mac/universal/bin; svn update wce2krn
 	cd ~/SVN/music/binary/mac/universal/bin; svn commit -m "wce2krn mac binary" wce2krn
 
 
