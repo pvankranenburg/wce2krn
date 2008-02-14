@@ -3,6 +3,8 @@
 # UNIVERSAL EXECUTABLE
 #
 
+FLAGS=-g
+
 wce2krn :  RationalTime_i386.o \
            RelLyToken_i386.o \
 		   Song_i386.o \
@@ -10,15 +12,17 @@ wce2krn :  RationalTime_i386.o \
 		   TimeSignature_i386.o \
 		   WCE_File_i386.o \
 		   lex.Lily_i386.o \
+		   lex.Text_i386.o \
 		   pvkutilities_i386.o \
 		   wce2krn_i386.o
-	g++ -o wce2krn RationalTime_i386.o \
+	g++ $(FLAGS) -o wce2krn RationalTime_i386.o \
 	               RelLyToken_i386.o \
 				   Song_i386.o \
 				   SongLine_i386.o \
 				   TimeSignature_i386.o \
 				   WCE_File_i386.o \
 				   lex.Lily_i386.o \
+				   lex.Text_i386.o \
 				   pvkutilities_i386.o \
 				   wce2krn_i386.o
 
@@ -28,34 +32,34 @@ wce2krn :  RationalTime_i386.o \
 #
 
 wce2krn_i386.o : wce2krn.cpp wce2krn.h
-	g++ -c -o wce2krn_i386.o wce2krn.cpp 
+	g++ $(FLAGS) -c -o wce2krn_i386.o wce2krn.cpp 
 
 RationalTime_i386.o : RationalTime.cpp RationalTime.h
-	g++ -c -o RationalTime_i386.o RationalTime.cpp 
+	g++ $(FLAGS) -c -o RationalTime_i386.o RationalTime.cpp 
 
 RelLyToken_i386.o : RelLyToken.cpp RelLyToken.h
-	g++ -c -o RelLyToken_i386.o RelLyToken.cpp 
+	g++ $(FLAGS) -c -o RelLyToken_i386.o RelLyToken.cpp 
 
 Song_i386.o : Song.cpp Song.h
-	g++ -c -o Song_i386.o Song.cpp 
+	g++ $(FLAGS) -c -o Song_i386.o Song.cpp 
 
 SongLine_i386.o : SongLine.cpp SongLine.h
-	g++ -Wno-deprecated -c -o SongLine_i386.o SongLine.cpp 
+	g++ $(FLAGS) -Wno-deprecated -c -o SongLine_i386.o SongLine.cpp 
 
 TimeSignature_i386.o : TimeSignature.cpp TimeSignature.h
-	g++ -c -o TimeSignature_i386.o TimeSignature.cpp 
+	g++ $(FLAGS) -c -o TimeSignature_i386.o TimeSignature.cpp 
 
 WCE_File_i386.o : WCE_File.cpp WCE_File.h
-	g++ -c -o WCE_File_i386.o WCE_File.cpp 
+	g++ $(FLAGS) -c -o WCE_File_i386.o WCE_File.cpp 
 
 pvkutilities_i386.o : pvkutilities.cpp pvkutilities.h
-	g++ -c -o pvkutilities_i386.o pvkutilities.cpp 
+	g++ $(FLAGS) -c -o pvkutilities_i386.o pvkutilities.cpp 
 
 lex.Lily_i386.o : lex.Lily.cc
-	g++ -Wno-deprecated -c -o lex.Lily_i386.o lex.Lily.cc 
+	g++ $(FLAGS) -Wno-deprecated -c -o lex.Lily_i386.o lex.Lily.cc 
 
-#lex.Text_i386.o : lex.Text.cc
-#	g++ -Wno-deprecated -c -o lex.Text_i386.o lex.Text.cc 
+lex.Text_i386.o : lex.Text.cc
+	g++ $(FLAGS) -Wno-deprecated -c -o lex.Text_i386.o lex.Text.cc 
 
 
 ##########################################
@@ -66,8 +70,8 @@ lex.Lily_i386.o : lex.Lily.cc
 lex.Lily.cc : lilylexer.ll
 	flex lilylexer.ll
 
-#lex.Text.cc : textlexer.ll
-#	flex textlexer.ll
+lex.Text.cc : textlexer.ll
+	flex textlexer.ll
 
 ##########################################
 #

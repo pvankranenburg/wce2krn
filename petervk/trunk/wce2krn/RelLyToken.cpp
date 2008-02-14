@@ -22,7 +22,7 @@ RelLyToken::RelLyToken(string t, string loc, string wcepos, bool is_music) : tok
 	//cout << token << ": " << printIdentity(id) << endl;
 }
 
-RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()) {
+RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCEPosition(r.WCEPosition) {
 	//id = computeIdentity();
 }
 

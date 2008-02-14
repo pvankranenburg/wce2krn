@@ -23,9 +23,9 @@ using namespace std;
 #define yyFlexLexer LilyFlexLexer
 #include <FlexLexer.h>
 
-//#undef yyFlexLexer
-//#define yyFlexLexer TextFlexLexer
-//#include <FlexLexer.h>
+#undef yyFlexLexer
+#define yyFlexLexer TextFlexLexer
+#include <FlexLexer.h>
 
 
 SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string wcelineno) :
@@ -440,7 +440,7 @@ void SongLine::translate() {
 				if ( relly_index >= relLyTokens[i].size() ) {
 					kernTokens[i].push_back( "." );
 					// rest at end of line could be tolerated
-					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", getLocation(), false) );
+					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", "", getLocation(), false) );
 					// any case: annotate
 					text_ann[i-1].push_back( RelLyToken::NO_WORD );
 				} else {
@@ -579,90 +579,92 @@ void SongLine::breakWcelines() {
 	string line;
 	string token;
 	vector<RelLyToken> emptyline;
-	bool is_music = true;
+	bool is_music = true; //first line is music line
 
 	string::size_type pos;
+	string ctoken = "";
 	vector<string>::const_iterator it;
+	int pos_in_line = 0;		
 	for( it = wcelines.begin(); it != wcelines.end(); it++) {
 		relLyTokens.push_back(emptyline);
 		line = *it;
-		
 
-		//do the flex test
-		string flexline = line + " ";
+		//ask flex
+		string flexline = line + " "; //add whitespace at end!!
 		istringstream iss(flexline);
 		FlexLexer* lexer;
 		
 		string lexline = "";
 		
 		if ( is_music ) {
+		  pos_in_line = 0;
 		  lexer = new LilyFlexLexer(&iss);
 
 		  int tok = lexer->yylex();
 		  bool eerste = true;
 		  while(tok != 0){
-			if ( tok == -1 )
+			if ( tok == -1 ) {
 			  cerr << getLocation() << ": Warning: Unrecognized token: " << lexer->YYText() << endl;
+			}	
 			else {
-			  string ctoken = lexer->YYText();
-			  if ( eerste )
-				lexline = lexline + pvktrim(ctoken);
-			  else
-				lexline = lexline + "\t" + pvktrim(ctoken); 
+			  ctoken = lexer->YYText();
+			  pvktrim(ctoken);
+			  //add token to list of tokens
+			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+			
 			} 
+			
+			pos_in_line += lexer->YYLeng();			
 			tok = lexer->yylex();
-			eerste = false;
+			
 		  }		  
 		  delete lexer;
-		  line = lexline;
-		}
-		
-		int linepos = 0; //position of token in line
-		
-		while ( line.size() > 0 ) {
-			if ( ( pos=line.find_first_of("\t") ) == string::npos) { // not found => last token
-				pvktrim(line);
-				(relLyTokens.back()).push_back(RelLyToken(line, getLocation(), WCELineNumber + ":0:0", is_music));
-				line.clear();
-			} else { //found -> extract token and add to 'matrix'
-				token = line.substr(0, pos);
-				pvktrim(token);
-				(relLyTokens.back()).push_back(RelLyToken(token, getLocation(), WCELineNumber + ":0:0", is_music));
-				line.erase(0, pos+1); //also erase tab
-				if (line.size() == 0) (relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber + ":0:0", is_music)); // if last token is empty, nothing remains, but token has to be added.
-			}
+		  
+		} else { //textline
+		  
+		  pos_in_line = 0;
+		  int current_note_index = 0;
+		  
+		  lexer = new TextFlexLexer(&iss);
+
+		  int tok = lexer->yylex();
+		  bool eerste = true;
+		  while(tok != 0){
+			if ( tok == -1 ) {
+			  cerr << getLocation() << ": Warning: Unrecognized token: " << lexer->YYText() << endl;
+			} else if ( tok == 2 ) { //do nothing	
+			} else {
+			  ctoken = lexer->YYText();
+			  pvktrim(ctoken);
+			  //if not a note in corresponding music, add empty tokens first.
+			  while ( relLyTokens[0][current_note_index].getIdentity() != RelLyToken::NOTE || relLyTokens[0][current_note_index].isRest() ) {
+			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+			  	current_note_index++;
+			  	if ( current_note_index > relLyTokens[0].size() ) {
+			  		cerr << getLocation() << ": Error: too much text: " << ctoken << endl;
+			  		exit(1);
+			  	}
+			  }
+			  //add token to list of tokens
+			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+			  current_note_index++;
+			} 
+			
+			pos_in_line += lexer->YYLeng();
+			
+			tok = lexer->yylex();
+		  }		  
+		  delete lexer;
+		  
+		  //add text tokens if the line is not long enough (e.g. when a rest or \time command is at the and)
+		  while ( relLyTokens.back().size() < relLyTokens[0].size() ) {
+		  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+		  }
+		  
 		}
 		is_music = false;
 	}
 	
-	//now remove empty tokens that are at the end of the music line
-	//and remove the last tokens from text lines that are longer than music line.
-	
-	int ti = relLyTokens[0].size()-1;
-	int empty = 0;
-	while ( relLyTokens[0][ti].getToken() == "" ) {empty++; ti--;}
-	//cout << "empty: " << empty << endl;
-	//cout << "size before: " << relLyTokens[0].size() << endl;
-	//now empty contains the number of empty tokens at the end of the music line.
-	relLyTokens[0].erase(relLyTokens[0].end()-empty, relLyTokens[0].end());
-	for ( int i=0; i<wcelines.size(); i++ ) {
-		int diff = relLyTokens[i].size() - relLyTokens[0].size();
-		if ( diff > 0 ) relLyTokens[i].erase(relLyTokens[i].end()-diff, relLyTokens[i].end());
-	}
-	//cout << "size after: " << relLyTokens[0].size() << endl;
-	
-	//still do a check whether there are empty token in the middle of a melodyline
-	for ( int i=0; i<relLyTokens[0].size(); i++ )
-		if ( relLyTokens[0][i].getToken() == "" ) {
-			cerr << getLocation() << ": Warning: empty token" << endl;
-		}
-	
-	
-	/*
-	for ( int i = 0; i < wcelines.size(); i++ ) {
-		cout << "length " << i << " : " << relLyTokens[i].size() << endl;
-	}
-	*/
 }
 
 int SongLine::computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const {
@@ -1303,7 +1305,7 @@ bool SongLine::checkMelisma() const {
 
 bool SongLine::checkTextPlacing() const {
 	bool res = true;
-	string syl = "*";
+	string syl = "#";
 		
 	if ( relLyTokens.size() < 2 ) { return true; } //no text. check not needed
 	if ( text_ann.size() < 1 ) { cerr << getLocation() << ": Error: no annotations" << endl; return false; }
@@ -1317,6 +1319,7 @@ bool SongLine::checkTextPlacing() const {
 			if ( i<text_ann[0].size() )
 				if ( text_ann[0][i] == RelLyToken::NO_WORD ) {
 					if ( i<relLyTokens[1].size() ) syl = relLyTokens[1][i].getToken();
+					else syl = "";
 					pvktrim(syl);
 					if ( syl.size() != 0 )
 						cerr << getLocation() << ": Error: \\time or \\times should not have lyrics: " << syl << endl;
@@ -1338,7 +1341,7 @@ void SongLine::createAnnotations() {
 	
 	//STRINGSTREAM DOESNT WORK
 	
-	int field_width = 15;
+	int field_width = 17;
 		
 	for ( int i=0; i<relLyTokens[0].size(); i++ ) {
 		part = (relLyTokens[0][i].getToken() + "*");
@@ -1367,6 +1370,10 @@ void SongLine::createAnnotations() {
 				columnize(part, field_width); st = st + part;
 			}
 		}
+		part = relLyTokens[0][i].getWCEPosition();
+		columnize(part, field_width); st = st + part;
+		//cout << part;
+		
 		annotations.push_back(st); st = "";
 	}
 	
@@ -1509,7 +1516,7 @@ bool SongLine::checkLengths() const {
 				}
 				*/
 				
-				cerr << getLocation() << ": Warning: textline to short: " << endl;
+				cerr << getLocation() << ": Warning: textline too short: " << endl;
 				cerr << wcelines[0] << endl;
 				cerr << wcelines[i] << endl;
 				res = false;
