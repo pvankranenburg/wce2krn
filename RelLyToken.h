@@ -70,7 +70,8 @@ private:
 	const string token;
 	Identity id;
 	const string location;
-	const string WCEPosition; //store the 
+	const string WCEPosition; //store the position of the token in the ly input field.
+	                          //format: line number:
 };
 
 #endif

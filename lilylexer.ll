@@ -16,9 +16,9 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()]*
 
 %%
 ({glis}|{ws}|{cross}|\{)*{note}{ws}*\}*{ws}			return 1; /*clog << "NOTE  " << YYText() << endl;*/
-{time_command}{ws}*{digit}+"/"{digit}+{ws}				return 2; /*clog << "TIME  " << YYText() << endl;*/
+{time_command}{ws}*{digit}+"/"{digit}+{ws}			return 2; /*clog << "TIME  " << YYText() << endl;*/
 {times_command}{ws}*{digit}+"/"{digit}+{ws}			return 3; /*clog << "TIMES " << YYText() << endl;*/ 
-.														return -1; /*cerr << "Unrecognized character: "<< YYText() << endl;*/
+.													return -1; /*cerr << "Unrecognized character: "<< YYText() << endl;*/
 %%
 
 int Lilywrap(void) {
