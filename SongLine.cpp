@@ -1080,15 +1080,15 @@ vector<string> SongLine::getKernLine(bool lines) const {
 	//otherwise only add barline at end a line of a meterless song.
 	if ( phraseNo == numPhrases ) {
 		s = "";
-		for( int i=0; i < kernTokens.size(); i++) s = s + "=||" + "\t";
+		for( int i=0; i < kernTokens.size(); i++) s = s + "==|!" + "\t";
 		s = s.substr(0,s.size()-1); //remove last tab
 		res.push_back(s);
 	} else {
 		s = "";
-		if ( meterInvisible && lines ) {
-			for( int i=0; i < kernTokens.size(); i++) s = s + "=" + "\t";
+		if ( ( meterInvisible && lines ) || lines) {
+			for( int i=0; i < kernTokens.size(); i++) s = s + "==" + "\t";
 			s = s.substr(0,s.size()-1); //remove last tab
-			res.push_back(s);	
+			res.push_back(s);
 		}
 	}
 	

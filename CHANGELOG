@@ -1,8 +1,8 @@
 Version 1.32
 - added spine with positions in wce score field
 - added command line option to generate lilypond 2.10. Currently, this doesn't change anything except the version number in the lilypond \version statement
-- added closing barline to meterless songs as workaround for bug in hum2mid.
-- added closing barline to last line of all songs.
+- added closing barline to kern for meterless songs as workaround for bug in hum2mid.
+- added closing barline to kern for last line of all songs.
 
 Version 1.30
 - Added flex analyser for text as well
