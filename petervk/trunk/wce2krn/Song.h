@@ -31,8 +31,8 @@ public:
 	void printContents() const;
 	
 	void writeToDisk(string basename_full,
-					 SongLine::Representation repr = SongLine::KERN,
-					 bool lines = false) const;
+					 SongLine::Representation repr,
+					 bool lines, bool ly210) const;
 	
 private:
 	WCE_File wcefile;

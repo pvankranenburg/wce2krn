@@ -76,6 +76,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  false,
 								  translateKeySignature(wcefile.getKey()),
 								  translateMidiTempo(wcefile.getMidiTempo()),
+								  wcefile.getMidiTempo(),
 								  initialBarnumber,
 								  wcefile.getMeterInvisible(),
 								  wcefile.getFilename(),
@@ -83,7 +84,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  numberOfPhrases,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe(),
-								  convertToString(i-singleline.size())));
+								  i-singleline.size()));
 					singleline.clear();
 					phraseno++;
 					//songLines.push_back(sl);
@@ -98,6 +99,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  (songLines.back()).getFinalTripletStatus(),
 								  (songLines.back()).getKeySignature(),
 								  (songLines.back()).getMidiTempo(),
+								  (songLines.back()).getLyTempo(),
 								  (songLines.back()).getFinalBarnumber(),
 								  (songLines.back()).getMeterInvisible(),
 								  wcefile.getFilename(),
@@ -105,7 +107,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  numberOfPhrases,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe(),
-								  convertToString(i-singleline.size())));
+								  i-singleline.size()));
 					//songLines.push_back(sl);
 					singleline.clear();
 					phraseno++;
@@ -159,7 +161,7 @@ RationalTime Song::translateUpbeat(string lyUpbeat) const {
 	return RationalTime(amount,duration);
 }
 
-void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool lines) const {
+void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool lines, bool ly210) const {
 	vector<string> part;
 	vector<string>::iterator part_it;
 	vector<SongLine>::const_iterator si;
@@ -214,8 +216,8 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				}
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernBeginSignature(lines); break;
-					case SongLine::ABSLY: part = si->getLyBeginSignature(true, lines, weblily); break;
-					case SongLine::RELLY: part = si->getLyBeginSignature(false, lines, weblily); break;
+					case SongLine::ABSLY: part = si->getLyBeginSignature(true, lines, weblily, ly210); break;
+					case SongLine::RELLY: part = si->getLyBeginSignature(false, lines, weblily, ly210); break;
 					//case SongLine::TEXT: do nothing
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
@@ -226,7 +228,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 			switch (repr) {
 				case SongLine::KERN:
 				
-					part = si->getKernLine();
+					part = si->getKernLine(lines);
 					
 					if (stdoutput)
 						if (!lines) cout << "!! verse " << line << endl;
@@ -240,7 +242,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					
 				case SongLine::RELLY:
 					
-					part = si->getLyLine(false, lines);
+					part = si->getLyLine(false, lines, ly210);
 					
 					if ( part.size() == 0 ) { cerr << "Empty line!" << endl; exit(0); }
 					
@@ -276,7 +278,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 				case SongLine::ABSLY:
 					
-					part = si->getLyLine(true, lines);
+					part = si->getLyLine(true, lines, ly210);
 				
 				break;
 
@@ -293,7 +295,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernEndSignature(); break;
 					case SongLine::ABSLY:
-					case SongLine::RELLY: part = si->getLyEndSignature(); break;
+					case SongLine::RELLY: part = si->getLyEndSignature(ly210); break;
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
@@ -385,16 +387,28 @@ int Song::translateMidiTempo(string lymtempo) const {
 	int res = 120;
 	
 	pvktrim(lymtempo);
-	string::size_type pos;
-	if ( ( pos = lymtempo.find("=") ) == string::npos ) {		
-		cerr << "Warning: Bad midiTempo; '=' missing: " << lymtempo << endl;
+	string::size_type is_pos;
+	if ( ( is_pos = lymtempo.find("=") ) == string::npos ) {		
+		cerr << getLocation() << ": Warning: Bad midiTempo; '=' missing: " << lymtempo << endl;
 		return 120;
 	}
+
+	//find number of dots before the '='
+	int dots = 0;
+	string::size_type dpos;
+	string lt = lymtempo;
+	while( (dpos = lt.find(".")) != string::npos && dpos + dots <= is_pos ) { dots++; lt.erase(dpos,1); }
+		
+	int duration = convertToInt(lymtempo.substr(0,is_pos - dots));
+	int tempo = convertToInt(lymtempo.substr(is_pos+1));
 	
-	int duration = convertToInt(lymtempo.substr(0,pos));
-	int tempo = convertToInt(lymtempo.substr(pos+1));
+	if ( dots > 1 ) {
+		cerr << getLocation() << ": Warning: only one dot allowed in tempo: " << lymtempo << endl;
+		dots = 1;
+	}
 	
 	float factor = duration / 4.0;
+	if ( dots == 1 ) factor = factor * 2 / 3;
 	res = (int)(tempo / factor);
 	
 	return res;
