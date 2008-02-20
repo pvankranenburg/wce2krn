@@ -4,4 +4,4 @@ TODO
 - toonsoort in krn *G:
 - include character positions in witchcraft editor score block in separate humdrum spine
 - alle depencies in makefile. (ook bijv Song -> SongLine)
-- option to generate lilypond 2.10
+

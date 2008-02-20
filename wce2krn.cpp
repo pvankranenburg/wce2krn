@@ -20,6 +20,7 @@ void print_usage() {
 	cout << "Reads wce-file and generates *kern file" << endl;
 	cout << " -k: generate kernfile." << endl;
 	cout << " -r: generate relative lilypond file." << endl;
+	cout << " -210: generate lilypond 2.10 compatible lilypond file (default is lilypond 2.8)." << endl;
 	cout << " -w: generate lilypond for presentation on the web." << endl;
 	//cout << " -a: generate absolute lilypond file (not implemented)!" << endl;
 	cout << " -l: generate file(s) with only the lyrics." << endl;
@@ -44,6 +45,7 @@ int main (int argc, char * const argv[]) {
 	bool lyrics = false;
 	bool absly = false;
 	bool relly = false;
+	bool ly210 = false;
 	bool weblily = false;
 	bool suppresslog = false;
 	bool printContents = false;
@@ -57,6 +59,7 @@ int main (int argc, char * const argv[]) {
 		else if ( arg == "-k" ) kern = true;
 		else if ( arg == "-l" ) lyrics = true;
 		else if ( arg == "-r" ) relly = true;
+		else if ( arg == "-210" ) ly210 = true;
 		else if ( arg == "-a" ) absly = true;
 		else if ( arg == "-w" ) weblily = true;
 		else if ( arg == "-p" ) printContents = true;
@@ -92,9 +95,9 @@ int main (int argc, char * const argv[]) {
 			
 	if (basename == "-" && kern && lyrics) kern = false;
 	if (basename == "-" && split ) split = false;
-	if (kern) s.writeToDisk(basename, SongLine::KERN, split);
-	if (lyrics) s.writeToDisk(basename, SongLine::TEXT, split);
-	if (relly) s.writeToDisk(basename, SongLine::RELLY, split);
+	if (kern) s.writeToDisk(basename, SongLine::KERN, split, ly210);
+	if (lyrics) s.writeToDisk(basename, SongLine::TEXT, split, ly210);
+	if (relly) s.writeToDisk(basename, SongLine::RELLY, split, ly210);
 	//if (absly) s.writeToDisk(basename, SongLine::ABSLY, split);
 	clog << "===============================================================================" << endl;
 

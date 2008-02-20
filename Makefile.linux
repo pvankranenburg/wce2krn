@@ -79,6 +79,7 @@ lex.Text.cc : textlexer.ll
 #
 
 install: wce2krn
+	strip wce2krn
 	cd ~/SVN/music/binary/linux/intel/bin; svn update wce2krn
 	cp wce2krn ~/SVN/music/binary/linux/intel/bin
 	cd ~/SVN/music/binary/linux/intel/bin; svn commit -m "wce2krn linux binary" wce2krn
@@ -94,7 +95,7 @@ release: install
 	cp *.h ../wce2krn
 	cp *.ll ../wce2krn
 	cp Makefile Makefile.osx Makefile.linux build.sh ../wce2krn
-	cp CHANGELOG TODO ../wce2krn
+	cp CHANGELOG TODO KNWON_BUGS ../wce2krn
 	cd ../wce2krn; svn commit -m "wce2krn update"
 
 ##########################################
@@ -105,5 +106,6 @@ release: install
 clean :
 	rm *.o \
 	lex.Lily.cc \
+	lex.Text.cc \
 	wce2krn
 
