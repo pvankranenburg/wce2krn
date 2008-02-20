@@ -1,5 +1,11 @@
+Version 1.32
+- added spine with positions in wce score field
+- added command line option to generate lilypond 2.10. Currently, this doesn't change anything except the version number in the lilypond \version statement
+- added closing barline to meterless songs as workaround for bug in hum2mid.
+- added closing barline to last line of all songs.
+
 Version 1.30
-- Added flex analyser for text
+- Added flex analyser for text as well
 
 Version 1.28
 - Added flex analyzer for tabless (instrumental) input.
@@ -65,4 +71,4 @@ Version 1.6
 - added error message if \time or \times has text
 
 Version 1.4
-... lost in history ...
+... verzonken in der tijden nacht ...

@@ -28,7 +28,7 @@ using namespace std;
 #include <FlexLexer.h>
 
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string wcelineno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, int wcelineno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -48,6 +48,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   finalTripletStatus(false),
 																   keySignature(keysig),
 																   midiTempo(mtempo),
+																   lyTempo(lytempo),
 																   translationMade(false),
 																   meterInvisible(meterinv),
 																   fileName(filename),
@@ -70,6 +71,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   initialBarnumber(0),
 					   keySignature(0),
 					   midiTempo(120),
+					   lyTempo("4=120"),
 					   translationMade(false),
 					   meterInvisible(false),
 					   fileName("[noname]"),
@@ -77,7 +79,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   numPhrases(0),
 					   record("unknown"),
 					   strophe("0"),
-					   WCELineNumber("0") {
+					   WCELineNumber(0) {
 	translate();
 }
 
@@ -100,6 +102,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 finalTripletStatus(sl.finalTripletStatus),
 										 keySignature(sl.getKeySignature()),
 										 midiTempo(sl.getMidiTempo()),
+										 lyTempo(sl.lyTempo),
 										 translationMade(sl.translationMade),
 										 relLyTokens(sl.relLyTokens),
 										 absLyTokens(sl.absLyTokens),
@@ -184,7 +187,9 @@ void SongLine::translate() {
 	//first do the melody
 	string token = "";
 	absLyTokens.push_back(vector<string>());
-	kernTokens.push_back(vector<string>());
+	kernTokens.push_back(vector<string>()); //line for kern spine
+	kernTokens.push_back(vector<string>()); //line for location spine
+	
 	
 	//Upbeat and initial barnumber (if no upbeat)
 	RationalTime timeInBar = RationalTime(0,1);
@@ -199,6 +204,7 @@ void SongLine::translate() {
 			string barstr = "";
 			ss >> barstr;
 			kernTokens[0].push_back(barstr);
+			kernTokens[1].push_back(barstr);
 			timeInBar = RationalTime(0,1);
 		}
 	}
@@ -225,6 +231,7 @@ void SongLine::translate() {
 						string barstr = "";
 						ss >> barstr;
 						kernTokens[0].push_back(barstr);
+						kernTokens[1].push_back(barstr);
 						timeInBar = RationalTime(0,1);
 					}
 				}
@@ -281,6 +288,7 @@ void SongLine::translate() {
 												currentSlurStatus,
 												currentTieStatus);
 				kernTokens[0].push_back(token);
+				kernTokens[1].push_back( (*rl_it).getWCEPosition() );
 				token = (*rl_it).createAbsLyNote(currentOctave,
 				                                 currentDuration,
 												 currentDots,
@@ -324,6 +332,7 @@ void SongLine::translate() {
 					string barstr = "";
 					ss >> barstr;
 					kernTokens[0].push_back(barstr);
+					kernTokens[1].push_back(barstr);
 					timeInBar = RationalTime(0,1);
 				}				
 				currentTimeSignature = (*rl_it).getTimeSignature();
@@ -333,6 +342,7 @@ void SongLine::translate() {
 				//firstOfLine gaat mis als hele song wordt geconverteerd. Dan is er geen preamble voor elke regel.
 				//if (!firstOfLine) kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
 				kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
+				kernTokens[1].push_back((*rl_it).getWCEPosition());
 				//annotation has also to be done here
 				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
@@ -399,7 +409,8 @@ void SongLine::translate() {
 	vector<RelLyToken::TextStatus> vrt;
 	for( int i = 1; i<numLines; i++ ) {
 		absLyTokens.push_back(vector<string>());
-		kernTokens.push_back(vector<string>());
+		kernTokens.push_back(vector<string>()); //text line
+		kernTokens.push_back(vector<string>()); //line for location spine
 		lyricsLines.push_back("");
 		text_ann.push_back(vrt);
 	}
@@ -414,11 +425,13 @@ void SongLine::translate() {
 		if ( (*krn_it).find_first_of("!=*") != string::npos ) {
 			if ( (*krn_it).find("*") == 0 )
 				for ( int i = 1; i<numLines; i++ ) {
-					kernTokens[i].push_back( "*" );
+					kernTokens[2*i].push_back( "*" );
+					kernTokens[2*i+1].push_back( "*" );
 				}
 			else
 				for ( int i = 1; i<numLines; i++ ) {
-					kernTokens[i].push_back( (*krn_it) );
+					kernTokens[2*i].push_back( (*krn_it) );
+					kernTokens[2*i+1].push_back( (*krn_it) );
 				}
 						
 			//it can be possible that there is a corresponding rel ly token (time / unknown). If so, add that to absLy
@@ -438,7 +451,8 @@ void SongLine::translate() {
 			for ( int i = 1; i<numLines; i++ ) {
 				
 				if ( relly_index >= relLyTokens[i].size() ) {
-					kernTokens[i].push_back( "." );
+					kernTokens[2*i].push_back( "." );
+					kernTokens[2*i+1].push_back( "." );
 					// rest at end of line could be tolerated
 					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", "", getLocation(), false) );
 					// any case: annotate
@@ -478,7 +492,8 @@ void SongLine::translate() {
 						}
 												
 						// add translated text to appropriate vectors
-						kernTokens[i].push_back( toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, KERN ) );
+						kernTokens[2*i].push_back( toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, KERN ) );
+						kernTokens[2*i+1].push_back( relLyTokens[i][relly_index].getWCEPosition() );						
 						lyricsLines[i-1] = lyricsLines[i-1] + toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, TEXT );
 						// annotation
 						//if rest or empty: NO_WORD
@@ -584,7 +599,8 @@ void SongLine::breakWcelines() {
 	string::size_type pos;
 	string ctoken = "";
 	vector<string>::const_iterator it;
-	int pos_in_line = 0;		
+	int pos_in_line = 0;
+	int line_offset = 0;		
 	for( it = wcelines.begin(); it != wcelines.end(); it++) {
 		relLyTokens.push_back(emptyline);
 		line = *it;
@@ -610,7 +626,7 @@ void SongLine::breakWcelines() {
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
 			  //add token to list of tokens
-			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), is_music));
 			
 			} 
 			
@@ -632,13 +648,14 @@ void SongLine::breakWcelines() {
 		  while(tok != 0){
 			if ( tok == -1 ) {
 			  cerr << getLocation() << ": Warning: Unrecognized token: " << lexer->YYText() << endl;
-			} else if ( tok == 2 ) { //do nothing	
+			} else if ( tok == 2 ) { //whitespace.
+				//cout << "Whitespace detected: " << lexer->YYLeng() << endl;
 			} else {
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
 			  //if not a note in corresponding music, add empty tokens first.
 			  while ( relLyTokens[0][current_note_index].getIdentity() != RelLyToken::NOTE || relLyTokens[0][current_note_index].isRest() ) {
-			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), is_music));
 			  	current_note_index++;
 			  	if ( current_note_index > relLyTokens[0].size() ) {
 			  		cerr << getLocation() << ": Error: too much text: " << ctoken << endl;
@@ -646,10 +663,12 @@ void SongLine::breakWcelines() {
 			  	}
 			  }
 			  //add token to list of tokens
-			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), is_music));
 			  current_note_index++;
 			} 
 			
+			// any case: add length to position;
+			//cout << "pos in line: " << pos_in_line << endl;
 			pos_in_line += lexer->YYLeng();
 			
 			tok = lexer->yylex();
@@ -658,11 +677,12 @@ void SongLine::breakWcelines() {
 		  
 		  //add text tokens if the line is not long enough (e.g. when a rest or \time command is at the and)
 		  while ( relLyTokens.back().size() < relLyTokens[0].size() ) {
-		  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber + ":" + convertToString(pos_in_line), is_music));
+		  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), is_music));
 		  }
 		  
 		}
 		is_music = false;
+		line_offset++;
 	}
 	
 }
@@ -758,7 +778,7 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 	return tok;
 }
 
-vector<string> SongLine::getLyLine(bool absolute, bool lines) const{
+vector<string> SongLine::getLyLine(bool absolute, bool lines, bool ly210) const{
 	// if lines:
 	// take care of triples that are across line breaks.
 	
@@ -801,7 +821,7 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines) const{
 	return res;
 }
 
-vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool weblily) const {
+vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool weblily, bool ly210) const {
 	vector<string> res;
 
 	string key;
@@ -958,7 +978,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("%");
 	res.push_back("% produced by wce2krn " + version + " (" + releasedate + ")");
 	res.push_back("%");	
-	res.push_back("\\version\"2.8.2\"");
+	if ( ly210 ) res.push_back("\\version\"2.10.0\""); else res.push_back("\\version\"2.8.2\"");
 	if ( weblily ) {
 		res.push_back("#(append! paper-alist '((\"long\" . (cons (* 210 mm) (* 2000 mm)))))");
 		res.push_back("#(set-default-paper-size \"long\")");
@@ -1016,14 +1036,18 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	meterss >> meter;
 	res.push_back("\\time " + meter);
 	
+	//tempo
+	res.push_back("\\tempo " + lyTempo);
+	res.push_back("\\override Score.MetronomeMark #'transparent = ##t");
+	
 	return res;
 }
 
-vector<string> SongLine::getLyEndSignature() const {
+vector<string> SongLine::getLyEndSignature(bool ly210) const {
 	vector<string> res;
 	
 	res.push_back(" }}");
-	res.push_back(" \\midi { \\tempo 4=120 }");
+	res.push_back(" \\midi { }"); //tempo is in the score block. This works for boty ly 2.8 and 2.10
 	if ( !meterInvisible )
 		res.push_back(" \\layout { indent = 0.0\\cm }");
 	else {
@@ -1036,7 +1060,7 @@ vector<string> SongLine::getLyEndSignature() const {
 	return res;
 }
 
-vector<string> SongLine::getKernLine() const {
+vector<string> SongLine::getKernLine(bool lines) const {
 	vector<string> res;
 	string s;
 	
@@ -1051,7 +1075,24 @@ vector<string> SongLine::getKernLine() const {
 		s = s.substr(0,s.size()-1);
 		res.push_back(s);
 	}
-		
+	
+	//add closing barline to last line
+	//otherwise only add barline at end a line of a meterless song.
+	if ( phraseNo == numPhrases ) {
+		s = "";
+		for( int i=0; i < kernTokens.size(); i++) s = s + "=||" + "\t";
+		s = s.substr(0,s.size()-1); //remove last tab
+		res.push_back(s);
+	} else {
+		s = "";
+		if ( meterInvisible && lines ) {
+			for( int i=0; i < kernTokens.size(); i++) s = s + "=" + "\t";
+			s = s.substr(0,s.size()-1); //remove last tab
+			res.push_back(s);	
+		}
+	}
+	
+	
 	return res;
 }
 
@@ -1062,8 +1103,8 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		
 	//identify spine
 	s = "";
-	for(int i=0; i < kernTokens.size(); i++ ) {
-		if (i == 0 ) s = s + "**kern" + "\t" ; else s = s + "**text" + "\t";
+	for(int i=0; i < kernTokens.size() / 2; i++ ) {
+		if (i == 0 ) s = s + "**kern" + "\t" + "**loc" + "\t"; else s = s + "**text" + "\t" + "**loc" + "\t";
 	}
 	//remove last tab.
 	s = s.substr(0,s.size()-1);
@@ -1071,8 +1112,8 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	
 	//time signature
 	s = "";
-	for(int i=0; i < kernTokens.size(); i++ ) {
-		if ( i == 0 ) s = s + initialTimeSignature.getKernTimeSignature() + "\t"; else s = s + "*\t";
+	for(int i=0; i < kernTokens.size() / 2; i++ ) {
+		if ( i == 0 ) s = s + initialTimeSignature.getKernTimeSignature() + "\t*\t"; else s = s + "*\t*\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
@@ -1083,8 +1124,8 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	string midiTempo_str;
 	ss >> midiTempo_str;
 	s = "";
-	for(int i=0; i < kernTokens.size(); i++ ) {
-		if ( i == 0 ) s = s + "*MM" + midiTempo_str + "\t"; else s = s + "*\t";
+	for(int i=0; i < kernTokens.size() / 2; i++ ) {
+		if ( i == 0 ) s = s + "*MM" + midiTempo_str + "\t*\t"; else s = s + "*\t*\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
@@ -1100,8 +1141,8 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 
 	int ks = abs(tempkey);
 	s = "";
-	for( int i=0; i< kernTokens.size(); i++ ) {
-		if ( i == 0) s = s + "*k[" + keys.substr(0,2*ks) + "]\t"; else s = s + "*\t";
+	for( int i=0; i< kernTokens.size() / 2; i++ ) {
+		if ( i == 0) s = s + "*k[" + keys.substr(0,2*ks) + "]\t*\t"; else s = s + "*\t*\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
@@ -1117,14 +1158,14 @@ vector<string> SongLine::getKernEndSignature() const {
 
 	//identify spine
 	s = "";
-	for(int i=0; i < kernTokens.size(); i++ ) {
-		s = s + "*-" + "\t";
+	for(int i=0; i < kernTokens.size() / 2; i++ ) {
+		s = s + "*-" + "\t*-\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
 	
 	//comment
-	res.push_back("!! produced by wce2krn " + version + " (" + releasedate + ")");
+	res.push_back("!! produced by wce2krn " + version + " ( released on " + releasedate + ")");
 
 	
 	return res;
@@ -1318,8 +1359,10 @@ bool SongLine::checkTextPlacing() const {
 		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) {
 			if ( i<text_ann[0].size() )
 				if ( text_ann[0][i] == RelLyToken::NO_WORD ) {
-					if ( i<relLyTokens[1].size() ) syl = relLyTokens[1][i].getToken();
-					else syl = "";
+					if ( i<relLyTokens[1].size() )
+						syl = relLyTokens[1][i].getToken();
+					else
+						syl = "";
 					pvktrim(syl);
 					if ( syl.size() != 0 )
 						cerr << getLocation() << ": Error: \\time or \\times should not have lyrics: " << syl << endl;

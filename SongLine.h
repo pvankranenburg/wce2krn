@@ -20,7 +20,7 @@ using namespace std;
 
 class SongLine {
 public:
-	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, int barnumber, bool meterinvisible, string filename, int phraseno, int numphrases, string recordno, string stropheno, string wcelineno); //if duration is 0, take duration from first note
+	SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, string filename, int phraseno, int numphrases, string recordno, string stropheno, int wcelineno); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -59,6 +59,7 @@ public:
 	bool getFinalTripletStatus() const { return finalTripletStatus; }
 
 	int getMidiTempo() const { return midiTempo; }
+	string getLyTempo() const { return lyTempo; }
 	bool getMeterInvisible() const { return meterInvisible; }
 	int getPhraseNo() const { return phraseNo; }
 	string getRecord() const { return record; }
@@ -68,15 +69,15 @@ public:
 	vector<string> getAnnotations() { return annotations; }
 	void printAnnotations() const;
 	string getLocation() const;
-	string getWCELineNumber() const { return WCELineNumber; }
+	int getWCELineNumber() const { return WCELineNumber; }
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
-	vector<string> getLyLine(bool absolute, bool lines) const;
-	vector<string> getLyBeginSignature(bool absolute, bool lines, bool weblily) const;
-	vector<string> getLyEndSignature() const;
+	vector<string> getLyLine(bool absolute, bool lines, bool ly210) const;
+	vector<string> getLyBeginSignature(bool absolute, bool lines, bool weblily, bool ly210) const;
+	vector<string> getLyEndSignature(bool ly210) const;
 	
-	vector<string> getKernLine() const;
+	vector<string> getKernLine(bool lines) const;
 	vector<string> getKernBeginSignature(bool lines) const;
 	vector<string> getKernEndSignature() const;
 	
@@ -121,6 +122,7 @@ private:
 	int finalDots;
 	const int keySignature;
 	const int midiTempo;
+	const string lyTempo;
 	const int initialBarnumber;
 	int finalBarnumber;
 	bool meterInvisible;
@@ -131,7 +133,7 @@ private:
 	int numPhrases;
 	string record;
 	string strophe;
-	string WCELineNumber;
+	int WCELineNumber;
 	
 };
 
