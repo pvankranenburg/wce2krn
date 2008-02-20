@@ -1086,7 +1086,7 @@ vector<string> SongLine::getKernLine(bool lines) const {
 	} else {
 		s = "";
 		if ( ( meterInvisible && lines ) || lines) {
-			for( int i=0; i < kernTokens.size(); i++) s = s + "==" + "\t";
+			for( int i=0; i < kernTokens.size(); i++) s = s + "==||" + "\t";
 			s = s.substr(0,s.size()-1); //remove last tab
 			res.push_back(s);
 		}
