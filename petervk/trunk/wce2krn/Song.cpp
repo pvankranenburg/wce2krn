@@ -84,6 +84,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  numberOfPhrases,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe(),
+								  wcefile.getTitle(),
 								  i-singleline.size()));
 					singleline.clear();
 					phraseno++;
@@ -107,6 +108,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  numberOfPhrases,
 								  wcefile.getRecord(),
 								  wcefile.getStrophe(),
+								  wcefile.getTitle(),
 								  i-singleline.size()));
 					//songLines.push_back(sl);
 					singleline.clear();
@@ -169,6 +171,8 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 	//to remember the textlines for lilypond output
 	vector<string> textlines;	
 	vector<string>::iterator text_it;
+
+	int stanzas = 0;
 
 	int line = 0;
 	stringstream ss;
@@ -250,7 +254,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					if (stdoutput) cout << part[0] << endl; else out << part[0] << endl;
 					
 					//save text into textlines
-					int stanzas = songLines.begin()->getNumberOfLines()-1; //number of text lines. Assume melody is in line 0, rest is text
+					stanzas = songLines.begin()->getNumberOfLines()-1; //number of text lines. Assume melody is in line 0, rest is text
 					for ( int l = 1; l <= stanzas; l++ ) {
 						if ( l <= part.size() ) textlines.push_back(part[l]); else textlines.push_back("");
 					}

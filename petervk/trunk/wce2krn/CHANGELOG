@@ -1,3 +1,14 @@
+Version 1.34
+- added input filter for instrumental music
+	- only grace notes and [, ] need further processing.
+- added code to compute octave after grace note(s)
+- type for RelLyToken not longer autodetected. Rather rely on detection of lilylexer
+- bugfix: input with only one line of music now works.
+- added: title field.
+
+Version 1.32.1
+- solved some g++ 4.1 issues
+
 Version 1.32
 - added spine with positions in wce score field
 - added command line option to generate lilypond 2.10. Currently, this doesn't change anything except the version number in the lilypond \version statement

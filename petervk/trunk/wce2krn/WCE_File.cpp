@@ -87,6 +87,11 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 			strophe = extractStringFromLine(line);
 			continue;
 		}
+		if( (pos = line.find("SignatureController-titleTextField")) != string::npos ) {
+			if (stdinput) getline(cin,line); else getline(infile,line);
+			title = extractStringFromLine(line);
+			continue;
+		}
 		if( (pos = line.find("SignatureController-isMeterInvisibleSwitch")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			if ( line.find("true") != string::npos ) meterInvisible = true;
@@ -193,9 +198,9 @@ vector<string> WCE_File::extractStringFromMultiLine(string s)
 	if( (pos1 = s.find("<string>")) == string::npos )
 		return res; // no <string> found. should be there.
 	if( (pos2 = s.find("</string>")) == string::npos ) {
-		res.push_back(s.substr(pos1+8, pos2-pos1-8));
-	} else {
 		res.push_back(s.substr(pos1+8, s.length()-pos1-8));
+	} else {
+		res.push_back(s.substr(pos1+8, pos2-pos1-8));
 		return res; //string geheel op 1 regel
 	}
 
