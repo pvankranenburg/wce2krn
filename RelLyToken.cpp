@@ -14,11 +14,12 @@
 #include <sstream>
 #include <cstdlib>
 #include <cctype>
+#include <cassert>
 using namespace std;
 
-RelLyToken::RelLyToken(string t, string loc, string wcepos, bool is_music) : token(t), location(loc), WCEPosition(wcepos) {
+RelLyToken::RelLyToken(string t, string loc, string wcepos, RelLyToken::Identity token_id, bool is_music) : token(t), id(token_id), location(loc), WCEPosition(wcepos) {
 	
-	id = computeIdentity(is_music);
+	//id = computeIdentity(is_music);
 	//cout << token << ": " << printIdentity(id) << endl;
 }
 
@@ -82,6 +83,7 @@ RelLyToken::Identity RelLyToken::computeIdentity(bool is_music) const {
 			return UNKNOWN;
 		}
 	}
+	
 	//now find out if it is a note
 	//remove all allowed nonnote characters so that only the notename remains
 	//cout << lt << " - ";
@@ -388,6 +390,7 @@ string RelLyToken::printIdentity(Identity i) {
 		case TIME_COMMAND: return "TIME_COMMAND";
 		case TIMES_COMMAND: return "TIMES_COMMAND";
 		case TEXT: return "TEXT";
+		case GRACE: return "GRACE";
 		case UNKNOWN: return "UNKNOWN";
 	}
 	return "";

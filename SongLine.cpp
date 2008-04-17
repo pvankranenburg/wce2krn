@@ -28,7 +28,7 @@ using namespace std;
 #include <FlexLexer.h>
 
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, int wcelineno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -56,6 +56,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   numPhrases(numphrases),
 																   record(recordno),
 																   strophe(stropheno),
+																   title(str_title),
 																   WCELineNumber(wcelineno) {
 	translate();
 }
@@ -79,6 +80,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   numPhrases(0),
 					   record("unknown"),
 					   strophe("0"),
+					   title(""),
 					   WCELineNumber(0) {
 	translate();
 }
@@ -118,6 +120,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 numPhrases(sl.numPhrases),
 										 record(sl.record),
 										 strophe(sl.strophe),
+										 title(sl.title),
 										 annotations(sl.annotations),
 										 WCELineNumber(sl.WCELineNumber) {
 	//translate();
@@ -183,7 +186,6 @@ void SongLine::translate() {
 	
 	//for debugging
 	//string rellytoken;
-	//assume line 0 is melody, other lines are text
 	//first do the melody
 	string token = "";
 	absLyTokens.push_back(vector<string>());
@@ -221,7 +223,7 @@ void SongLine::translate() {
 				// new bar? : raise barnumber and write barlines to kern
 				if ( !meterInvisible ) {
 					if ( timeInBar > currentTimeSignature.getRationalTime() ) {
-						cerr << getLocation() << ": Error: bar to long: " << currentBarnumber << endl;
+						cerr << getLocation() << ": Error: bar too long: " << currentBarnumber << endl;
 					}
 					if ( timeInBar >= currentTimeSignature.getRationalTime() ) { // new bar
 						//write in **kern
@@ -374,6 +376,59 @@ void SongLine::translate() {
 				//exit(1);
 			} break;
 			
+			case RelLyToken::GRACE: {
+				//clog << "GRACE detected" << endl;
+				
+				//figure out the current octave after the grace notes
+				//make songline of gracenotes and ask for finallastpitchclass and final octave
+
+				
+				if (lastPitchClass != 's' && lastPitchClass != 'r') finalLastPitchClass = lastPitchClass;
+				string gracestring = (*rl_it).getToken();
+				string::size_type grpos1, grpos2;
+				//remove "\grace{" and "}"
+				if ( ( grpos1 = gracestring.find("{") ) == string::npos ) {
+					cerr << getLocation() << ": Error: \"{\" missing in gracenote. This should never happen." << endl;
+					exit(-1);
+				}
+				if ( ( grpos2 = gracestring.find("}") ) == string::npos ) {
+					cerr << getLocation() << ": Error: \"}\" missing in gracenote. This should never happen." << endl;
+					exit(-1);
+				}
+				gracestring = gracestring.substr(grpos1+1, grpos2 - grpos1 -1 );
+				pvktrim(gracestring);
+				vector<string> gracelines;
+				gracelines.push_back(gracestring);
+				SongLine grace   (gracelines,
+							      RationalTime(0,1), //from previous line
+								  currentTimeSignature,
+								  8,
+								  0,
+								  currentOctave,
+								  lastPitchClass,
+								  false,
+								  getKeySignature(),
+								  getMidiTempo(),
+								  getLyTempo(),
+								  currentBarnumber,
+								  getMeterInvisible(),
+								  fileName,
+								  phraseNo,
+								  numPhrases,
+								  record,
+								  strophe,
+								  title,
+								  WCELineNumber);
+
+				//grace.printAnnotations();
+				//cout << grace.getInitialOctave() << " - " << grace.getFinalOctave() << endl;
+				currentOctave = grace.getFinalOctave();
+				lastPitchClass = grace.getFinalLastPitchClass();
+				
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+			} break;
+			
 			default: {
 				cerr << getLocation() << ": Error: Unrecognized token: \"" << (*rl_it).getToken() << "\" This should not happen." << endl;
 				exit(1);
@@ -454,7 +509,7 @@ void SongLine::translate() {
 					kernTokens[2*i].push_back( "." );
 					kernTokens[2*i+1].push_back( "." );
 					// rest at end of line could be tolerated
-					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", "", getLocation(), false) );
+					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", "", getLocation(), RelLyToken::TEXT, false) );
 					// any case: annotate
 					text_ann[i-1].push_back( RelLyToken::NO_WORD );
 				} else {
@@ -610,6 +665,8 @@ void SongLine::breakWcelines() {
 		istringstream iss(flexline);
 		FlexLexer* lexer;
 		
+		//cout << flexline << endl;
+		
 		string lexline = "";
 		
 		if ( is_music ) {
@@ -619,17 +676,40 @@ void SongLine::breakWcelines() {
 		  int tok = lexer->yylex();
 		  bool eerste = true;
 		  while(tok != 0){
+			
 			if ( tok == -1 ) {
 			  cerr << getLocation() << ": Warning: Unrecognized token: " << lexer->YYText() << endl;
-			}	
+			}
+			else if ( tok == 4 ) {
+				//clog << getLocation() << ": INSTR: " << lexer->YYText() << endl;
+			}
+			else if ( tok == 5 ) { //grace
+				ctoken = lexer->YYText();
+				//put this with "\grace{" and "}" int relLyTokens 
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::GRACE, is_music));
+		  	}	
+			else if ( tok == 2 ) { //time
+				ctoken = lexer->YYText();
+				//put this with "\grace{" and "}" int relLyTokens 
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::TIME_COMMAND, is_music));
+		  	}	
+			else if ( tok == 3 ) { //times
+				ctoken = lexer->YYText();
+				//put this with "\grace{" and "}" int relLyTokens 
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::TIMES_COMMAND, is_music));
+		  	}
+		  	else if ( tok == -2 ) { //whitespace
+		  	}	
 			else {
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
 			  //add token to list of tokens
-			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), is_music));
+			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::NOTE, is_music));
 			
 			} 
 			
+			//cout << tok << " - " << lexer->YYText() << " - " << pos_in_line << endl;
+
 			pos_in_line += lexer->YYLeng();			
 			tok = lexer->yylex();
 			
@@ -655,7 +735,7 @@ void SongLine::breakWcelines() {
 			  pvktrim(ctoken);
 			  //if not a note in corresponding music, add empty tokens first.
 			  while ( relLyTokens[0][current_note_index].getIdentity() != RelLyToken::NOTE || relLyTokens[0][current_note_index].isRest() ) {
-			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), is_music));
+			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), RelLyToken::TEXT, is_music));
 			  	current_note_index++;
 			  	if ( current_note_index > relLyTokens[0].size() ) {
 			  		cerr << getLocation() << ": Error: too much text: " << ctoken << endl;
@@ -663,7 +743,7 @@ void SongLine::breakWcelines() {
 			  	}
 			  }
 			  //add token to list of tokens
-			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), is_music));
+			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), RelLyToken::TEXT, is_music));
 			  current_note_index++;
 			} 
 			
@@ -677,7 +757,7 @@ void SongLine::breakWcelines() {
 		  
 		  //add text tokens if the line is not long enough (e.g. when a rest or \time command is at the and)
 		  while ( relLyTokens.back().size() < relLyTokens[0].size() ) {
-		  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), is_music));
+		  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), RelLyToken::TEXT, is_music));
 		  }
 		  
 		}
@@ -994,16 +1074,40 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("mBreak = { \\bar \"\" \\break }");
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
+	//** for instrumental music
+	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
+	res.push_back("sb = {\\breathe}");
+	res.push_back("fine = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{Fine}}}");
+	res.push_back("dc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.C.}}}");
+	res.push_back("dcf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.C. al Fine}}}");
+	res.push_back("dcc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.C. al Coda}}}");
+	res.push_back("ds = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.S.}}}");
+	res.push_back("dsf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.S. al Fine}}}");
+	res.push_back("dsc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.S. al Coda}}}");
+	//** end for instrumental music
 	res.push_back("\\header{ tagline = \"\"");
-	string songtitle = "piece = \"Record " + record + " - Strophe " + strophe;
-	if ( lines ) {
-		stringstream s;
-		s << phraseNo;
-		string str_phraseNo = "";
-		s >> str_phraseNo;
-		songtitle = songtitle + " - Phrase " + str_phraseNo;
+	string songtitle = title;
+	if ( songtitle.size() == 0 ) {
+		songtitle = "piece = \"Record " + record + " - Strophe " + strophe;
+		if ( lines ) {
+			stringstream s;
+			s << phraseNo;
+			string str_phraseNo = "";
+			s >> str_phraseNo;
+			songtitle = songtitle + " - Phrase " + str_phraseNo;
+		}
+		songtitle = songtitle + "\"";
+	} else {
+		songtitle = "title = \"" + songtitle;
+		if ( lines ) {
+			stringstream s;
+			s << phraseNo;
+			string str_phraseNo = "";
+			s >> str_phraseNo;
+			songtitle = songtitle + " (phrase " + str_phraseNo + ")";
+		}
+		songtitle = songtitle + "\"";		
 	}
-	songtitle = songtitle + "\"";
 	if ( !weblily ) res.push_back(songtitle);
 	res.push_back("}");
 	res.push_back("\\score {{");
@@ -1039,6 +1143,9 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	//tempo
 	res.push_back("\\tempo " + lyTempo);
 	res.push_back("\\override Score.MetronomeMark #'transparent = ##t");
+	
+	//** for instrumental music
+	res.push_back("\\override Score.RehearsalMark #'break-visibility = #begin-of-line-invisible");
 	
 	return res;
 }

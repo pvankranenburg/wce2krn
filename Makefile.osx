@@ -69,7 +69,7 @@ RelLyToken_i386.o : RelLyToken.cpp RelLyToken.h
 Song_i386.o : Song.cpp Song.h
 	g++ $(FLAGS) -c -o Song_i386.o Song.cpp -arch i386
 
-SongLine_i386.o : SongLine.cpp SongLine.h
+SongLine_i386.o : SongLine.cpp SongLine.h lex.Lily.cc
 	g++ $(FLAGS) -Wno-deprecated -c -o SongLine_i386.o SongLine.cpp -arch i386
 
 TimeSignature_i386.o : TimeSignature.cpp TimeSignature.h
@@ -104,7 +104,7 @@ RelLyToken_ppc.o : RelLyToken.cpp RelLyToken.h
 Song_ppc.o : Song.cpp Song.h
 	g++ $(FLAGS) -c -o Song_ppc.o Song.cpp -arch ppc
 
-SongLine_ppc.o : SongLine.cpp SongLine.h
+SongLine_ppc.o : SongLine.cpp SongLine.h  lex.Lily.cc
 	g++ $(FLAGS) -Wno-deprecated -c -o SongLine_ppc.o SongLine.cpp -arch ppc
 
 TimeSignature_ppc.o : TimeSignature.cpp TimeSignature.h

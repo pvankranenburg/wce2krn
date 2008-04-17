@@ -2,6 +2,7 @@ TODO
 - warning if only 'x' in lyrics
 - free meter -> no meter in kern
 - toonsoort in krn *G:
-- include character positions in witchcraft editor score block in separate humdrum spine
 - alle depencies in makefile. (ook bijv Song -> SongLine)
-
+- Waarschuwing "only - under note" van SongLine::toText() naar ... (SongLine::breakWcelines()?)
+- filter instrumental
+- add softbreak

@@ -21,7 +21,7 @@ void print_usage() {
 	cout << " -k: generate kernfile." << endl;
 	cout << " -r: generate relative lilypond file." << endl;
 	cout << " -210: generate lilypond 2.10 compatible lilypond file (default is lilypond 2.8)." << endl;
-	cout << " -w: generate lilypond for presentation on the web." << endl;
+	cout << " -w: generate lilypond for presentation on the web (long page & no title)." << endl;
 	//cout << " -a: generate absolute lilypond file (not implemented)!" << endl;
 	cout << " -l: generate file(s) with only the lyrics." << endl;
 	cout << " -s: spit in lines." << endl;
