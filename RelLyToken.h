@@ -17,12 +17,8 @@ using namespace std;
 
 class RelLyToken {
 public:
-	RelLyToken(string t, string loc, string wcepos, bool is_music = true);
-	RelLyToken();
-	RelLyToken(const RelLyToken& r);
-	RelLyToken& RelLyToken::operator=(const RelLyToken& r);
 	
-	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, UNKNOWN };
+	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, UNKNOWN };
 	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, IN_SLUR, NO_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
 	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
@@ -30,12 +26,18 @@ public:
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
 	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD, NO_WORD, BEGIN_WORD_CONT, SINGLE_WORD_CONT, END_WORD_CONT, IN_WORD_CONT, DONTKNOW };
 
+	RelLyToken(string t, string loc, string wcepos, RelLyToken::Identity token_id, bool is_music = true);
+	RelLyToken();
+	RelLyToken(const RelLyToken& r);
+	RelLyToken& operator=(const RelLyToken& r);
+
+
 	static string printSlurStatus(SlurStatus ss);
 	static string printTieStatus(TieStatus ts);
 	static string printTextStatus(TextStatus ts);
 	static string printIdentity(Identity i);
 
-	string RelLyToken::getToken() const { return token; }
+	string getToken() const { return token; }
 	
 	string getWCEPosition() const { return WCEPosition; }
 	

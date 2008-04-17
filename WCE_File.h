@@ -30,6 +30,7 @@ public:
 	string getMidiTempo() const;
 	string getUpbeat() const;
 	string getWCEVersion() const;
+	string getTitle() const { return title; }
 	bool getMeterInvisible() const;
 	string getRecord() const { return record; }
 	string getStrophe() const { return strophe; }
@@ -51,6 +52,7 @@ private:
 	string midiTempo;
 	string upbeat;
 	string WCEVersion;
+	string title;
 	string firstNoteRelativeTo;
 	bool meterInvisible;
 	string record;

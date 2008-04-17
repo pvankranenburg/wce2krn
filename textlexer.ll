@@ -1,5 +1,6 @@
 %option c++
 %option prefix="Text"
+%option noyywrap
 
 ext		--
 ws		[ \t\n]+
