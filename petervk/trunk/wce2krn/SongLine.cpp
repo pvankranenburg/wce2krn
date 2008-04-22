@@ -368,6 +368,11 @@ void SongLine::translate() {
 				exit(1);
 			} break;
 			
+			case RelLyToken::BARLINE: {
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+			} break;
+
 			case RelLyToken::UNKNOWN: {
 				if ( (*rl_it).getToken().size() > 0 )
 					cerr << getLocation() << ": Warning: Unknown token: \"" << (*rl_it).getToken() << "\"" << endl;
@@ -688,6 +693,11 @@ void SongLine::breakWcelines() {
 				//put this with "\grace{" and "}" int relLyTokens 
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::GRACE, is_music));
 		  	}	
+			else if ( tok == 6 ) { //barline
+				ctoken = lexer->YYText();
+				pvktrim(ctoken);
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::BARLINE, is_music));
+		  	}	
 			else if ( tok == 2 ) { //time
 				ctoken = lexer->YYText();
 				//put this with "\grace{" and "}" int relLyTokens 
@@ -882,18 +892,21 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines, bool ly210) const{
 
 		// add break at end
 		// if there is a baline, don't add the empty bar.
-
-		if ( phraseNo == numPhrases ) {
-			if ( res.size() >0 ) res[0] = res[0] + " \\bar \"|.\"";
-		} else {
-			if ( finalUpbeat.getNumerator() == 0 ) {
-				if ( res.size() >0 ) res[0] = res[0] + " \\mBreak \\bar \"|\"";
+		
+		// if not barline is provided at the end of the line, print an appropriate one.
+		
+		if ((relLyTokens[0].back()).getIdentity() != RelLyToken::BARLINE ) {
+			if ( phraseNo == numPhrases ) {
+				if ( res.size() >0 ) res[0] = res[0] + " \\bar \"|.\"";
+			} else {
+				if ( finalUpbeat.getNumerator() == 0 ) {
+					if ( res.size() >0 ) res[0] = res[0] + " \\mBreak \\bar \"|\"";
+					}
+				else {
+					if ( res.size() >0 ) res[0] = res[0] + " \\mBreak";
 				}
-			else {
-				if ( res.size() >0 ) res[0] = res[0] + " \\mBreak";
 			}
 		}
-		
 	}
 	
 	//cout << phraseNo << " of " << numPhrases << endl;

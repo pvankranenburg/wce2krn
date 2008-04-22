@@ -22,11 +22,11 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 \\grace{ws}*\{[^\}]*\}{ws}*							{/*clog << "GRACE  " << YYText() << endl; */ return 5; }
 [\^_]?\\staccato{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\staccatissimo{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-[\^_]?\trill{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+[\^_]?\\trill{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\(prall)+{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\"\/\/\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\sb{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-\\bar{ws}*\"[^\"]*\"{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+\\bar{ws}*\"[^\"]*\"{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 6; }
 \\segno{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\coda{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\fine{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
