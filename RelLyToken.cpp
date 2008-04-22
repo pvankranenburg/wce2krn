@@ -391,6 +391,7 @@ string RelLyToken::printIdentity(Identity i) {
 		case TIMES_COMMAND: return "TIMES_COMMAND";
 		case TEXT: return "TEXT";
 		case GRACE: return "GRACE";
+		case BARLINE: return "BARLINE";
 		case UNKNOWN: return "UNKNOWN";
 	}
 	return "";
