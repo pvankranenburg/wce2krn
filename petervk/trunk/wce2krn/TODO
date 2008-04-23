@@ -4,5 +4,6 @@ TODO
 - toonsoort in krn *G:
 - alle depencies in makefile. (ook bijv Song -> SongLine)
 - Waarschuwing "only - under note" van SongLine::toText() naar ... (SongLine::breakWcelines()?)
-- filter instrumental
-- add softbreak
+- more meaningful error messages after lexer
+-- . -> only dot. provide full duration
+- add editorial comments.
