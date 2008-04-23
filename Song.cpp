@@ -85,7 +85,8 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getRecord(),
 								  wcefile.getStrophe(),
 								  wcefile.getTitle(),
-								  i-singleline.size()));
+								  i-singleline.size(),
+								  wcefile.getEditorialNotes()));
 					singleline.clear();
 					phraseno++;
 					//songLines.push_back(sl);
@@ -109,7 +110,8 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getRecord(),
 								  wcefile.getStrophe(),
 								  wcefile.getTitle(),
-								  i-singleline.size()));
+								  i-singleline.size(),
+								  wcefile.getEditorialNotes()));
 					//songLines.push_back(sl);
 					singleline.clear();
 					phraseno++;

@@ -28,7 +28,7 @@ using namespace std;
 #include <FlexLexer.h>
 
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, vector<string> edNotes) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -57,7 +57,8 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   record(recordno),
 																   strophe(stropheno),
 																   title(str_title),
-																   WCELineNumber(wcelineno) {
+																   WCELineNumber(wcelineno),
+																   editorialNotes(edNotes) {
 	translate();
 }
 
@@ -81,7 +82,8 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   record("unknown"),
 					   strophe("0"),
 					   title(""),
-					   WCELineNumber(0) {
+					   WCELineNumber(0),
+					   editorialNotes(vector<string>()) {
 	translate();
 }
 
@@ -122,7 +124,8 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 strophe(sl.strophe),
 										 title(sl.title),
 										 annotations(sl.annotations),
-										 WCELineNumber(sl.WCELineNumber) {
+										 WCELineNumber(sl.WCELineNumber),
+										 editorialNotes(sl.editorialNotes) {
 	//translate();
 }
 
@@ -423,7 +426,8 @@ void SongLine::translate() {
 								  record,
 								  strophe,
 								  title,
-								  WCELineNumber);
+								  WCELineNumber,
+								  editorialNotes);
 
 				//grace.printAnnotations();
 				//cout << grace.getInitialOctave() << " - " << grace.getFinalOctave() << endl;
@@ -683,7 +687,11 @@ void SongLine::breakWcelines() {
 		  while(tok != 0){
 			
 			if ( tok == -1 ) {
-			  cerr << getLocation() << ": Warning: Unrecognized token: " << lexer->YYText() << endl;
+			  ctoken = lexer->YYText();
+			  if ( ctoken == "." )
+			  	cerr << getLocation() << ": Warning: Unrecognized dot. Probably duration without digits: " << ctoken << endl;
+			  else
+			  	cerr << getLocation() << ": Warning: Unrecognized token: " << ctoken << endl;
 			}
 			else if ( tok == 4 ) {
 				//clog << getLocation() << ": INSTR: " << lexer->YYText() << endl;
@@ -1176,6 +1184,22 @@ vector<string> SongLine::getLyEndSignature(bool ly210) const {
 		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" } }");
 	}
 	res.push_back("}");
+	
+	if ( editorialNotes.size() > 0 ) {
+		//first figure out whether there is something in it at all
+		bool doen = true;
+		if ( editorialNotes.size() == 1) {
+			string tmpstr = editorialNotes[0];
+			pvktrim(tmpstr);
+			if ( tmpstr.size() == 0 ) doen = false; 
+		}
+		if(doen) {
+			res.push_back("\\markup { \\column { ");
+			for ( int i = 0; i < editorialNotes.size(); i++ )
+				res.push_back("\\line {" + editorialNotes[i] + "}");
+			res.push_back("}}");
+		}
+	}
 	
 	return res;
 }
