@@ -38,7 +38,7 @@ public:
 	char getFirstNoteRelativeToPitchClass() const;
 	string getFirstNoteRelativeTo() const { return firstNoteRelativeTo; }
 	string getLocation() const;
-	vector<string> getEditorialNotes() const { return editorialNotes; }
+	vector<string> getFooterField() const { return footerField; }
 
 private:
 	ifstream infile;
@@ -46,7 +46,7 @@ private:
 	vector<string> contents;
 	vector<string> beginSignature;
 	vector<string> endSignature;
-	vector<string> editorialNotes;
+	vector<string> footerField;
 	const string filename;
 	string encoder;
 	string timeSignature;

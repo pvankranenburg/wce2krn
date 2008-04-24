@@ -86,7 +86,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getStrophe(),
 								  wcefile.getTitle(),
 								  i-singleline.size(),
-								  wcefile.getEditorialNotes()));
+								  wcefile.getFooterField()));
 					singleline.clear();
 					phraseno++;
 					//songLines.push_back(sl);
@@ -111,7 +111,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getStrophe(),
 								  wcefile.getTitle(),
 								  i-singleline.size(),
-								  wcefile.getEditorialNotes()));
+								  wcefile.getFooterField()));
 					//songLines.push_back(sl);
 					singleline.clear();
 					phraseno++;
@@ -301,7 +301,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernEndSignature(); break;
 					case SongLine::ABSLY:
-					case SongLine::RELLY: part = si->getLyEndSignature(ly210); break;
+					case SongLine::RELLY: part = si->getLyEndSignature(ly210, lines); break;
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
