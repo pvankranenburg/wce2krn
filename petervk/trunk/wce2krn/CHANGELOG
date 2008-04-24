@@ -1,4 +1,8 @@
-Version 1.35
+Version 1.36.1
+- bugfix in lilylexer [\^_]\".*\"{ws}* -> [\^_]\"[^\"]*\"{ws}*
+- editorial remarks replaced by footer field.
+
+Version 1.36
 - fermata added
 - included editorial notes into lilypond output
 - more explanative error message in case of unrecognized dot.

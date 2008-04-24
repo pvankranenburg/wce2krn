@@ -67,9 +67,9 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 			contents = extractStringFromMultiLine(line);
 			continue;
 		}
-		if( (pos = line.find("editorialNotes")) != string::npos ) {
+		if( (pos = line.find("footerTextView")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
-			editorialNotes = extractStringFromMultiLine(line);
+			footerField = extractStringFromMultiLine(line);
 			continue;
 		}
 		if( (pos = line.find("endSignatureTextView")) != string::npos ) {

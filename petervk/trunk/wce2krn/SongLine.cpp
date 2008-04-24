@@ -28,7 +28,7 @@ using namespace std;
 #include <FlexLexer.h>
 
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, vector<string> edNotes) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, vector<string> fField) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -58,7 +58,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   strophe(stropheno),
 																   title(str_title),
 																   WCELineNumber(wcelineno),
-																   editorialNotes(edNotes) {
+																   footerField(fField) {
 	translate();
 }
 
@@ -83,7 +83,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   strophe("0"),
 					   title(""),
 					   WCELineNumber(0),
-					   editorialNotes(vector<string>()) {
+					   footerField(vector<string>()) {
 	translate();
 }
 
@@ -125,7 +125,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 title(sl.title),
 										 annotations(sl.annotations),
 										 WCELineNumber(sl.WCELineNumber),
-										 editorialNotes(sl.editorialNotes) {
+										 footerField(sl.footerField) {
 	//translate();
 }
 
@@ -427,7 +427,7 @@ void SongLine::translate() {
 								  strophe,
 								  title,
 								  WCELineNumber,
-								  editorialNotes);
+								  footerField);
 
 				//grace.printAnnotations();
 				//cout << grace.getInitialOctave() << " - " << grace.getFinalOctave() << endl;
@@ -1098,13 +1098,13 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	//** for instrumental music
 	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
 	res.push_back("sb = {\\breathe}");
-	res.push_back("fine = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{Fine}}}");
-	res.push_back("dc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.C.}}}");
-	res.push_back("dcf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.C. al Fine}}}");
-	res.push_back("dcc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.C. al Coda}}}");
-	res.push_back("ds = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.S.}}}");
-	res.push_back("dsf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.S. al Fine}}}");
-	res.push_back("dsc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #right \\mark \\markup {\\italic{D.S. al Coda}}}");
+	res.push_back("fine = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{Fine}}}");
+	res.push_back("dc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.C.}}}");
+	res.push_back("dcf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.C. al Fine}}}");
+	res.push_back("dcc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.C. al Coda}}}");
+	res.push_back("ds = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.S.}}}");
+	res.push_back("dsf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.S. al Fine}}}");
+	res.push_back("dsc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.S. al Coda}}}");
 	//** end for instrumental music
 	res.push_back("\\header{ tagline = \"\"");
 	string songtitle = title;
@@ -1166,12 +1166,12 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("\\override Score.MetronomeMark #'transparent = ##t");
 	
 	//** for instrumental music
-	res.push_back("\\override Score.RehearsalMark #'break-visibility = #begin-of-line-invisible");
+	res.push_back("\\override Score.RehearsalMark #'break-visibility = #(vector #t #t #f)");
 	
 	return res;
 }
 
-vector<string> SongLine::getLyEndSignature(bool ly210) const {
+vector<string> SongLine::getLyEndSignature(bool ly210, bool lines) const {
 	vector<string> res;
 	
 	res.push_back(" }}");
@@ -1185,22 +1185,21 @@ vector<string> SongLine::getLyEndSignature(bool ly210) const {
 	}
 	res.push_back("}");
 	
-	if ( editorialNotes.size() > 0 ) {
-		//first figure out whether there is something in it at all
-		bool doen = true;
-		if ( editorialNotes.size() == 1) {
-			string tmpstr = editorialNotes[0];
-			pvktrim(tmpstr);
-			if ( tmpstr.size() == 0 ) doen = false; 
+	if (!lines) {
+		if ( footerField.size() > 0 ) {
+			//first figure out whether there is something in it at all
+			bool doen = true;
+			if ( footerField.size() == 1) {
+				string tmpstr = footerField[0];
+				pvktrim(tmpstr);
+				if ( tmpstr.size() == 0 ) doen = false; 
+			}
+			if(doen) {
+				for ( int i = 0; i < footerField.size(); i++ )
+					res.push_back( footerField[i] );
+			}
 		}
-		if(doen) {
-			res.push_back("\\markup { \\column { ");
-			for ( int i = 0; i < editorialNotes.size(); i++ )
-				res.push_back("\\line {" + editorialNotes[i] + "}");
-			res.push_back("}}");
-		}
-	}
-	
+	}	
 	return res;
 }
 

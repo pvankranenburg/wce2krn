@@ -40,7 +40,7 @@ public:
 	         string stropheno,
 	         string str_title,
 	         int wcelineno,
-	         vector<string> edNotes); //if duration is 0, take duration from first note
+	         vector<string> fField); //if duration is 0, take duration from first note
 	SongLine();
 	SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -95,7 +95,7 @@ public:
 
 	vector<string> getLyLine(bool absolute, bool lines, bool ly210) const;
 	vector<string> getLyBeginSignature(bool absolute, bool lines, bool weblily, bool ly210) const;
-	vector<string> getLyEndSignature(bool ly210) const;
+	vector<string> getLyEndSignature(bool ly210, bool lines) const;
 	
 	vector<string> getKernLine(bool lines) const;
 	vector<string> getKernBeginSignature(bool lines) const;
@@ -155,7 +155,7 @@ private:
 	string record;
 	string strophe;
 	int WCELineNumber;
-	vector<string> editorialNotes;
+	vector<string> footerField;
 	
 };
 
