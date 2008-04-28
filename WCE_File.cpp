@@ -11,7 +11,7 @@
 #include "pvkutilities.h"
 using namespace std;
 
-WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), record("unknown") {
+WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), eachPhraseNewStaff(true), record("unknown") {
 	
 	
 	string line; //line from wce file
@@ -101,6 +101,12 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			if ( line.find("true") != string::npos ) meterInvisible = true;
 			if ( line.find("false") != string::npos ) meterInvisible = false;
+			continue;
+		}
+		if( (pos = line.find("SignatureController-isEachPhraseNewStaffSwitch")) != string::npos ) {
+			if (stdinput) getline(cin,line); else getline(infile,line);
+			if ( line.find("true") != string::npos ) eachPhraseNewStaff = true;
+			if ( line.find("false") != string::npos ) eachPhraseNewStaff = false;
 			continue;
 		}
 		if( (pos = line.find("SignatureController-relativeTextField")) != string::npos ) {
