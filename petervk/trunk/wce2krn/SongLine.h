@@ -33,6 +33,7 @@ public:
 	         string lytempo,
 	         int barnumber,
 	         bool meterinvisible,
+	         bool eachphrasenewstaff,
 	         string filename,
 	         int phraseno,
 	         int numphrases,
@@ -81,6 +82,7 @@ public:
 	int getMidiTempo() const { return midiTempo; }
 	string getLyTempo() const { return lyTempo; }
 	bool getMeterInvisible() const { return meterInvisible; }
+	bool getEachPhraseNewStaff() const { return eachPhraseNewStaff; }
 	int getPhraseNo() const { return phraseNo; }
 	string getRecord() const { return record; }
 	string getStrophe() const { return strophe; }
@@ -90,6 +92,7 @@ public:
 	void printAnnotations() const;
 	string getLocation() const;
 	int getWCELineNumber() const { return WCELineNumber; }
+	bool endsWithBarLine() const;
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
@@ -146,6 +149,7 @@ private:
 	const int initialBarnumber;
 	int finalBarnumber;
 	bool meterInvisible;
+	bool eachPhraseNewStaff;
 	bool initialTripletStatus;
 	bool finalTripletStatus;
 	string fileName;
