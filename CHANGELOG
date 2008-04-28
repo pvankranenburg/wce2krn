@@ -1,3 +1,7 @@
+Version 1.38
+- eachPhraseNewStaff added.
+- bugfix: linebreaking in lilypond now respects lines in input again
+
 Version 1.36.1
 - bugfix in lilylexer [\^_]\".*\"{ws}* -> [\^_]\"[^\"]*\"{ws}*
 - editorial remarks replaced by footer field.

@@ -28,7 +28,7 @@ using namespace std;
 #include <FlexLexer.h>
 
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinv, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, vector<string> fField) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, vector<string> fField) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -50,7 +50,8 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   midiTempo(mtempo),
 																   lyTempo(lytempo),
 																   translationMade(false),
-																   meterInvisible(meterinv),
+																   meterInvisible(meterinvisible),
+																   eachPhraseNewStaff(eachphrasenewstaff),
 																   fileName(filename),
 																   phraseNo(phraseno),
 																   numPhrases(numphrases),
@@ -76,6 +77,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   lyTempo("4=120"),
 					   translationMade(false),
 					   meterInvisible(false),
+					   eachPhraseNewStaff(true),
 					   fileName("[noname]"),
 					   phraseNo(0),
 					   numPhrases(0),
@@ -114,6 +116,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 absLyLine(sl.absLyLine),
 										 lyricsLines(sl.lyricsLines),
 										 meterInvisible(sl.meterInvisible),
+										 eachPhraseNewStaff(sl.eachPhraseNewStaff),
 										 text_ann(sl.text_ann),
 										 ties_ann(sl.ties_ann),
 										 slurs_ann(sl.slurs_ann),
@@ -420,6 +423,7 @@ void SongLine::translate() {
 								  getLyTempo(),
 								  currentBarnumber,
 								  getMeterInvisible(),
+								  getEachPhraseNewStaff(),
 								  fileName,
 								  phraseNo,
 								  numPhrases,
@@ -903,7 +907,7 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines, bool ly210) const{
 		
 		// if not barline is provided at the end of the line, print an appropriate one.
 		
-		if ((relLyTokens[0].back()).getIdentity() != RelLyToken::BARLINE ) {
+		if (!endsWithBarLine() ) {
 			if ( phraseNo == numPhrases ) {
 				if ( res.size() >0 ) res[0] = res[0] + " \\bar \"|.\"";
 			} else {
@@ -915,6 +919,11 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines, bool ly210) const{
 				}
 			}
 		}
+		else
+			if ( phraseNo != numPhrases ) {
+				if ( res.size() >0 ) res[0] = res[0] + " \\bBreak";
+			}
+		
 	}
 	
 	//cout << phraseNo << " of " << numPhrases << endl;
@@ -1092,7 +1101,13 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 		//res.push_back("  bottom-margin = 1 \\mm");
 		//res.push_back("}");
 	}
-	res.push_back("mBreak = { \\bar \"\" \\break }");
+	if ( eachPhraseNewStaff ) {
+		res.push_back("mBreak = { \\bar \"\" \\break }");
+		res.push_back("bBreak = { \\break }");
+	} else {
+		res.push_back("mBreak = { }");
+		res.push_back("bBreak = { }");
+	}
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
 	//** for instrumental music
@@ -1621,6 +1636,10 @@ string SongLine::getLocation() const {
 	string::size_type pos;
 	if ( (pos = fn.find_last_of("/")) != string::npos ) fn = fn.substr(pos+1);
 	return fn + ": Record " + record + " - Strophe " + strophe + " - Phrase " + phr;
+}
+
+bool SongLine::endsWithBarLine() const {
+	return (relLyTokens[0].back()).getIdentity() == RelLyToken::BARLINE;
 }
 
 

@@ -39,6 +39,7 @@ public:
 	string getFirstNoteRelativeTo() const { return firstNoteRelativeTo; }
 	string getLocation() const;
 	vector<string> getFooterField() const { return footerField; }
+	bool getEachPhraseNewStaff() const { return eachPhraseNewStaff; }
 
 private:
 	ifstream infile;
@@ -57,6 +58,7 @@ private:
 	string title;
 	string firstNoteRelativeTo;
 	bool meterInvisible;
+	bool eachPhraseNewStaff;
 	string record;
 	string strophe;
 	
