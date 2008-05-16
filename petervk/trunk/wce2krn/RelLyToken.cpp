@@ -31,6 +31,14 @@ RelLyToken::RelLyToken() : token("") {
 	id = UNKNOWN;
 }
 
+void RelLyToken::addTie() {
+	token = token + "~";
+}
+
+void RelLyToken::addClosingBrace() {
+	token = token + " }";
+}
+
 RelLyToken& RelLyToken::operator=(const RelLyToken& r) {
 	if ( &r != this ) {
 	}

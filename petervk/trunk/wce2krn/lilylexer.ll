@@ -23,7 +23,7 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 [\^_]?\\staccato{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\staccatissimo{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\trill{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-[\^_]?\\fermata{ws}*
+[\^_]?\\fermata{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\(prall)+{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\"\/\/\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\sb{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
@@ -33,6 +33,8 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 \\fine{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\dc[fc]?{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\ds[fc]?{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+\~													return 7; /*clog << "TIE  " << YYText() << endl;*/
+\}													return 8; /*clog << "TIE  " << YYText() << endl;*/
 ({glis}|{cross}|\{)*{ws}*{note}{ws}*\}*				return 1; /*clog << "NOTE  " << YYText() << endl;*/
 {time_command}{ws}*{digit}+"/"{digit}+{ws}			return 2; /*clog << "TIME  " << YYText() << endl;*/
 {times_command}{ws}*{digit}+"/"{digit}+{ws}			return 3; /*clog << "TIMES " << YYText() << endl;*/ 
