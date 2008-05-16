@@ -41,6 +41,9 @@ public:
 	
 	string getWCEPosition() const { return WCEPosition; }
 	
+	void addTie(); //adds a tie to the note.
+	void addClosingBrace(); //adds a closing brace to the note.
+	
 	Identity getIdentity() const;
 	char getPitchClass() const;
 	int getOctaveCorrection() const; // 0 if no octave correction
@@ -69,7 +72,7 @@ public:
 private:
 	Identity computeIdentity(bool is_music) const;
 	
-	const string token;
+	string token;
 	Identity id;
 	const string location;
 	const string WCEPosition; //store the position of the token in the ly input field.
