@@ -32,7 +32,7 @@ public:
 	
 	void writeToDisk(string basename_full,
 					 SongLine::Representation repr,
-					 bool lines, bool ly210) const;
+					 bool lines, int ly_ver) const;
 	
 private:
 	WCE_File wcefile;

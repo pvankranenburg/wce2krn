@@ -1,3 +1,8 @@
+Version 1.38.1
+- correct import of xml entities.
+- ~ after ornament or text now accepted a b^"+" ~ b
+- } after ornament or text now accepted \times { a b c^"+" }
+
 Version 1.38
 - eachPhraseNewStaff added.
 - bugfix: linebreaking in lilypond now respects lines in input again

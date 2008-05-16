@@ -145,11 +145,11 @@ TimeSignature Song::translateTimeSignature(string lyTimeSignature) const {
 }
 
 RationalTime Song::translateUpbeat(string lyUpbeat) const {
+	pvktrim(lyUpbeat);
 	if ( lyUpbeat.size() == 0 ) return RationalTime(0,1);
 	int duration = 0;
 	int amount = 1;
 	bool dot = false;
-	pvktrim(lyUpbeat);
 	string::size_type pos;
 	if( (pos = lyUpbeat.find("*")) != string::npos ) { //number of notes
 		amount = atoi( (lyUpbeat.substr(pos+1)).c_str() );
@@ -167,7 +167,7 @@ RationalTime Song::translateUpbeat(string lyUpbeat) const {
 	return RationalTime(amount,duration);
 }
 
-void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool lines, bool ly210) const {
+void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool lines, int ly_ver) const {
 	vector<string> part;
 	vector<string>::iterator part_it;
 	vector<SongLine>::const_iterator si;
@@ -224,8 +224,8 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				}
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernBeginSignature(lines); break;
-					case SongLine::ABSLY: part = si->getLyBeginSignature(true, lines, weblily, ly210); break;
-					case SongLine::RELLY: part = si->getLyBeginSignature(false, lines, weblily, ly210); break;
+					case SongLine::ABSLY: part = si->getLyBeginSignature(true, lines, weblily, ly_ver); break;
+					case SongLine::RELLY: part = si->getLyBeginSignature(false, lines, weblily, ly_ver); break;
 					//case SongLine::TEXT: do nothing
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
@@ -250,7 +250,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					
 				case SongLine::RELLY:
 					
-					part = si->getLyLine(false, lines, ly210);
+					part = si->getLyLine(false, lines, ly_ver);
 					
 					if ( part.size() == 0 ) { cerr << "Empty line!" << endl; exit(0); }
 					
@@ -286,7 +286,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 				case SongLine::ABSLY:
 					
-					part = si->getLyLine(true, lines, ly210);
+					part = si->getLyLine(true, lines, ly_ver);
 				
 				break;
 
@@ -303,7 +303,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernEndSignature(); break;
 					case SongLine::ABSLY:
-					case SongLine::RELLY: part = si->getLyEndSignature(ly210, lines); break;
+					case SongLine::RELLY: part = si->getLyEndSignature(ly_ver, lines); break;
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;

@@ -721,6 +721,26 @@ void SongLine::breakWcelines() {
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::TIMES_COMMAND, is_music));
 		  	}
 		  	else if ( tok == -2 ) { //whitespace
+		  	}
+		  	else if ( tok == 7 ) { //separate tie, should be added to last note
+		  		//cout << "separate tie" << endl;
+		  		int ix = relLyTokens.back().size() -1;
+		  		//cout << ix << endl;
+		  		while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+		  			ix--;
+		  		if ( ix < 0 ) cerr << getLocation() << ": Warning: tie symbol could not be attached to a note." << endl;
+		  		else
+		  			(relLyTokens.back())[ix].addTie();
+		  	}	
+		  	else if ( tok == 8 ) { //separate closing brace, should be added to last note
+		  		//cout << "separate closing brace" << endl;
+		  		int ix = relLyTokens.back().size() -1;
+		  		//cout << ix << endl;
+		  		while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+		  			ix--;
+		  		if ( ix < 0 ) cerr << getLocation() << ": Warning: closing brace symbol could not be attached to a note." << endl;
+		  		else
+		  			(relLyTokens.back())[ix].addClosingBrace();
 		  	}	
 			else {
 			  ctoken = lexer->YYText();
@@ -880,7 +900,7 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 	return tok;
 }
 
-vector<string> SongLine::getLyLine(bool absolute, bool lines, bool ly210) const{
+vector<string> SongLine::getLyLine(bool absolute, bool lines, int ly_ver) const{
 	// if lines:
 	// take care of triples that are across line breaks.
 	
@@ -931,7 +951,7 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines, bool ly210) const{
 	return res;
 }
 
-vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool weblily, bool ly210) const {
+vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool weblily, int ly_ver) const {
 	vector<string> res;
 
 	string key;
@@ -1088,7 +1108,9 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("%");
 	res.push_back("% produced by wce2krn " + version + " (" + releasedate + ")");
 	res.push_back("%");	
-	if ( ly210 ) res.push_back("\\version\"2.10.0\""); else res.push_back("\\version\"2.8.2\"");
+	if ( ly_ver == 10 ) res.push_back("\\version\"2.10.0\"");
+	else if ( ly_ver == 11 ) res.push_back("\\version\"2.11.0\"");
+	else res.push_back("\\version\"2.8.2\"");
 	if ( weblily ) {
 		res.push_back("#(append! paper-alist '((\"long\" . (cons (* 210 mm) (* 2000 mm)))))");
 		res.push_back("#(set-default-paper-size \"long\")");
@@ -1186,11 +1208,11 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	return res;
 }
 
-vector<string> SongLine::getLyEndSignature(bool ly210, bool lines) const {
+vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines) const {
 	vector<string> res;
 	
 	res.push_back(" }}");
-	res.push_back(" \\midi { }"); //tempo is in the score block. This works for boty ly 2.8 and 2.10
+	res.push_back(" \\midi { }"); //tempo is in the score block. This works for ly 2.8, 2.10 and 2.11
 	if ( !meterInvisible )
 		res.push_back(" \\layout { indent = 0.0\\cm }");
 	else {

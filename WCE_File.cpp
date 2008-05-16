@@ -32,6 +32,14 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 	if (stdinput) good = getline(cin,line); else good = getline(infile,line);
 	
 	while(good) {
+		
+		//replace xml entities
+		while ( (pos = line.find("&amp;")) != string::npos ) line.replace(pos,5,"&");
+		while ( (pos = line.find("&quot;")) != string::npos ) line.replace(pos,6,"\"");
+		while ( (pos = line.find("&apos;")) != string::npos ) line.replace(pos,6,"'");
+		while ( (pos = line.find("&lt;")) != string::npos ) line.replace(pos,4,"<");
+		while ( (pos = line.find("&gt;")) != string::npos ) line.replace(pos,4,">");		
+		
 		if( (pos = line.find("encoderNameTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			encoder = extractStringFromLine(line);

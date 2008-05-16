@@ -96,9 +96,9 @@ public:
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
-	vector<string> getLyLine(bool absolute, bool lines, bool ly210) const;
-	vector<string> getLyBeginSignature(bool absolute, bool lines, bool weblily, bool ly210) const;
-	vector<string> getLyEndSignature(bool ly210, bool lines) const;
+	vector<string> getLyLine(bool absolute, bool lines, int ly_ver) const;
+	vector<string> getLyBeginSignature(bool absolute, bool lines, bool weblily, int ly_ver) const;
+	vector<string> getLyEndSignature(int ly_ver, bool lines) const;
 	
 	vector<string> getKernLine(bool lines) const;
 	vector<string> getKernBeginSignature(bool lines) const;
