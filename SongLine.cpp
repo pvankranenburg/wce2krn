@@ -1146,13 +1146,13 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("\\header{ tagline = \"\"");
 	string songtitle = title;
 	if ( songtitle.size() == 0 ) {
-		songtitle = "piece = \"Record " + record + " - Strophe " + strophe;
+		if ( !weblily ) songtitle = "piece = \"Record " + record + " - Strophe " + strophe;
 		if ( lines ) {
 			stringstream s;
 			s << phraseNo;
 			string str_phraseNo = "";
 			s >> str_phraseNo;
-			songtitle = songtitle + " - Phrase " + str_phraseNo;
+			if ( !weblily ) songtitle = songtitle + " - Phrase " + str_phraseNo;
 		}
 		songtitle = songtitle + "\"";
 	} else {
@@ -1166,7 +1166,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 		}
 		songtitle = songtitle + "\"";		
 	}
-	if ( !weblily ) res.push_back(songtitle);
+	res.push_back(songtitle);
 	res.push_back("}");
 	res.push_back("\\score {{");
 	

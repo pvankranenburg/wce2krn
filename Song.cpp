@@ -137,6 +137,8 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 			exit(1);
 		}
 	}
+	
+	//cout << wcefile.getRecord() << " " << wcefile.getStrophe() << " " << songLines.size() << " LINES" << endl;
 }
 
 
