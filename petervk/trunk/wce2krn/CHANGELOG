@@ -1,3 +1,6 @@
+Version 1.40
+- if title is provided it is kept for meertensweb
+
 Version 1.38.1
 - correct import of xml entities.
 - ~ after ornament or text now accepted a b^"+" ~ b
