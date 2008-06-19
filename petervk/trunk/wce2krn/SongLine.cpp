@@ -1144,29 +1144,44 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("dsc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.S. al Coda}}}");
 	//** end for instrumental music
 	res.push_back("\\header{ tagline = \"\"");
-	string songtitle = title;
-	if ( songtitle.size() == 0 ) {
-		if ( !weblily ) songtitle = "piece = \"Record " + record + " - Strophe " + strophe;
+	string songtitle = "";
+	string piece = "";
+	//cout << "title: " << title << endl;
+	if ( weblily ) {
+		if ( title.size() != 0 ) { //only produce given title. do not construct one
+			songtitle = "title = \"" + title;
+			if ( lines ) {
+				stringstream s;
+				s << phraseNo;
+				string str_phraseNo = "";
+				s >> str_phraseNo;
+				songtitle = songtitle + " (phrase " + str_phraseNo + ")\"";
+			}
+			else
+				songtitle = songtitle + "\""; 
+		}
+	} else { //not weblily
+		// construct a 'piece' with recordnumber. Always!
+		piece = "piece = \"Record " + record + " - Strophe " + strophe;
 		if ( lines ) {
 			stringstream s;
 			s << phraseNo;
 			string str_phraseNo = "";
 			s >> str_phraseNo;
-			if ( !weblily ) songtitle = songtitle + " - Phrase " + str_phraseNo;
+			piece = piece + " - Phrase " + str_phraseNo + "\"";
+		} else {
+			piece = piece + "\"";
 		}
-		songtitle = songtitle + "\"";
-	} else {
-		songtitle = "title = \"" + songtitle;
-		if ( lines ) {
-			stringstream s;
-			s << phraseNo;
-			string str_phraseNo = "";
-			s >> str_phraseNo;
-			songtitle = songtitle + " (phrase " + str_phraseNo + ")";
+		if ( title.size() != 0 ) { //use provided title if given for 'title' field.
+			songtitle = "title = \"" + title + "\"";
 		}
-		songtitle = songtitle + "\"";		
 	}
-	res.push_back(songtitle);
+	if ( songtitle.size() != 0 ) {
+		res.push_back(songtitle);
+	}
+	if ( piece.size() != 0 ) {
+		res.push_back(piece);
+	}
 	res.push_back("}");
 	res.push_back("\\score {{");
 	
