@@ -38,7 +38,7 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 		while ( (pos = line.find("&quot;")) != string::npos ) line.replace(pos,6,"\"");
 		while ( (pos = line.find("&apos;")) != string::npos ) line.replace(pos,6,"'");
 		while ( (pos = line.find("&lt;")) != string::npos ) line.replace(pos,4,"<");
-		while ( (pos = line.find("&gt;")) != string::npos ) line.replace(pos,4,">");		
+		while ( (pos = line.find("&gt;")) != string::npos ) line.replace(pos,4,">");
 		
 		if( (pos = line.find("encoderNameTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
@@ -202,6 +202,14 @@ string WCE_File::extractStringFromLine(string s) const
 		return res;
 	res = s.substr( pos1+8, pos2-pos1-8 );
 	
+	//replace xml entities
+	string::size_type pos;
+	while ( (pos = res.find("&amp;")) != string::npos ) res.replace(pos,5,"&");
+	while ( (pos = res.find("&quot;")) != string::npos ) res.replace(pos,6,"\"");
+	while ( (pos = res.find("&apos;")) != string::npos ) res.replace(pos,6,"'");
+	while ( (pos = res.find("&lt;")) != string::npos ) res.replace(pos,4,"<");
+	while ( (pos = res.find("&gt;")) != string::npos ) res.replace(pos,4,">");	
+		
 	return res;
 }
 
@@ -220,7 +228,7 @@ vector<string> WCE_File::extractStringFromMultiLine(string s)
 		res.push_back(s.substr(pos1+8, s.length()-pos1-8));
 	} else {
 		res.push_back(s.substr(pos1+8, pos2-pos1-8));
-		return res; //string geheel op 1 regel
+		foundLast = true; //string geheel op 1 regel
 	}
 
 	//vanaf nu met current
@@ -234,10 +242,15 @@ vector<string> WCE_File::extractStringFromMultiLine(string s)
 		}
 	}
 	
-	//translate &quot; to "
+	//translate xml entities
 	string::size_type pos;
 	for ( int i = 0; i < res.size(); i++ ) {
+		while ( (pos = res[i].find("&amp;")) != string::npos ) res[i].replace(pos,5,"&");
 		while ( (pos = res[i].find("&quot;")) != string::npos ) res[i].replace(pos,6,"\"");
+		while ( (pos = res[i].find("&apos;")) != string::npos ) res[i].replace(pos,6,"'");
+		while ( (pos = res[i].find("&lt;")) != string::npos ) res[i].replace(pos,4,"<");
+		while ( (pos = res[i].find("&gt;")) != string::npos ) res[i].replace(pos,4,">");
+		//cout << "RES[" << i << "]: " << res[i] << endl;
 	}
 	
 	return res;

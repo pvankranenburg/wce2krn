@@ -1,3 +1,6 @@
+Version 1.40.2
+- fixed bug in conversion of xml entities when contents field has only one line.
+
 Version 1.40.1
 - fixed bugs in the titles.
 
