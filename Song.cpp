@@ -58,8 +58,10 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	}
 	
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
+		//cout << wcelines[i] << endl;
 		if (lineprofile[i] && i<lineprofile.size()) { // dataline
-			singleline.push_back(wcelines[i]); // is cleared after adding to songLines
+			singleline.push_back(wcelines[i]);
+			//cout << "SINGLELINE: " << singleline[singleline.size()-1] << endl; // is cleared after adding to songLines
 		} else { //empty line -> this means that the line that has just been passed can be added to songLines
 			if( !singleline.empty() ) { //don't add empty lines to songLines
 				if( songLines.empty() ) { //first line of song

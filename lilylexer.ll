@@ -36,8 +36,8 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 \~													return 7; /*clog << "TIE  " << YYText() << endl;*/
 \}													return 8; /*clog << "TIE  " << YYText() << endl;*/
 ({glis}|{cross}|\{)*{ws}*{note}{ws}*\}*				return 1; /*clog << "NOTE  " << YYText() << endl;*/
-{time_command}{ws}*{digit}+"/"{digit}+{ws}			return 2; /*clog << "TIME  " << YYText() << endl;*/
-{times_command}{ws}*{digit}+"/"{digit}+{ws}			return 3; /*clog << "TIMES " << YYText() << endl;*/ 
+{time_command}{ws}*{digit}+"/"{digit}+{ws}*			return 2; /*clog << "TIME  " << YYText() << endl;*/
+{times_command}{ws}*{digit}+"/"{digit}+{ws}*			return 3; /*clog << "TIMES " << YYText() << endl;*/ 
 {ws}												{/*clog << "WHITESPACE" << endl; */ return -2; }
 .													return -1; /*cerr << "Unrecognized character: "<< YYText() << endl;*/
 %%
