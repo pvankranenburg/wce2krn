@@ -89,6 +89,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 	translate();
 }
 
+/*
 SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 									     initialUpbeat(sl.getInitialUpbeat()),
 										 initialTimeSignature(sl.getInitialTimeSignature()),
@@ -131,6 +132,7 @@ SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
 										 footerField(sl.footerField) {
 	//translate();
 }
+*/
 
 /* old copy constructor
 SongLine::SongLine(const SongLine& sl) : wcelines(sl.getWceLines()),
@@ -681,6 +683,7 @@ void SongLine::breakWcelines() {
 		//cout << flexline << endl;
 		
 		string lexline = "";
+		bool addOpeningBrace = false; //true if an opening brace has to be added to the next note
 		
 		if ( is_music ) {
 		  pos_in_line = 0;
@@ -689,6 +692,8 @@ void SongLine::breakWcelines() {
 		  int tok = lexer->yylex();
 		  bool eerste = true;
 		  while(tok != 0){
+			
+			cout << lexer->YYText() << " - " ;
 			
 			if ( tok == -1 ) {
 			  ctoken = lexer->YYText();
@@ -742,9 +747,14 @@ void SongLine::breakWcelines() {
 		  		else
 		  			(relLyTokens.back())[ix].addClosingBrace();
 		  	}	
+		  	else if ( tok == 9 ) { //separate opening brace, should be remembered for next note
+		  		//cout << "separate opening brace" << endl;
+				addOpeningBrace = true;
+		  	}	
 			else {
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
+			  if ( tok == 1 && addOpeningBrace ) { ctoken = "{ " + ctoken; addOpeningBrace = false; }
 			  //add token to list of tokens
 			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::NOTE, is_music));
 			
@@ -757,6 +767,20 @@ void SongLine::breakWcelines() {
 			
 		  }		  
 		  delete lexer;
+	
+		  //test whether anything follows repeat bar
+		  for ( int i = 0; i < (relLyTokens.back()).size(); i++ ) {
+		  	if ( (relLyTokens.back())[i].getIdentity() == RelLyToken::BARLINE ) {
+		  		string tc = (relLyTokens.back())[i].getToken();
+		  		string::size_type pos;
+		  		if ( (pos = tc.find(":|")) != string::npos ||  
+		  		     (pos = tc.find("|:")) != string::npos ) { // repeat barline :| or :|:
+		  		}
+		  		if ( i != ( (relLyTokens.back()).size() -1 ) )
+		  			cerr << getLocation() << ": Warning: Something follows repeat bar: " << line << endl;
+		  	} 
+		  }
+	
 		  
 		} else { //textline
 		  
@@ -806,7 +830,7 @@ void SongLine::breakWcelines() {
 		is_music = false;
 		line_offset++;
 	}
-	
+		
 }
 
 int SongLine::computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const {
@@ -1114,15 +1138,10 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	if ( weblily ) {
 		res.push_back("#(append! paper-alist '((\"long\" . (cons (* 210 mm) (* 2000 mm)))))");
 		res.push_back("#(set-default-paper-size \"long\")");
-		//res.push_back("#(set-global-staff-size 10)");
-		//res.push_back("\\paper {");
-		//res.push_back("  line-width = 3.5 \\in");
-		//res.push_back("  between-system-space = 1 \\mm");
-		//res.push_back("  between-system-padding = 2 \\mm");
-		//res.push_back("  top-margin = 1 \\mm");
-		//res.push_back("  bottom-margin = 1 \\mm");
-		//res.push_back("}");
+		res.push_back("sb = { }");
 	}
+	else
+		res.push_back("sb = {\\breathe}");
 	if ( eachPhraseNewStaff ) {
 		res.push_back("mBreak = { \\bar \"\" \\break }");
 		res.push_back("bBreak = { \\break }");
@@ -1134,7 +1153,6 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("\\let gl=\\glissando");
 	//** for instrumental music
 	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
-	res.push_back("sb = {\\breathe}");
 	res.push_back("fine = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{Fine}}}");
 	res.push_back("dc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.C.}}}");
 	res.push_back("dcf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.C. al Fine}}}");

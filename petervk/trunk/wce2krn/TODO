@@ -5,3 +5,4 @@ TODO
 - alle depencies in makefile. (ook bijv Song -> SongLine)
 - Waarschuwing "only - under note" van SongLine::toText() naar ... (SongLine::breakWcelines()?)
 - more meaningful error messages after lexer
+- Waarschuwing f~    g (ipv g~        g)
