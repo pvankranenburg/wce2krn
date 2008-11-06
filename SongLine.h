@@ -43,7 +43,7 @@ public:
 	         int wcelineno,
 	         vector<string> fField); //if duration is 0, take duration from first note
 	SongLine();
-	SongLine(const SongLine& sl);
+	//SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
 	
 	enum Representation { KERN, RELLY, ABSLY, TEXT };
