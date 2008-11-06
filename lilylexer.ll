@@ -3,7 +3,7 @@
 %option noyywrap
 
 digit			[0-9]
-pitchbase		[a-grs]|(as)|(es)
+pitchbase		(as)|(es)|[a-grs]
 alteration		[(is)|(es)]
 octave			[',]
 ws				[| \t\n]+
@@ -34,10 +34,11 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 \\dc[fc]?{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\ds[fc]?{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \~													return 7; /*clog << "TIE  " << YYText() << endl;*/
-\}													return 8; /*clog << "TIE  " << YYText() << endl;*/
+\}													return 8; /*clog << "CLOSINGBRACE " << YYText() << endl;*/
+\{													return 9; /*clog << "OPENINGBRACE " << YYText() << endl;*/
 ({glis}|{cross}|\{)*{ws}*{note}{ws}*\}*				return 1; /*clog << "NOTE  " << YYText() << endl;*/
 {time_command}{ws}*{digit}+"/"{digit}+{ws}*			return 2; /*clog << "TIME  " << YYText() << endl;*/
-{times_command}{ws}*{digit}+"/"{digit}+{ws}*			return 3; /*clog << "TIMES " << YYText() << endl;*/ 
+{times_command}{ws}*{digit}+"/"{digit}+{ws}*		return 3; /*clog << "TIMES " << YYText() << endl;*/ 
 {ws}												{/*clog << "WHITESPACE" << endl; */ return -2; }
 .													return -1; /*cerr << "Unrecognized character: "<< YYText() << endl;*/
 %%
