@@ -774,10 +774,11 @@ void SongLine::breakWcelines() {
 		  		string tc = (relLyTokens.back())[i].getToken();
 		  		string::size_type pos;
 		  		if ( (pos = tc.find(":|")) != string::npos ||  
-		  		     (pos = tc.find("|:")) != string::npos ) { // repeat barline :| or :|:
+		  		     (pos = tc.find(":|:")) != string::npos ) { // repeat barline :| or :|:
+		  	
+		  			if ( i != ( (relLyTokens.back()).size() -1 ) )
+		  				cerr << getLocation() << ": Warning: Something follows repeat bar: " << line << endl;
 		  		}
-		  		if ( i != ( (relLyTokens.back()).size() -1 ) )
-		  			cerr << getLocation() << ": Warning: Something follows repeat bar: " << line << endl;
 		  	} 
 		  }
 	
