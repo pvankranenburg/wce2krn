@@ -9,6 +9,7 @@
 
 #include "WCE_File.h"
 #include "pvkutilities.h"
+#include <cstdlib>
 using namespace std;
 
 WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), eachPhraseNewStaff(true), record("unknown") {
