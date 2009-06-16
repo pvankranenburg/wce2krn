@@ -1,3 +1,6 @@
+Version 1.41
+- Key indication in kern output. Only if minor or major.
+
 Version 1.40.4
 - little improvement in detecting of notes following barline.
 

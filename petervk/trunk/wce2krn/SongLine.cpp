@@ -980,7 +980,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	vector<string> res;
 
 	string key;
-	string mode;
+	//string mode;
 	//guess most probable key (not optimal)
 	switch( keySignature ) {
 		//major 0
@@ -1311,6 +1311,155 @@ vector<string> SongLine::getKernLine(bool lines) const {
 }
 
 vector<string> SongLine::getKernBeginSignature(bool lines) const {
+
+	string key;
+	switch( keySignature ) {
+		//major 0
+		case 7: key = "C#"; break;
+		case 6: key = "F#"; break;
+		case 5: key = "B"; break;
+		case 4: key = "E"; break;
+		case 3: key = "A"; break;
+		case 2: key = "D"; break;
+		case 1: key = "G"; break;
+		case 0: key = "C"; break;
+		case -1: key = "F"; break;
+		case -2: key = "B-"; break;
+		case -3: key = "E-"; break;
+		case -4: key = "A-"; break;
+		case -5: key = "D-"; break;
+		case -6: key = "G-"; break;
+		case -7: key = "C-"; break;
+		//minor 30
+		case 37: key = "a#"; break;
+		case 36: key = "d#"; break;
+		case 35: key = "g#"; break;
+		case 34: key = "c#"; break;
+		case 33: key = "f#"; break;
+		case 32: key = "b"; break;
+		case 31: key = "e"; break;
+		case 30: key = "a"; break;
+		case 29: key = "d"; break;
+		case 28: key = "g"; break;
+		case 27: key = "c"; break;
+		case 26: key = "f"; break;
+		case 25: key = "b-"; break;
+		case 24: key = "e-"; break;
+		case 23: key = "a-"; break;
+		//ionian 60
+		case 67: key = ""; break;
+		case 66: key = ""; break;
+		case 65: key = ""; break;
+		case 64: key = ""; break;
+		case 63: key = ""; break;
+		case 62: key = ""; break;
+		case 61: key = ""; break;
+		case 60: key = ""; break;
+		case 59: key = ""; break;
+		case 58: key = ""; break;
+		case 57: key = ""; break;
+		case 56: key = ""; break;
+		case 55: key = ""; break;
+		case 54: key = ""; break;
+		case 53: key = ""; break;
+		//dorian 90
+		case 97: key = ""; break;
+		case 96: key = ""; break;
+		case 95: key = ""; break;
+		case 94: key = ""; break;
+		case 93: key = ""; break;
+		case 92: key = ""; break;
+		case 91: key = ""; break;
+		case 90: key = ""; break;
+		case 89: key = ""; break;
+		case 88: key = ""; break;
+		case 87: key = ""; break;
+		case 86: key = ""; break;
+		case 85: key = ""; break;
+		case 84: key = ""; break;
+		case 83: key = ""; break;
+		//phrygian 120
+		case 127: key = ""; break;
+		case 126: key = ""; break;
+		case 125: key = ""; break;
+		case 124: key = ""; break;
+		case 123: key = ""; break;
+		case 122: key = ""; break;
+		case 121: key = ""; break;
+		case 120: key = ""; break;
+		case 119: key = ""; break;
+		case 118: key = ""; break;
+		case 117: key = ""; break;
+		case 116: key = ""; break;
+		case 115: key = ""; break;
+		case 114: key = ""; break;
+		case 113: key = ""; break;
+		//lydian 150
+		case 157: key = ""; break;
+		case 156: key = ""; break;
+		case 155: key = ""; break;
+		case 154: key = ""; break;
+		case 153: key = ""; break;
+		case 152: key = ""; break;
+		case 151: key = ""; break;
+		case 150: key = ""; break;
+		case 149: key = ""; break;
+		case 148: key = ""; break;
+		case 147: key = ""; break;
+		case 146: key = ""; break;
+		case 145: key = ""; break;
+		case 144: key = ""; break;
+		case 143: key = ""; break;
+		//mixolydian 180
+		case 187: key = ""; break;
+		case 186: key = ""; break;
+		case 185: key = ""; break;
+		case 184: key = ""; break;
+		case 183: key = ""; break;
+		case 182: key = ""; break;
+		case 181: key = ""; break;
+		case 180: key = ""; break;
+		case 179: key = ""; break;
+		case 178: key = ""; break;
+		case 177: key = ""; break;
+		case 176: key = ""; break;
+		case 175: key = ""; break;
+		case 174: key = ""; break;
+		case 173: key = ""; break;
+		//aeolian 210
+		case 217: key = ""; break;
+		case 216: key = ""; break;
+		case 215: key = ""; break;
+		case 214: key = ""; break;
+		case 213: key = ""; break;
+		case 212: key = ""; break;
+		case 211: key = ""; break;
+		case 210: key = ""; break;
+		case 209: key = ""; break;
+		case 208: key = ""; break;
+		case 207: key = ""; break;
+		case 206: key = ""; break;
+		case 205: key = ""; break;
+		case 204: key = ""; break;
+		case 203: key = ""; break;		
+		//locrian 240
+		case 247: key = ""; break;
+		case 246: key = ""; break;
+		case 245: key = ""; break;
+		case 244: key = ""; break;
+		case 243: key = ""; break;
+		case 242: key = ""; break;
+		case 241: key = ""; break;
+		case 240: key = ""; break;
+		case 239: key = ""; break;
+		case 238: key = ""; break;
+		case 237: key = ""; break;
+		case 236: key = ""; break;
+		case 235: key = ""; break;
+		case 234: key = ""; break;
+		case 233: key = ""; break;	
+	}
+	
 	vector<string> res;
 	string s;
 	if ( kernTokens.size() == 0 ) return res;
@@ -1360,6 +1509,16 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
+	
+	//key (if major or minor)
+	if ( key.size() > 0 ) {
+		s = "";
+		for( int i=0; i< kernTokens.size() / 2; i++ ) {
+			if ( i == 0) s = s + "*" + key + ":\t*\t"; else s = s + "*\t*\t";
+		}
+		s = s.substr(0,s.size()-1);
+		res.push_back(s);
+	}
 	
 	return res;
 }
