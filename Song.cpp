@@ -56,6 +56,11 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 				numberOfPhrases++;
 		}
 	}
+
+	if ( lineprofile.size() == 0 ) {
+		cerr << "Error: empty file." << endl;
+		exit (1);
+	}
 	
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
 		//cout << wcelines[i] << endl;
@@ -141,6 +146,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	}
 	
 	//cout << wcefile.getRecord() << " " << wcefile.getStrophe() << " " << songLines.size() << " LINES" << endl;
+
 }
 
 

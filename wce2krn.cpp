@@ -9,6 +9,7 @@
  
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include "wce2krn.h"
 #include "Song.h"
 using namespace std;
