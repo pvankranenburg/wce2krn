@@ -354,6 +354,7 @@ int Song::translateKeySignature(string lykey) const {
 	pvktrim(lykey);
 	if ( lykey.size() == 0 ) return res;
 	
+	bool major = ( lykey.find("\\major") != string::npos );
 	bool minor = ( lykey.find("\\minor") != string::npos );
 	bool ionian = ( lykey.find("\\ionian") != string::npos );
 	bool locrian = ( lykey.find("\\locrian") != string::npos );
@@ -362,6 +363,11 @@ int Song::translateKeySignature(string lykey) const {
 	bool lydian = ( lykey.find("\\lydian") != string::npos );
 	bool phrygian = ( lykey.find("\\phrygian") != string::npos );
 	bool dorian = ( lykey.find("\\dorian") != string::npos );
+
+	if ( !major && !minor && !ionian && !locrian && !aeolian && !mixolydian && !lydian && !phrygian && !dorian ) {
+		cerr << "Warning: Bad key signature. Assuming c major." << endl;
+		return res;
+	}
 
 	string root = lykey.erase(lykey.find("\\"));
 	pvktrim (root);
