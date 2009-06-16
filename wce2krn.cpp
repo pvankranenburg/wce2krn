@@ -91,7 +91,7 @@ int main (int argc, char * const argv[]) {
 	if ( basename != "-" ){
 		string::size_type pos;	
 		pos = basename.rfind(".wce");
-		basename.erase(pos);
+		if ( pos != string::npos) basename.erase(pos);
 	}
 	
 	Song s(filename, weblily);
