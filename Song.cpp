@@ -14,12 +14,13 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 using namespace std;
 
 Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), weblily(weblilypond) {
 
 	int i; //index
-	
+
 	//extract the lilypond lines
 	vector<string> wcelines = wcefile.getContents();
 
@@ -32,7 +33,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	int phraseno = 1;
 	int numberOfPhrases = 0;
 	SongLine sl;
-	
+
 	for( str_it=wcelines.begin(); str_it!=wcelines.end(); str_it++) {
 		emptyline = false;
 		if ((*str_it).empty()) emptyline = true;
@@ -40,15 +41,18 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 		if ( emptyline ) lineprofile.push_back(false); else lineprofile.push_back(true);
 	}
 	//nu staan in lineprofile de dataregels op true
-	
+
 	//compute number of lines
 	//is there at least 1 phrase?
 	for( int i = 0; i < lineprofile.size(); i++ ) {
 		if ( lineprofile[i] ) numberOfPhrases = 1;
 	}
 	//but if the first line is empty, the counter should be set to 0
+
+	if ( lineprofile.size() == 0 ) { cout << inputfilename << ": Error: No lines in score field. Is this a WCE file?" << endl; exit(1); }
+
 	if ( !lineprofile[0] ) numberOfPhrases = 0;
-	
+
 	// now count the number of false -> true
 	for( int i = 0; i < lineprofile.size(); i++ ) {
 		if ( i < lineprofile.size()-1 ) {
@@ -61,7 +65,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 		cerr << "Error: empty file." << endl;
 		exit (1);
 	}
-	
+
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
 		//cout << wcelines[i] << endl;
 		if (lineprofile[i] && i<lineprofile.size()) { // dataline
@@ -128,14 +132,16 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 			}
 		}
 	}
-	
+
+	//cout << "HIER" << endl;
+
 	vector<SongLine>::iterator it_sl;
 	//test
 	//for(it_sl=songLines.begin(); it_sl != songLines.end(); it_sl++) {
 	//	cout << "songline: " << endl;
 	//	(*it_sl).writeToStdout();
 	//}
-	
+
 	//test if each songline has same number of lines (spines)
 	//vector<SongLine>::iterator it_sl;
 	for(it_sl=songLines.begin()+1; it_sl != songLines.end(); it_sl++) {
@@ -144,7 +150,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 			exit(1);
 		}
 	}
-	
+
 	//cout << wcefile.getRecord() << " " << wcefile.getStrophe() << " " << songLines.size() << " LINES" << endl;
 
 }
@@ -183,7 +189,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 	vector<SongLine>::const_iterator si;
 
 	//to remember the textlines for lilypond output
-	vector<string> textlines;	
+	vector<string> textlines;
 	vector<string>::iterator text_it;
 
 	int stanzas = 0;
@@ -210,14 +216,14 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 	string outname = path + "all-" + basename + ext;
 	ofstream out;
-	
+
 	if (!lines && repr != SongLine::TEXT && !stdoutput) {
 		out.open(outname.c_str());
 		clog << "Writing " << outname << endl;
 	}
-	
 
-	
+
+
 
 	if (songLines.size() > 0 && repr != SongLine::TEXT) {
 		//songlines
@@ -245,67 +251,67 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 			switch (repr) {
 				case SongLine::KERN:
-				
+
 					part = si->getKernLine(lines);
-					
+
 					if (stdoutput)
 						if (!lines) cout << "!! verse " << line << endl;
 					else
 						if (!lines) out << "!! verse " << line << endl;
-				
+
 					for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 						if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
 
 					break;
-					
+
 				case SongLine::RELLY:
-					
+
 					part = si->getLyLine(false, lines, ly_ver);
-					
+
 					if ( part.size() == 0 ) { cerr << "Empty line!" << endl; exit(0); }
-					
+
 					//output lilypond line. first line is music, other lines are txt.
 					if (stdoutput) cout << part[0] << endl; else out << part[0] << endl;
-					
+
 					//save text into textlines
 					stanzas = songLines.begin()->getNumberOfLines()-1; //number of text lines. Assume melody is in line 0, rest is text
 					for ( int l = 1; l <= stanzas; l++ ) {
 						if ( l <= part.size() ) textlines.push_back(part[l]); else textlines.push_back("");
 					}
-					
+
 					//if lines or at end of song, output textblocks: output everything in textlines
 					if (lines || si == (songLines.end()-1)) {
 
 						for ( int s = 0; s < stanzas; s++) {
-							
+
 							if (stdoutput) cout << "} \\addlyrics {" << endl; else out << "} \\addlyrics {" << endl;
-							
+
 							int ix = s;
 							while ( ix < textlines.size() ) {
-								
+
 								if (stdoutput) cout << textlines[ix] << endl; else out << textlines[ix] << endl;
 								ix = ix + stanzas;
 							}
 						}
-						
+
 						textlines.clear();
-						
+
 					}
-					
+
 					break;
 
 				case SongLine::ABSLY:
-					
+
 					part = si->getLyLine(true, lines, ly_ver);
-				
+
 				break;
 
 			}
-			
+
 
 			//in case of lilypond: output text lines.
 			if ( repr == SongLine::ABSLY || repr == SongLine::RELLY ) {
-				
+
 			}
 
 			//postamble
@@ -320,9 +326,9 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 			}
 		line++;
 		}
-	
+
 	} else { //output lyrics
-	
+
 		if (out.is_open()) out.close();
 		ss.clear();
 		ss << path << "lyrics-" << basename << ".txt";
@@ -331,7 +337,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 			out.open(s.c_str());
 			clog << "Writing " << s << endl;
 		}
-		
+
 		int stanzas = songLines.begin()->getNumberOfLines()-1; //number of text lines. Assume melody is in line 0, rest is text
 		for ( int s = 1; s < stanzas+1; s++ ) {
 			for ( si = songLines.begin(); si != songLines.end(); si++ ) {
@@ -341,19 +347,19 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 		}
 		if (out.is_open()) out.close();
 	}
-		
+
 
 	//close
-	
+
 	if ( out.is_open() ) out.close();
-	
+
 }
 
 int Song::translateKeySignature(string lykey) const {
 	int res = 0;
 	pvktrim(lykey);
 	if ( lykey.size() == 0 ) return res;
-	
+
 	bool major = ( lykey.find("\\major") != string::npos );
 	bool minor = ( lykey.find("\\minor") != string::npos );
 	bool ionian = ( lykey.find("\\ionian") != string::npos );
@@ -371,7 +377,7 @@ int Song::translateKeySignature(string lykey) const {
 
 	string root = lykey.erase(lykey.find("\\"));
 	pvktrim (root);
-	
+
 	if (root == "ces") { res = -7; }
 	if (root == "c") { res = 0; }
 	if (root == "cis") { res = 7; }
@@ -385,14 +391,14 @@ int Song::translateKeySignature(string lykey) const {
 	if (root == "fis") { res = 6; }
 	if (root == "ges") { res = -6; }
 	if (root == "g") { res = 1; }
-	if (root == "gis") { res = 8; }	
-	if (root == "as") { res = -4; }	
-	if (root == "aes") { res = -4; }	
+	if (root == "gis") { res = 8; }
+	if (root == "as") { res = -4; }
+	if (root == "aes") { res = -4; }
 	if (root == "a") { res = 3; }
 	if (root == "ais") { res = 10; }
 	if (root == "bes") { res = -2; }
 	if (root == "b") { res = 5; }
-		
+
 	if (minor) res = res - 3 + 30;
 	if (ionian) res = res + 60;
 	if (dorian) res = res - 2 + 90;
@@ -409,10 +415,10 @@ int Song::translateKeySignature(string lykey) const {
 
 int Song::translateMidiTempo(string lymtempo) const {
 	int res = 120;
-	
+
 	pvktrim(lymtempo);
 	string::size_type is_pos;
-	if ( ( is_pos = lymtempo.find("=") ) == string::npos ) {		
+	if ( ( is_pos = lymtempo.find("=") ) == string::npos ) {
 		cerr << getLocation() << ": Warning: Bad midiTempo; '=' missing: " << lymtempo << endl;
 		return 120;
 	}
@@ -422,19 +428,19 @@ int Song::translateMidiTempo(string lymtempo) const {
 	string::size_type dpos;
 	string lt = lymtempo;
 	while( (dpos = lt.find(".")) != string::npos && dpos + dots <= is_pos ) { dots++; lt.erase(dpos,1); }
-		
+
 	int duration = convertToInt(lymtempo.substr(0,is_pos - dots));
 	int tempo = convertToInt(lymtempo.substr(is_pos+1));
-	
+
 	if ( dots > 1 ) {
 		cerr << getLocation() << ": Warning: only one dot allowed in tempo: " << lymtempo << endl;
 		dots = 1;
 	}
-	
+
 	float factor = duration / 4.0;
 	if ( dots == 1 ) factor = factor * 2 / 3;
 	res = (int)(tempo / factor);
-	
+
 	return res;
 }
 
