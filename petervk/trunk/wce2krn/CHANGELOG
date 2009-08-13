@@ -1,3 +1,6 @@
+Version 1.44
+- Now ties and slurs can go across phrase boundaries.
+
 Version 1.42
 - Key indication in kern output. Only if minor or major.
 - some bugfixes
