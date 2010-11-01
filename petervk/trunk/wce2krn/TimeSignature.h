@@ -19,6 +19,7 @@ public:
 	TimeSignature();
 	TimeSignature(string ts); //input is lilypond time signature (with or without "\time ").
 	                          //no whitespace at begin or end allowed!
+	TimeSignature(int num, int den) : numerator(num), denominator(den) {};
 	
 	RationalTime getRationalTime() const;
 	int getNumerator() const;

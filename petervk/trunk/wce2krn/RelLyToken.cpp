@@ -400,6 +400,7 @@ string RelLyToken::printIdentity(Identity i) {
 		case TEXT: return "TEXT";
 		case GRACE: return "GRACE";
 		case BARLINE: return "BARLINE";
+		case STOPBAR: return "STOPBAR";
 		case UNKNOWN: return "UNKNOWN";
 	}
 	return "";

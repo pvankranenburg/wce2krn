@@ -1,3 +1,9 @@
+Version 1.46
+- \mordent added
+- \itime added for invisible meter change
+- \uplines and \upline added
+- \stopbar added (TODO: insert meter changes in kern output)
+
 Version 1.44
 - Now ties and slurs can go across phrase boundaries.
 
@@ -6,7 +12,7 @@ Version 1.42
 - some bugfixes
 
 Version 1.40.4
-- little improvement in detecting of notes following barline.
+- small improvement in detecting of notes following barline.
 
 Version 1.40.3
 - fixed bug in lily lexer. in "{ \ficta <note>"  the { was not recognized. Will now be added to next note.
