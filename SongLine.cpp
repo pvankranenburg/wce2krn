@@ -228,7 +228,7 @@ void SongLine::translate() {
 		//rellytoken = (*rl_it).getToken();
 
 		//to note or not to note
-		//in each case the slur and tie annotation has to be updated, for keeping the ananotations in sync with the melody.
+		//in each case the slur and tie annotation has to be updated, for keeping the annotations in sync with the melody.
 		id = (*rl_it).getIdentity();
 		//cout << (*rl_it).getToken() << " : " << id << endl;
 		switch(id) {
@@ -383,13 +383,49 @@ void SongLine::translate() {
 			} break;
 
 			case RelLyToken::TEXT: {
-				cerr << getLocation() << ": Error: Tekst in melody line: \"" << (*rl_it).getToken() << "\"" << endl;
+				cerr << getLocation() << ": Error: Text in melody line: \"" << (*rl_it).getToken() << "\"" << endl;
 				exit(1);
 			} break;
 
 			case RelLyToken::BARLINE: {
 				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+			} break;
+
+			case RelLyToken::STOPBAR: {
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+				cerr << "TODO: IMPLEMENT STOPBAR!" << endl;
+				TimeSignature tempts(timeInBar.getNumerator(),timeInBar.getDenominator());
+
+				//insert, or replace (TODO) this time signature at the start of the current measure
+				// WHAT IF THE START OF THE MEASURE IS IN THE PREVIOUS SONGLINE?
+				//search back till kerntoken starting with =
+				vector<string>::iterator kt_it0 = kernTokens[0].end()-1;
+				vector<string>::iterator kt_it1 = kernTokens[1].end()-1;
+				while ( ( (*kt_it0).at(0) != '=' ) ) { if (kt_it0 == kernTokens[0].begin()) break; kt_it0--; kt_it1--; cout << "y"; }
+				if ( kt_it0 == kernTokens[0].begin() ) { cerr << "Error: cannot find start of the bar containing \\stopbar" << endl; exit(1); }
+				kt_it0++; kt_it1++; //now points to the element BEFORE which the meter change should be inserted
+				//check whether kt_it0 points to a meter change. If so, replace, else insert
+				if ( (*kt_it0).at(0) == '*' && (*kt_it0).at(0) == 'M') {
+					*kt_it0 = tempts.getKernTimeSignature();
+					*kt_it1 = *(kt_it1+1);
+				} else {
+					kernTokens[0].insert(kt_it0, tempts.getKernTimeSignature() );
+					kernTokens[1].insert(kt_it1, *kt_it1 );
+				}
+				//start a new bar
+				//and insert the right time signature EXCEPT WHEN IT IS THE FINAL BAR! HOW TO CHECK?
+				stringstream ss;
+				currentBarnumber++;
+				ss << "=" << currentBarnumber;
+				string barstr = "";
+				ss >> barstr;
+				kernTokens[0].push_back(barstr);
+				kernTokens[1].push_back(barstr);
+				timeInBar = RationalTime(0,1);
+				kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
+				kernTokens[1].push_back((*rl_it).getWCEPosition());
 			} break;
 
 			case RelLyToken::UNKNOWN: {
@@ -519,7 +555,7 @@ void SongLine::translate() {
 					kernTokens[2*i+1].push_back( (*krn_it) );
 				}
 
-			//it can be possible that there is a corresponding rel ly token (time / unknown). If so, add that to absLy
+			//possibly, there is a corresponding rel ly token (time / unknown). If so, add that to absLy
 			if ( relly_index < relLyTokens[0].size() ) {
 				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE ) {
 					for (int i = 1; i<numLines; i++ ) {
@@ -765,6 +801,12 @@ void SongLine::breakWcelines() {
 		  	else if ( tok == 9 ) { //separate opening brace, should be remembered for next note
 		  		//cout << "separate opening brace" << endl;
 				addOpeningBrace = true;
+		  	}
+		  	else if ( tok == 10 ) { //stop the current bar!
+		  		//cout << "separate opening brace" << endl;
+				ctoken = lexer->YYText();
+				cerr << "\\stopbar not yet implemented (" << ctoken << ")" << endl;
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::STOPBAR, is_music));
 		  	}
 			else {
 			  ctoken = lexer->YYText();
@@ -1167,6 +1209,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	}
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
+	res.push_back("\\let itime={\\override Staff.TimeSignature #'stencil = ##f }");
 	//** for instrumental music
 	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
 	res.push_back("fine = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{Fine}}}");
@@ -1315,7 +1358,7 @@ vector<string> SongLine::getKernLine(bool lines) const {
 	} else {
 		s = "";
 		if ( ( meterInvisible && lines ) || lines) {
-			for( int i=0; i < kernTokens.size(); i++) s = s + "==||" + "\t";
+			for( int i=0; i < kernTokens.size(); i++) s = s + "==|!" + "\t";
 			s = s.substr(0,s.size()-1); //remove last tab
 			res.push_back(s);
 		}

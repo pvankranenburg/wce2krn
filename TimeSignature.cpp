@@ -19,14 +19,27 @@ TimeSignature::TimeSignature() {
 }
 
 TimeSignature::TimeSignature(string ts) {
-	string::size_type pos;
+	string::size_type pos = string::npos;
+	/*
 	if ( pos = ts.find("\\time ") != string::npos ) // time gevonden
-		ts.erase(0,6); //verwijder "\time "
+		ts.erase(0,pos+6); //verwijder "\time "
 	if ( pos = ts.find("\\time") != string::npos ) // time gevonden
-		ts.erase(0,5); //verwijder "\time"
+		ts.erase(0,pos+5); //verwijder "\time"
 	pos = ts.find("/");
 	numerator = convertToInt(ts.substr(0,pos));
 	denominator = convertToInt(ts.substr(pos+1));
+	*/
+	//cout << ts << endl;
+	if ( ( pos = ts.find("\\time") ) != string::npos ) // time gevonden
+		ts.erase(0,pos+5); //verwijder \time
+	pvktrim(ts);
+	//cout << pos << endl;
+	//cout << ts << endl;
+	pos = ts.find("/");
+	string nstr = ts.substr(0,pos);
+	string dstr = ts.substr(pos+1);
+	numerator = convertToInt(pvktrim(nstr));
+	denominator = convertToInt(pvktrim(dstr));
 }
 
 RationalTime TimeSignature::getRationalTime() const {

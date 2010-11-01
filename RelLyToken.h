@@ -18,7 +18,7 @@ using namespace std;
 class RelLyToken {
 public:
 	
-	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, BARLINE, UNKNOWN };
+	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, BARLINE, STOPBAR, UNKNOWN };
 	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, IN_SLUR, NO_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
 	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
@@ -63,7 +63,7 @@ public:
 	bool isRest() const;
 	
 	
-	TimeSignature getTimeSignature() const; //do only invoke if idenity is TIME_COMMAND
+	TimeSignature getTimeSignature() const; //do only invoke if identity is TIME_COMMAND
 	
 	//pitchclass, tiestatus, accidental en braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
 	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie) const;
