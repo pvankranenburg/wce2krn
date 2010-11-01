@@ -7,7 +7,7 @@ pitchbase		(as)|(es)|[a-grs]
 alteration		[(is)|(es)]
 octave			[',]
 ws				[| \t\n]+
-time_command	\\time
+time_command	(\\itime)?{ws}*\\time
 times_command	\\times
 glis			\\gl
 cross			\\x
@@ -24,7 +24,10 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 [\^_]?\\staccatissimo{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\trill{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\fermata{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+[\^_]?\\upline{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+[\^_]?\\uplines{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\(prall)+{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+[\^_]?\\mordent{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\"\/\/\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\sb{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\bar{ws}*\"[^\"]*\"{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 6; }
@@ -37,6 +40,7 @@ note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 \}													return 8; /*clog << "CLOSINGBRACE " << YYText() << endl;*/
 \{													return 9; /*clog << "OPENINGBRACE " << YYText() << endl;*/
 ({glis}|{cross}|\{)*{ws}*{note}{ws}*\}*				return 1; /*clog << "NOTE  " << YYText() << endl;*/
+\\stopbar{ws}*										return 10; /*clog << "STOPBAR  " << YYText() << endl;*/
 {time_command}{ws}*{digit}+"/"{digit}+{ws}*			return 2; /*clog << "TIME  " << YYText() << endl;*/
 {times_command}{ws}*{digit}+"/"{digit}+{ws}*		return 3; /*clog << "TIMES " << YYText() << endl;*/ 
 {ws}												{/*clog << "WHITESPACE" << endl; */ return -2; }
