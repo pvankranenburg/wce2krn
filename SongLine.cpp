@@ -488,6 +488,7 @@ void SongLine::translate() {
 				//cout << grace.getInitialOctave() << " - " << grace.getFinalOctave() << endl;
 				currentOctave = grace.getFinalOctave();
 				lastPitchClass = grace.getFinalLastPitchClass();
+				currentDuration = grace.getFinalDuration();
 
 				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
@@ -1193,6 +1194,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	if ( ly_ver == 10 ) res.push_back("\\version\"2.10.0\"");
 	else if ( ly_ver == 11 ) res.push_back("\\version\"2.11.0\"");
 	else res.push_back("\\version\"2.8.2\"");
+
 	if ( weblily ) {
 		res.push_back("#(append! paper-alist '((\"long\" . (cons (* 210 mm) (* 2000 mm)))))");
 		res.push_back("#(set-default-paper-size \"long\")");
@@ -1200,13 +1202,18 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	}
 	else
 		res.push_back("sb = {\\breathe}");
-	if ( eachPhraseNewStaff ) {
+
+	if ( weblily ) {
+		res.push_back("mBreak = { }");
+		res.push_back("bBreak = { }");
+	} else if ( eachPhraseNewStaff ) {
 		res.push_back("mBreak = { \\bar \"\" \\break }");
 		res.push_back("bBreak = { \\break }");
 	} else {
 		res.push_back("mBreak = { }");
 		res.push_back("bBreak = { }");
 	}
+
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("\\let gl=\\glissando");
 	res.push_back("\\let itime={\\override Staff.TimeSignature #'stencil = ##f }");
@@ -1225,7 +1232,8 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	string piece = "";
 	//cout << "title: " << title << endl;
 	if ( weblily ) {
-		if ( title.size() != 0 ) { //only produce given title. do not construct one
+		if ( title.size() != 0 && title.compare(0,3,"NLB") ) { //only produce given title if it is not an NLB number. do not construct one
+			cout << title << endl;
 			songtitle = "title = \"" + title;
 			if ( lines ) {
 				stringstream s;
@@ -1300,7 +1308,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	return res;
 }
 
-vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines) const {
+vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily) const {
 	vector<string> res;
 
 	res.push_back(" }}");
@@ -1329,6 +1337,14 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines) const {
 			}
 		}
 	}
+	// if for web, add url
+
+	if (weblily) {
+		res.push_back("\\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller http://www.liederenbank.nl/image.php?recordid="+record+"} } }");
+	}
+
+	// \markup { \with-color #grey \fill-line { \center-column { \smaller http://www.liederenbank.nl/image.php?recordid=167802 } } }
+
 	return res;
 }
 
