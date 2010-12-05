@@ -1,3 +1,10 @@
+Version 1.48
+- don't show titles starting with NLB for web presentation (-w)
+- add url to ly for web presentation (-w)
+- duration made relative to duration of last note in grace (as in lilypond)
+-- before "a16 \grace {c8} b" --> "a16 \grace {c8} b16"
+-- now: "a16 \grace {c8} b" --> "a16 \grace {c8} b8"
+
 Version 1.46
 - \mordent added
 - \itime added for invisible meter change

@@ -323,7 +323,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				switch(repr) {
 					case SongLine::KERN: part = si->getKernEndSignature(); break;
 					case SongLine::ABSLY:
-					case SongLine::RELLY: part = si->getLyEndSignature(ly_ver, lines); break;
+					case SongLine::RELLY: part = si->getLyEndSignature(ly_ver, lines, weblily); break;
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
