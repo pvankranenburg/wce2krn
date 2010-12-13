@@ -1,6 +1,10 @@
 %option c++
 %option prefix="Lily"
 %option noyywrap
+%x INMARKUP
+%{
+int brace_count = 0;
+%}
 
 digit			[0-9]
 pitchbase		(as)|(es)|[a-grs]
@@ -13,11 +17,16 @@ glis			\\gl
 cross			\\x
 duration		{digit}\.*
 note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
+braced			\{[^\}]*\}
 
 %%
 [\^_]\"\*\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\"\+\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\"[^\"]*\"{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+[\^_]\\markup{ws}*\{								{ BEGIN(INMARKUP); brace_count=1; /*clog << "INSTR  " << YYText() << endl; */ return 4; }
+<INMARKUP>\{										{ brace_count++; return 4; }
+<INMARKUP>\}										{ brace_count--; if (brace_count==0) BEGIN(INITIAL); return 4; }
+<INMARKUP>[^\{\}]									{/* skip */ return 4; }
 \\ficta{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\grace{ws}*\{[^\}]*\}{ws}*							{/*clog << "GRACE  " << YYText() << endl; */ return 5; }
 [\^_]?\\staccato{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }

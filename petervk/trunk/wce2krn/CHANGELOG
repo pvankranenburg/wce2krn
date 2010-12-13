@@ -1,3 +1,6 @@
+Version 1.50
+- _\markup{blabla} and ^\markup{blabla} nu mogelijk. MAAR niet met geneste { }
+
 Version 1.48
 - don't show titles starting with NLB for web presentation (-w)
 - add url to ly for web presentation (-w)
