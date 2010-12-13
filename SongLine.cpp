@@ -745,7 +745,7 @@ void SongLine::breakWcelines() {
 		  bool eerste = true;
 		  while(tok != 0){
 
-			//cout << lexer->YYText() << " - " ;
+			//cout << lexer->YYText() << endl ;
 
 			if ( tok == -1 ) {
 			  ctoken = lexer->YYText();
@@ -1233,7 +1233,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	//cout << "title: " << title << endl;
 	if ( weblily ) {
 		if ( title.size() != 0 && title.compare(0,3,"NLB") ) { //only produce given title if it is not an NLB number. do not construct one
-			cout << title << endl;
+			//cout << title << endl;
 			songtitle = "title = \"" + title;
 			if ( lines ) {
 				stringstream s;
