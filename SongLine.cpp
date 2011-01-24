@@ -28,7 +28,7 @@ using namespace std;
 #include <FlexLexer.h>
 
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, RelLyToken::TieStatus initialTie, RelLyToken::SlurStatus initialSlur, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, vector<string> fField) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, RelLyToken::TieStatus initialTie, RelLyToken::SlurStatus initialSlur, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, bool instr, vector<string> fField) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -63,6 +63,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   strophe(stropheno),
 																   title(str_title),
 																   WCELineNumber(wcelineno),
+																   instrumental(instr),
 																   footerField(fField) {
 	translate();
 }
@@ -91,6 +92,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   strophe("0"),
 					   title(""),
 					   WCELineNumber(0),
+					   instrumental(true),
 					   footerField(vector<string>()) {
 	translate();
 }
@@ -482,6 +484,7 @@ void SongLine::translate() {
 								  strophe,
 								  title,
 								  WCELineNumber,
+								  instrumental,
 								  footerField);
 
 				//grace.printAnnotations();
@@ -1006,16 +1009,17 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines, int ly_ver) const{
 		}
 
 		// add break at end
-		// if there is a baline, don't add the empty bar.
+		// if there is a barline, don't add the empty bar.
 
 		// if not barline is provided at the end of the line, print an appropriate one.
-
+		string bartype = "\"|\"";
 		if (!endsWithBarLine() ) {
 			if ( phraseNo == numPhrases ) {
 				if ( res.size() >0 ) res[0] = res[0] + " \\bar \"|.\"";
 			} else {
 				if ( finalUpbeat.getNumerator() == 0 ) {
-					if ( res.size() >0 ) res[0] = res[0] + " \\mBreak \\bar \"|\"";
+					if ( meterInvisible ) bartype = "\"\"";
+					if ( res.size() >0 ) res[0] = res[0] + " \\mBreak \\bar " + bartype;
 					}
 				else {
 					if ( res.size() >0 ) res[0] = res[0] + " \\mBreak";
@@ -1204,8 +1208,13 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 		res.push_back("sb = {\\breathe}");
 
 	if ( weblily ) {
-		res.push_back("mBreak = { }");
-		res.push_back("bBreak = { }");
+		if (instrumental) {
+			res.push_back("mBreak = { }");
+			res.push_back("bBreak = { }"); //see getLyLine()
+		} else {
+			res.push_back("mBreak = { \\bar \"\" \\break }");
+			res.push_back("bBreak = { \\break }"); //see getLyLine()
+		}
 	} else if ( eachPhraseNewStaff ) {
 		res.push_back("mBreak = { \\bar \"\" \\break }");
 		res.push_back("bBreak = { \\break }");
@@ -1317,8 +1326,8 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 		res.push_back(" \\layout { indent = 0.0\\cm }");
 	else {
 		res.push_back(" \\layout { indent = 0.0\\cm");
-		res.push_back("           \\context { \\Staff \\remove \"Bar_engraver\" \\remove \"Time_signature_engraver\" }");
-		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" } }");
+		res.push_back("           \\context { \\Staff \\remove \"Time_signature_engraver\" }");
+		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" defaultBarType = #\"\" \\override PaperColumn #'keep-inside-line = ##t \\override NonMusicalPaperColumn #'keep-inside-line = ##t } }");
 	}
 	res.push_back("}");
 
@@ -1339,8 +1348,8 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 	}
 	// if for web, add url
 
-	if (weblily) {
-		res.push_back("\\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller http://www.liederenbank.nl/image.php?recordid="+record+"} } }");
+	if (weblily && !lines) {
+		res.push_back("\\markup { \\vspace #0 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller http://www.liederenbank.nl/image.php?recordid="+record+"} } }");
 	}
 
 	// \markup { \with-color #grey \fill-line { \center-column { \smaller http://www.liederenbank.nl/image.php?recordid=167802 } } }
