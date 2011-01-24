@@ -43,6 +43,7 @@ public:
 	         string stropheno,
 	         string str_title,
 	         int wcelineno,
+	         bool instr,
 	         vector<string> fField); //if duration is 0, take duration from first note
 	SongLine();
 	//SongLine(const SongLine& sl);
@@ -97,6 +98,7 @@ public:
 	string getLocation() const;
 	int getWCELineNumber() const { return WCELineNumber; }
 	bool endsWithBarLine() const;
+	//bool changeMeterLastBar(int num, int den); //TODO for \stopbar problem
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
@@ -168,6 +170,7 @@ private:
 	string strophe;
 	int WCELineNumber;
 	vector<string> footerField;
+	bool instrumental;
 
 };
 

@@ -66,6 +66,17 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 		exit (1);
 	}
 
+	//instrumental?
+	bool instr = true; //by default assume instr
+	//if anywhere in the profile there are two adjacent true, then not instrumental
+	bool prev = false;
+	for (i = 0; i < lineprofile.size(); i++) {
+		//cout << lineprofile[i] << endl;
+		if ( prev && lineprofile[i] ) instr = false;
+		prev = lineprofile[i];
+	}
+	//cout << "Instrumental: " << instr << endl;
+
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
 		//cout << wcelines[i] << endl;
 		if (lineprofile[i] && i<lineprofile.size()) { // dataline
@@ -100,6 +111,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getStrophe(),
 								  wcefile.getTitle(),
 								  i-singleline.size(),
+								  instr,
 								  wcefile.getFooterField()));
 					singleline.clear();
 					phraseno++;
@@ -128,6 +140,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getStrophe(),
 								  wcefile.getTitle(),
 								  i-singleline.size(),
+								  instr,
 								  wcefile.getFooterField()));
 					//songLines.push_back(sl);
 					singleline.clear();
