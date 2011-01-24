@@ -1322,13 +1322,17 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 
 	res.push_back(" }}");
 	res.push_back(" \\midi { }"); //tempo is in the score block. This works for ly 2.8, 2.10 and 2.11
-	if ( !meterInvisible )
-		res.push_back(" \\layout { indent = 0.0\\cm }");
-	else {
-		res.push_back(" \\layout { indent = 0.0\\cm");
+	res.push_back(" \\layout {");
+	res.push_back("            indent = 0.0\\cm");
+	if (lines) {
+		res.push_back("           ragged-right = ##f ");
+		res.push_back("           ragged-last = ##f ");
+	}
+	if (meterInvisible) {
 		res.push_back("           \\context { \\Staff \\remove \"Time_signature_engraver\" }");
 		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" defaultBarType = #\"\" \\override PaperColumn #'keep-inside-line = ##t \\override NonMusicalPaperColumn #'keep-inside-line = ##t } }");
 	}
+	res.push_back("}"); //layout
 	res.push_back("}");
 
 	if (!lines) {
