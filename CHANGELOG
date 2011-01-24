@@ -1,5 +1,10 @@
+Version 1.52
+- weblily now inserts phrasebreaks if there are lyrics (mBreak = {\bar ""\break}),
+  otherwise no explicit breaks (mBreak = { }).
+- geen url bij -w -s
+
 Version 1.50
-- _\markup{blabla} and ^\markup{blabla} nu mogelijk. MAAR niet met geneste { }
+- _\markup{bla {bla} bla} and ^\markup{bla {bla} bla} now possible.
 
 Version 1.48
 - don't show titles starting with NLB for web presentation (-w)
@@ -12,7 +17,7 @@ Version 1.46
 - \mordent added
 - \itime added for invisible meter change
 - \uplines and \upline added
-- \stopbar added (TODO: insert meter changes in kern output)
+- \stopbar added (TODO: insert meter changes in kern output <- problem: how to insert if start of bar is in previous line?)
 
 Version 1.44
 - Now ties and slurs can go across phrase boundaries.
