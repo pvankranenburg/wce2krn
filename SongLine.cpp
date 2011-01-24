@@ -1333,7 +1333,6 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" defaultBarType = #\"\" \\override PaperColumn #'keep-inside-line = ##t \\override NonMusicalPaperColumn #'keep-inside-line = ##t } }");
 	}
 	res.push_back("}"); //layout
-	res.push_back("}");
 
 	if (!lines) {
 		if ( footerField.size() > 0 ) {
