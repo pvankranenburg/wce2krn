@@ -1330,9 +1330,10 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 	}
 	if (meterInvisible) {
 		res.push_back("           \\context { \\Staff \\remove \"Time_signature_engraver\" }");
-		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" defaultBarType = #\"\" \\override PaperColumn #'keep-inside-line = ##t \\override NonMusicalPaperColumn #'keep-inside-line = ##t } }");
+		res.push_back("           \\context { \\Score \\remove \"Bar_number_engraver\" defaultBarType = #\"\" \\override PaperColumn #'keep-inside-line = ##t \\override NonMusicalPaperColumn #'keep-inside-line = ##t }");
 	}
 	res.push_back("}"); //layout
+	res.push_back("}"); //score
 
 	if (!lines) {
 		if ( footerField.size() > 0 ) {
