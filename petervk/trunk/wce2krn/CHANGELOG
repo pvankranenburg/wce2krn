@@ -1,3 +1,6 @@
+Version 1.53
+- 
+
 Version 1.52.1
 - added ragged-right and ragged-last for single lines (apparently ly 2.13 needs that)
 
