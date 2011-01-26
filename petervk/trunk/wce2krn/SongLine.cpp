@@ -1241,18 +1241,11 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	string piece = "";
 	//cout << "title: " << title << endl;
 	if ( weblily ) {
-		if ( title.size() != 0 && title.compare(0,3,"NLB") ) { //only produce given title if it is not an NLB number. do not construct one
-			//cout << title << endl;
-			songtitle = "title = \"" + title;
-			if ( lines ) {
-				stringstream s;
-				s << phraseNo;
-				string str_phraseNo = "";
-				s >> str_phraseNo;
-				songtitle = songtitle + " (phrase " + str_phraseNo + ")\"";
+		if ( !lines ) {
+			if ( title.size() != 0 && title.compare(0,3,"NLB") ) { //only produce given title if it is not an NLB number. do not construct one
+				//cout << title << endl;
+				songtitle = "title = \"" + title + "\"";
 			}
-			else
-				songtitle = songtitle + "\"";
 		}
 	} else { //not weblily
 		// construct a 'piece' with recordnumber. Always!

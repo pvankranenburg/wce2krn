@@ -1,6 +1,12 @@
 Version 1.53
 - 
 
+Version 1.52.2
+- webpreviews geen titel
+
+Version 1.52.2
+- forgot closing } for layoutblock if '-s'
+
 Version 1.52.1
 - added ragged-right and ragged-last for single lines (apparently ly 2.13 needs that)
 
