@@ -1,3 +1,6 @@
+Version 1.54.1
+- alterations are now possible in the \key command (fis \major etc)
+
 Version 1.54
 - \key is accepted in lilypond input
 
