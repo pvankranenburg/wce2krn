@@ -748,7 +748,7 @@ void SongLine::breakWcelines() {
 		  bool eerste = true;
 		  while(tok != 0){
 
-			//cout << lexer->YYText() << endl ;
+			cout << lexer->YYText() << endl ;
 
 			if ( tok == -1 ) {
 			  ctoken = lexer->YYText();

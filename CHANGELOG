@@ -1,8 +1,8 @@
-Version 1.53
-- 
+Version 1.54
+- \key is accepted in lilypond input
 
 Version 1.52.2
-- webpreviews geen titel
+- webpreviews should not have a title
 
 Version 1.52.2
 - forgot closing } for layoutblock if '-s'
