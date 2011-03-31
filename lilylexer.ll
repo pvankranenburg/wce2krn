@@ -18,6 +18,7 @@ cross			\\x
 duration		{digit}\.*
 note			{pitchbase}{alteration}*{octave}*{duration}*{ws}*[\~()\[\]]*
 braced			\{[^\}]*\}
+key				major|minor|ionian|dorian|phrygian|lydian|mixolydian|aeolian|locrian
 
 %%
 [\^_]\"\*\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
@@ -38,6 +39,7 @@ braced			\{[^\}]*\}
 [\^_]?\\(prall)+{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\mordent{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\"\/\/\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+\\key{ws}+{pitchbase}{ws}*\\{key}{ws}*				{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\sb{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\bar{ws}*\"[^\"]*\"{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 6; }
 \\segno{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
