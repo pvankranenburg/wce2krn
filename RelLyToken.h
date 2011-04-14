@@ -14,6 +14,7 @@
 using namespace std;
 
 #include "TimeSignature.h"
+#include "pvkutilities.h"
 
 class RelLyToken {
 public:
@@ -26,7 +27,7 @@ public:
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
 	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD, NO_WORD, BEGIN_WORD_CONT, SINGLE_WORD_CONT, END_WORD_CONT, IN_WORD_CONT, DONTKNOW };
 
-	RelLyToken(string t, string loc, string wcepos, RelLyToken::Identity token_id, bool is_music = true);
+	RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool is_music = true);
 	RelLyToken();
 	RelLyToken(const RelLyToken& r);
 	RelLyToken& operator=(const RelLyToken& r);
@@ -39,7 +40,11 @@ public:
 
 	string getToken() const { return token; }
 	
-	string getWCEPosition() const { return WCEPosition; }
+	//string getWCEPosition() const { return WCEPosition; }
+	string getWCEPosition() const { return convertToString(WCE_LineNumber) + ":" + convertToString(WCE_Pos); }
+
+	int getWCE_LineNumber() const { return WCE_LineNumber; }
+	int getWCE_Pos() const { return WCE_Pos; }
 	
 	void addTie(); //adds a tie to the note.
 	void addClosingBrace(); //adds a closing brace to the note.
@@ -75,8 +80,10 @@ private:
 	string token;
 	Identity id;
 	const string location;
-	const string WCEPosition; //store the position of the token in the ly input field.
+	//const string WCEPosition; //store the position of the token in the ly input field.
 	                          //format: line number:
+	const int WCE_LineNumber;
+	const int WCE_Pos;
 };
 
 #endif

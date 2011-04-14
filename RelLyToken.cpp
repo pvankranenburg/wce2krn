@@ -17,18 +17,17 @@
 #include <cassert>
 using namespace std;
 
-RelLyToken::RelLyToken(string t, string loc, string wcepos, RelLyToken::Identity token_id, bool is_music) : token(t), id(token_id), location(loc), WCEPosition(wcepos) {
+RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos) {
 	
 	//id = computeIdentity(is_music);
-	//cout << token << ": " << printIdentity(id) << endl;
 }
 
-RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCEPosition(r.WCEPosition) {
+RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()) {
 	//id = computeIdentity();
 }
 
-RelLyToken::RelLyToken() : token("") {
-	id = UNKNOWN;
+RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0) {
+	//id = UNKNOWN;
 }
 
 void RelLyToken::addTie() {
