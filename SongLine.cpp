@@ -579,7 +579,7 @@ void SongLine::translate() {
 					kernTokens[2*i].push_back( "." );
 					kernTokens[2*i+1].push_back( "." );
 					// rest at end of line could be tolerated
-					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", "", getLocation(), RelLyToken::TEXT, false) );
+					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", "", 0, 0, RelLyToken::TEXT, false) );
 					// any case: annotate
 					text_ann[i-1].push_back( RelLyToken::NO_WORD );
 				} else {
@@ -748,7 +748,7 @@ void SongLine::breakWcelines() {
 		  bool eerste = true;
 		  while(tok != 0){
 
-			cout << lexer->YYText() << endl ;
+			//cout << lexer->YYText() << " " << tok << endl ;
 
 			if ( tok == -1 ) {
 			  ctoken = lexer->YYText();
@@ -763,22 +763,22 @@ void SongLine::breakWcelines() {
 			else if ( tok == 5 ) { //grace
 				ctoken = lexer->YYText();
 				//put this with "\grace{" and "}" int relLyTokens
-				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::GRACE, is_music));
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::GRACE, is_music));
 		  	}
 			else if ( tok == 6 ) { //barline
 				ctoken = lexer->YYText();
 				pvktrim(ctoken);
-				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::BARLINE, is_music));
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::BARLINE, is_music));
 		  	}
 			else if ( tok == 2 ) { //time
 				ctoken = lexer->YYText();
 				//put this with "\grace{" and "}" int relLyTokens
-				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::TIME_COMMAND, is_music));
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::TIME_COMMAND, is_music));
 		  	}
 			else if ( tok == 3 ) { //times
 				ctoken = lexer->YYText();
 				//put this with "\grace{" and "}" int relLyTokens
-				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::TIMES_COMMAND, is_music));
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::TIMES_COMMAND, is_music));
 		  	}
 		  	else if ( tok == -2 ) { //whitespace
 		  	}
@@ -810,16 +810,26 @@ void SongLine::breakWcelines() {
 		  		//cout << "separate opening brace" << endl;
 				ctoken = lexer->YYText();
 				cerr << "\\stopbar not yet implemented (" << ctoken << ")" << endl;
-				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::STOPBAR, is_music));
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::STOPBAR, is_music));
 		  	}
 			else {
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
 			  if ( tok == 1 && addOpeningBrace ) { ctoken = "{ " + ctoken; addOpeningBrace = false; }
 			  //add token to list of tokens
-			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber) + ":" + convertToString(pos_in_line), RelLyToken::NOTE, is_music));
-
+			  //cout << "WCELineNumber : " << WCELineNumber << endl;
+			  //cout << getLocation() << endl;
+			  //cout << "pos_in_line : " << pos_in_line << endl;
+			  //cout << ctoken << endl;
+			  //cout << "1" << endl;
+			  RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::NOTE, is_music);
+			  //cout << "2" << endl;
+			  relLyTokens.back().push_back(rlt);
+			  //cout << "3" << endl;
+			  //cout << relLyTokens.back().back().getPitchClass() << endl;
+			  //cout << "4" << endl;
 			}
+			//cout << "5" << endl;
 
 			//cout << tok << " - " << lexer->YYText() << " - " << pos_in_line << endl;
 
@@ -863,7 +873,7 @@ void SongLine::breakWcelines() {
 			  pvktrim(ctoken);
 			  //if not a note in corresponding music, add empty tokens first.
 			  while ( relLyTokens[0][current_note_index].getIdentity() != RelLyToken::NOTE || relLyTokens[0][current_note_index].isRest() ) {
-			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), RelLyToken::TEXT, is_music));
+			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber+line_offset, pos_in_line, RelLyToken::TEXT, is_music));
 			  	current_note_index++;
 			  	if ( current_note_index > relLyTokens[0].size() ) {
 			  		cerr << getLocation() << ": Error: too much text: " << ctoken << endl;
@@ -871,7 +881,7 @@ void SongLine::breakWcelines() {
 			  	}
 			  }
 			  //add token to list of tokens
-			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), RelLyToken::TEXT, is_music));
+			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber+line_offset, pos_in_line, RelLyToken::TEXT, is_music));
 			  current_note_index++;
 			}
 
@@ -885,7 +895,7 @@ void SongLine::breakWcelines() {
 
 		  //add text tokens if the line is not long enough (e.g. when a rest or \time command is at the and)
 		  while ( relLyTokens.back().size() < relLyTokens[0].size() ) {
-		  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), convertToString(WCELineNumber+line_offset) + ":" + convertToString(pos_in_line), RelLyToken::TEXT, is_music));
+		  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber+line_offset, pos_in_line, RelLyToken::TEXT, is_music));
 		  }
 
 		}
@@ -1670,10 +1680,12 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 	RelLyToken::Accidental ac = relLyTokens[0][index].getAccidental();
 
 	//find index of end of first note
-	while ( index > 0 ) {
-		pos = lyline.find('\t');
-		index--;
-	}
+	//while ( index > 0 ) {
+	//	pos = lyline.find('\t');
+	//	index--;
+	//}
+
+	pos = relLyTokens[0][index].getWCE_Pos();
 
 	//ptichclass
 	if ( (pos = lyline.find_first_of("abcdefgsr", pos)) == string::npos) return false;
