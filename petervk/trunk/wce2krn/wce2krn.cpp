@@ -84,7 +84,7 @@ int main (int argc, char * const argv[]) {
 	
 	clog << endl;
 	clog << "===============================================================================" << endl;
-	clog << "Processing " << filename << endl;
+	clog << "Processing : " << filename << endl;
 	
 	string basename = filename;
 	
