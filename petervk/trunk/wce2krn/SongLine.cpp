@@ -189,6 +189,7 @@ void SongLine::translate() {
 	bool currentTripletStatus = initialTripletStatus;
 	int indexFirstKernNote = -1;
 	int indexLastKernNote = -1;
+	bool newSubPhrase = false;
 
 	//now scan the relative lilypond tokens and translate to AbsoluteLilypond and Kern
 	//assume music in first line
@@ -303,13 +304,19 @@ void SongLine::translate() {
 						kernTokens[0][kernTokens[0].size()-1] = kernTokens[0][kernTokens[0].size()-1] + "h";
 					}
 				}
+
+				//softbreak
+				bool closeSubPhrase = (*rl_it).hasSoftBreak();
+
 				//create note-token
 				token = (*rl_it).createKernNote(currentOctave,
 				                                currentDuration,
 												currentDots,
 												currentTripletStatus,
 												currentSlurStatus,
-												currentTieStatus);
+												currentTieStatus,
+												newSubPhrase, //if current note has softbreak
+												closeSubPhrase); //if previous note has softbreak
 				kernTokens[0].push_back(token);
 				kernTokens[1].push_back( (*rl_it).getWCEPosition() );
 				token = (*rl_it).createAbsLyNote(currentOctave,
@@ -331,6 +338,10 @@ void SongLine::translate() {
 				//cout << token << " bar:" << currentBarnumber << " " << timeInBar.getNumerator() << "/" << timeInBar.getDenominator() <<
 				//	" " << t.getNumerator() << "/" << t.getDenominator() << endl;
 				if ( currentTripletStatus && (*rl_it).containsClosingBraceAfterNote() ) currentTripletStatus = false;
+				//set subphrase
+				newSubPhrase = false;
+				if ( closeSubPhrase ) newSubPhrase = true;
+
 			} break;
 
 			case RelLyToken::TIME_COMMAND: {
@@ -806,6 +817,17 @@ void SongLine::breakWcelines() {
 		  		//cout << "separate opening brace" << endl;
 				addOpeningBrace = true;
 		  	}
+		  	else if ( tok == 11 ) { //softbreak
+		  		clog << "softbreak" << endl;
+		  		//find last note
+				int ix = relLyTokens.back().size() -1;
+				//cout << ix << endl;
+				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+					ix--;
+				if ( ix < 0 ) cerr << getLocation() << ": Warning: softbreak symbol could not be attached to a note." << endl;
+				else
+					(relLyTokens.back())[ix].setSoftBreak();
+		  	}
 		  	else if ( tok == 10 ) { //stop the current bar!
 		  		//cout << "separate opening brace" << endl;
 				ctoken = lexer->YYText();
@@ -822,7 +844,7 @@ void SongLine::breakWcelines() {
 			  //cout << "pos_in_line : " << pos_in_line << endl;
 			  //cout << ctoken << endl;
 			  //cout << "1" << endl;
-			  RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::NOTE, is_music);
+			  RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::NOTE, false, is_music);
 			  //cout << "2" << endl;
 			  relLyTokens.back().push_back(rlt);
 			  //cout << "3" << endl;
@@ -1628,7 +1650,7 @@ vector<string> SongLine::getKernEndSignature() const {
 	res.push_back(s);
 
 	//comment
-	res.push_back("!! produced by wce2krn " + version + " ( released on " + releasedate + ")");
+	res.push_back("!! produced by wce2krn " + version + " (released on " + releasedate + ")");
 
 
 	return res;

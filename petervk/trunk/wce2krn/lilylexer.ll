@@ -8,7 +8,7 @@ int brace_count = 0;
 
 digit			[0-9]
 pitchbase		(as)|(es)|[a-grs]
-alteration		[(is)|(es)]
+alteration		[(is)|(es)]!?
 octave			[',]
 ws				[| \t\n]+
 time_command	(\\itime)?{ws}*\\time
@@ -40,7 +40,7 @@ key				major|minor|ionian|dorian|phrygian|lydian|mixolydian|aeolian|locrian
 [\^_]?\\mordent{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\"\/\/\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\key{ws}+{pitchbase}{alteration}*{ws}*\\{key}{ws}*	{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-\\sb{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+\\sb{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 11; }
 \\bar{ws}*\"[^\"]*\"{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 6; }
 \\segno{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\coda{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
