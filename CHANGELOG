@@ -1,3 +1,7 @@
+Version 1.55
+- Now both soft and hard break result in { } in kern
+- added ! for forcing accidentals in lilypond
+
 Version 1.54.2
 - bugfix in finding first note of line
 

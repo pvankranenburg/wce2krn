@@ -27,11 +27,10 @@ public:
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
 	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD, NO_WORD, BEGIN_WORD_CONT, SINGLE_WORD_CONT, END_WORD_CONT, IN_WORD_CONT, DONTKNOW };
 
-	RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool is_music = true);
+	RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool softbreak, bool is_music = true);
 	RelLyToken();
 	RelLyToken(const RelLyToken& r);
 	RelLyToken& operator=(const RelLyToken& r);
-
 
 	static string printSlurStatus(SlurStatus ss);
 	static string printTieStatus(TieStatus ts);
@@ -66,12 +65,13 @@ public:
 	bool containsClosingBraceBeforeNote() const;
 	bool containsClosingBraceAfterNote() const;
 	bool isRest() const;
-	
+	void setSoftBreak() { softBreak = true;};
+	bool hasSoftBreak() const { return softBreak; };
 	
 	TimeSignature getTimeSignature() const; //do only invoke if identity is TIME_COMMAND
 	
 	//pitchclass, tiestatus, accidental en braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
-	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie) const;
+	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
 	string createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const;
 						  
 private:
@@ -84,6 +84,7 @@ private:
 	                          //format: line number:
 	const int WCE_LineNumber;
 	const int WCE_Pos;
+	bool softBreak;
 };
 
 #endif

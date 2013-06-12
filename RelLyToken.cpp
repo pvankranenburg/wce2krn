@@ -17,16 +17,16 @@
 #include <cassert>
 using namespace std;
 
-RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos) {
+RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool hassoftbreak, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos), softBreak(hassoftbreak) {
 	
 	//id = computeIdentity(is_music);
 }
 
-RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()) {
+RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()), softBreak(r.hasSoftBreak()) {
 	//id = computeIdentity();
 }
 
-RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0) {
+RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0), softBreak(false) {
 	//id = UNKNOWN;
 }
 
@@ -179,10 +179,12 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 	return s;
 }
 
-string RelLyToken::createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie) const {
+string RelLyToken::createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
 	stringstream res;
+	//open sub
 	//open phrase
 	//open slur
+	//if ( opensub ) res << "{"; // <- is now done with breath mark after note
 	if (slur == START_SLUR) res << "(";
 	//open tie
 	if (tie == START_TIE) res << "[";
@@ -223,8 +225,11 @@ string RelLyToken::createKernNote(int octave, int duration, int dots, bool tripl
 	if (tie == CONTINUE_TIE) res << "_";
 	//slur close
 	if (slur == END_SLUR) res << ")";
-	//phrase close
 	
+	//subphrase
+	//if ( closesub ) res << "}";
+	if ( closesub ) res << ",";
+
 	string s;
 	res >> s;
 	return s;
