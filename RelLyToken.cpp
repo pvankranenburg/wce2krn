@@ -228,7 +228,8 @@ string RelLyToken::createKernNote(int octave, int duration, int dots, bool tripl
 	
 	//subphrase
 	//if ( closesub ) res << "}";
-	if ( closesub ) res << ",";
+	//if ( closesub ) res << ",";
+	if ( closesub ) res << ";"; //fermata can be imported by music21
 
 	string s;
 	res >> s;
@@ -293,6 +294,48 @@ RelLyToken::TieStatus RelLyToken::getTie() const {
 	if ( token.find("~") != string::npos ) return START_TIE; else return NO_TIE;
 	//never used:
 	return NO_TIE_INFO;
+}
+
+//NOBARLINE, NORMALBAR, ENDBAR, DOUBLEBAR, BEGINREPEAT, ENDREPEAT, DOUBLEREPEAT
+
+RelLyToken::BarLineType RelLyToken::getBarLineType() const {
+	if (id != BARLINE ) return NOBARLINE;
+	string::size_type pos1 = token.find_first_of("\"");
+	string::size_type pos2 = token.find_last_of("\"");
+	if ( pos1 == string::npos || pos2 == string::npos) {
+		cerr << "Error in barline token: " << endl;
+		exit(-1);
+	}
+	if ( pos2 <= pos1 ) {
+		cerr << "Error in barline token: " << endl;
+		exit(-1);
+	}
+	string::size_type len = pos2 - pos1;
+	string barline = token.substr(pos1,len);
+	pvktrim(barline);
+	if ( barline == "|" ) return NORMALBAR;
+	else if ( barline == "|." ) return ENDBAR;
+	else if ( barline == "||" ) return DOUBLEBAR;
+	else if ( barline == "|:" ) return BEGINREPEAT;
+	else if ( barline == ":|" ) return ENDREPEAT;
+	else if ( barline == ":|:" ) return DOUBLEREPEAT;
+
+	return NOBARLINE;
+}
+
+string RelLyToken::getKernBarLine() const {
+	string res = "";
+	switch(getBarLineType()) {
+	case NOBARLINE: res = "|"; break;
+	case NORMALBAR: res = "="; break;
+	case ENDBAR: res = "==|!"; break;
+	case DOUBLEBAR: res = "=="; break;
+	case BEGINREPEAT: res = "==!|:"; break;
+	case ENDREPEAT: res = "==:|!"; break;
+	case DOUBLEREPEAT: res = "==:!!:"; break;
+	}
+	return res;
+
 }
 
 RelLyToken::Accidental RelLyToken::getAccidental() const {

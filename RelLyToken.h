@@ -26,6 +26,7 @@ public:
 	enum Accidental { DOUBLE_FLAT, FLAT, NO_ACCIDENTAL, NATURAL, SHARP, DOUBLE_SHARP };
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
 	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD, NO_WORD, BEGIN_WORD_CONT, SINGLE_WORD_CONT, END_WORD_CONT, IN_WORD_CONT, DONTKNOW };
+	enum BarLineType { NOBARLINE, NORMALBAR, ENDBAR, DOUBLEBAR, BEGINREPEAT, ENDREPEAT, DOUBLEREPEAT};
 
 	RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool softbreak, bool is_music = true);
 	RelLyToken();
@@ -60,6 +61,7 @@ public:
 	TieStatus getTie() const;
 	Accidental getAccidental() const;
 	BraceStatus getBraceStatus() const;
+	BarLineType getBarLineType() const;
 	bool containsOpeningBrace() const {return (token.find("{") != string::npos); }
 	bool containsClosingBrace() const {return (token.find("}") != string::npos); }
 	bool containsClosingBraceBeforeNote() const;
@@ -73,7 +75,9 @@ public:
 	//pitchclass, tiestatus, accidental en braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
 	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
 	string createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const;
-						  
+
+	string getKernBarLine() const;
+
 private:
 	Identity computeIdentity(bool is_music) const;
 	

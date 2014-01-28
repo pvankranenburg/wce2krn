@@ -1,5 +1,18 @@
+Version 1.58
+- Named staffs in humdrum output (*staff1)
+- added \tv and \qv for tertia / quarta volta
+
+Version 1.56
+- Soft and hard breaks result in ";" (fermata) added in *kern
+- Only hard breaks result in { } in *kern
+- Modes are now exported to kern (but for now without the mode indication as music21 cannot parse that)
+- lyrics output now contains hyphenation
+- Added \pv and \sv for prima / secuda volta
+- Added \xv for ending volta beam
+- Added definitions for \pv, \sv, and \xv to Lilypond beginsignature
+
 Version 1.55
-- Now both soft and hard break result in { } in kern
+- Now both soft and hard break result in { } in *kern
 - added ! for forcing accidentals in lilypond
 
 Version 1.54.2
