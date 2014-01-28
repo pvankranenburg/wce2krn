@@ -13,7 +13,7 @@
 #include <string>
 using namespace std;
 
-const string version = "1.55";
-const string releasedate = "6 December 2012";
+const string version = "1.58";
+const string releasedate = "28 Jan 2014";
 
 #endif

@@ -80,9 +80,9 @@ lex.Text.cc : textlexer.ll
 
 install: wce2krn
 	strip wce2krn
-	cd ~/SVN/music/binary/linux/intel/bin; svn update wce2krn
-	cp wce2krn ~/SVN/music/binary/linux/intel/bin
-	cd ~/SVN/music/binary/linux/intel/bin; svn commit -m "wce2krn linux binary" wce2krn
+	cd ~/SVN/music/binary/mac/universal/bin; svn update wce2krn
+	cp wce2krn ~/SVN/music/binary/mac/universal/bin
+	cd ~/SVN/music/binary/mac/universal/bin; svn commit -m "wce2krn mac binary" wce2krn
 
 ##########################################
 #

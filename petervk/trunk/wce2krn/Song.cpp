@@ -277,7 +277,8 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 						if (!lines) out << "!! verse " << line << endl;
 
 					for ( part_it = part.begin(); part_it != part.end(); part_it++ )
-						if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
+						if (stdoutput) cout << *part_it << endl;
+						else out << *part_it << endl;
 
 					break;
 
