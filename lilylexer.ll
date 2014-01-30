@@ -49,6 +49,8 @@ key				major|minor|ionian|dorian|phrygian|lydian|mixolydian|aeolian|locrian
 \\ds[fc]?{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\pv{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\sv{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+\\tv{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+\\qv{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\xv{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \~													return 7; /*clog << "TIE  " << YYText() << endl;*/
 \}													return 8; /*clog << "CLOSINGBRACE " << YYText() << endl;*/
