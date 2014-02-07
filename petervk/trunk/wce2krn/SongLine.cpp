@@ -1436,6 +1436,17 @@ vector<string> SongLine::getKernLine(bool lines) const {
 
 vector<string> SongLine::getKernBeginSignature(bool lines) const {
 
+	vector<string> res;
+	string s;
+	if ( kernTokens.size() == 0 ) return res;
+
+	//first print some comments
+	res.push_back("!! Published by the Meertens Institute (http://www.meertens.knaw.nl)");
+	res.push_back("!! Part of the Database of Dutch Songs (NLB) (http://www.liederenbank.nl)");
+	res.push_back(string("!! NLB identifier: " + getNLBIdentifier()));
+	res.push_back(string("!! NLB record number: " + record));
+	res.push_back(string("!! NLB strophe/voice number: " + strophe));
+
 	string key,mode;
 	mode = ""; //major and minor do not have indication
 	switch( keySignature ) {
@@ -1585,9 +1596,6 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		case 233: key = "b-"; mode = "loc"; break;
 	}
 
-	vector<string> res;
-	string s;
-	if ( kernTokens.size() == 0 ) return res;
 
 	//identify spine
 	s = "";
@@ -1990,6 +1998,13 @@ bool SongLine::endsWithBarLine() const {
 	return (relLyTokens[0].back()).getIdentity() == RelLyToken::BARLINE;
 }
 
+string SongLine::getNLBIdentifier() const {
+	string recid = record;
+	string strid = strophe;
+	while ( recid.size() < 6 ) recid = "0"+recid;
+	while ( strid.size() < 2 ) strid = "0"+strid;
+	return string("NLB"+recid+"_"+strid);
+}
 
 bool SongLine::checkTies() const {
 	bool res = true;
