@@ -99,6 +99,7 @@ public:
 	int getWCELineNumber() const { return WCELineNumber; }
 	bool endsWithBarLine() const;
 	//bool changeMeterLastBar(int num, int den); //TODO for \stopbar problem
+	std::string getNLBIdentifier() const;
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
