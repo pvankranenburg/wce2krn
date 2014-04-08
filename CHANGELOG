@@ -1,5 +1,8 @@
-Version 1.59
-- 
+Version 1.62
+- Mode is now exported to krn (for MTC)
+
+Version 1.60
+- Added global comments to krn for MTC
 
 Version 1.58
 - Named staffs in humdrum output (*staff1)
