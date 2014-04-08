@@ -526,6 +526,9 @@ void SongLine::translate() {
 		kernTokens[0][indexLastKernNote] = kernTokens[0][indexLastKernNote] + ";}";
 	}
 
+	//add fermata to last lilypond note
+
+
 	finalOctave = currentOctave;
 	finalDuration = currentDuration;
 	finalDots = currentDots;
@@ -1407,7 +1410,7 @@ vector<string> SongLine::getKernLine(bool lines) const {
 
 	for(int j=0; j < kernTokens[0].size(); j++) {
 		s = "";
-		for (int i=0; i < kernTokens.size(); i++ ) {
+		for (int i=0; i < kernTokens.size(); i = i+2 ) {
 			s = s + kernTokens[i][j] + "\t";
 		}
 		//remove last tab.
@@ -1419,13 +1422,13 @@ vector<string> SongLine::getKernLine(bool lines) const {
 	//otherwise only add barline at end a line of a meterless song.
 	if ( phraseNo == numPhrases ) {
 		s = "";
-		for( int i=0; i < kernTokens.size(); i++) s = s + "==|!" + "\t";
+		for( int i=0; i < kernTokens.size(); i = i+2) s = s + "==|!" + "\t";
 		s = s.substr(0,s.size()-1); //remove last tab
 		res.push_back(s);
 	} else {
 		s = "";
 		if ( ( meterInvisible && lines ) || lines) {
-			for( int i=0; i < kernTokens.size(); i++) s = s + "==|!" + "\t";
+			for( int i=0; i < kernTokens.size(); i = i+2) s = s + "==|!" + "\t";
 			s = s.substr(0,s.size()-1); //remove last tab
 			res.push_back(s);
 		}
@@ -1451,15 +1454,15 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	mode = ""; //major and minor do not have indication
 	switch( keySignature ) {
 		//major 0
-		case 7: key = "C#"; break;
-		case 6: key = "F#"; break;
-		case 5: key = "B"; break;
-		case 4: key = "E"; break;
-		case 3: key = "A"; break;
-		case 2: key = "D"; break;
-		case 1: key = "G"; break;
-		case 0: key = "C"; break;
-		case -1: key = "F"; break;
+		case  7: key = "C#"; break;
+		case  6: key = "F#"; break;
+		case  5: key = "B" ; break;
+		case  4: key = "E" ; break;
+		case  3: key = "A" ; break;
+		case  2: key = "D" ; break;
+		case  1: key = "G" ; break;
+		case  0: key = "C" ; break;
+		case -1: key = "F" ; break;
 		case -2: key = "B-"; break;
 		case -3: key = "E-"; break;
 		case -4: key = "A-"; break;
@@ -1472,26 +1475,26 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		case 35: key = "g#"; break;
 		case 34: key = "c#"; break;
 		case 33: key = "f#"; break;
-		case 32: key = "b"; break;
-		case 31: key = "e"; break;
-		case 30: key = "a"; break;
-		case 29: key = "d"; break;
-		case 28: key = "g"; break;
-		case 27: key = "c"; break;
-		case 26: key = "f"; break;
+		case 32: key = "b" ; break;
+		case 31: key = "e" ; break;
+		case 30: key = "a" ; break;
+		case 29: key = "d" ; break;
+		case 28: key = "g" ; break;
+		case 27: key = "c" ; break;
+		case 26: key = "f" ; break;
 		case 25: key = "b-"; break;
 		case 24: key = "e-"; break;
 		case 23: key = "a-"; break;
 		//ionian 60
 		case 67: key = "C#"; mode = "ion"; break; //should
 		case 66: key = "F#"; mode = "ion"; break;
-		case 65: key = "B"; mode = "ion"; break;
-		case 64: key = "E"; mode = "ion"; break;
-		case 63: key = "A"; mode = "ion"; break;
-		case 62: key = "D"; mode = "ion"; break;
-		case 61: key = "G"; mode = "ion"; break;
-		case 60: key = "C"; mode = "ion"; break;
-		case 59: key = "F"; mode = "ion"; break;
+		case 65: key = "B" ; mode = "ion"; break;
+		case 64: key = "E" ; mode = "ion"; break;
+		case 63: key = "A" ; mode = "ion"; break;
+		case 62: key = "D" ; mode = "ion"; break;
+		case 61: key = "G" ; mode = "ion"; break;
+		case 60: key = "C" ; mode = "ion"; break;
+		case 59: key = "F" ; mode = "ion"; break;
 		case 58: key = "B-"; mode = "ion"; break;
 		case 57: key = "E-"; mode = "ion"; break;
 		case 56: key = "A-"; mode = "ion"; break;
@@ -1503,13 +1506,13 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		case 96: key = "g#"; mode = "dor"; break;
 		case 95: key = "c#"; mode = "dor"; break;
 		case 94: key = "f#"; mode = "dor"; break;
-		case 93: key = "b"; mode = "dor"; break;
-		case 92: key = "e"; mode = "dor"; break;
-		case 91: key = "a"; mode = "dor"; break;
-		case 90: key = "d"; mode = "dor"; break;
-		case 89: key = "g"; mode = "dor"; break;
-		case 88: key = "c"; mode = "dor"; break;
-		case 87: key = "f"; mode = "dor"; break;
+		case 93: key = "b" ; mode = "dor"; break;
+		case 92: key = "e" ; mode = "dor"; break;
+		case 91: key = "a" ; mode = "dor"; break;
+		case 90: key = "d" ; mode = "dor"; break;
+		case 89: key = "g" ; mode = "dor"; break;
+		case 88: key = "c" ; mode = "dor"; break;
+		case 87: key = "f" ; mode = "dor"; break;
 		case 86: key = "b-"; mode = "dor"; break;
 		case 85: key = "e-"; mode = "dor"; break;
 		case 84: key = "a-"; mode = "dor"; break;
@@ -1521,24 +1524,24 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		case 124: key = "g#"; mode = "phr"; break;
 		case 123: key = "c#"; mode = "phr"; break;
 		case 122: key = "f#"; mode = "phr"; break;
-		case 121: key = "b"; mode = "phr"; break;
-		case 120: key = "e"; mode = "phr"; break;
-		case 119: key = "a"; mode = "phr"; break;
-		case 118: key = "d"; mode = "phr"; break;
-		case 117: key = "g"; mode = "phr"; break;
-		case 116: key = "c"; mode = "phr"; break;
-		case 115: key = "f"; mode = "phr"; break;
+		case 121: key = "b" ; mode = "phr"; break;
+		case 120: key = "e" ; mode = "phr"; break;
+		case 119: key = "a" ; mode = "phr"; break;
+		case 118: key = "d" ; mode = "phr"; break;
+		case 117: key = "g" ; mode = "phr"; break;
+		case 116: key = "c" ; mode = "phr"; break;
+		case 115: key = "f" ; mode = "phr"; break;
 		case 114: key = "b-"; mode = "phr"; break;
 		case 113: key = "e-"; mode = "phr"; break;
 		//lydian 150
 		case 157: key = "F#"; mode = "lyd"; break;
-		case 156: key = "B"; mode = "lyd"; break;
-		case 155: key = "E"; mode = "lyd"; break;
-		case 154: key = "A"; mode = "lyd"; break;
-		case 153: key = "D"; mode = "lyd"; break;
-		case 152: key = "G"; mode = "lyd"; break;
-		case 151: key = "C"; mode = "lyd"; break;
-		case 150: key = "F"; mode = "lyd"; break;
+		case 156: key = "B" ; mode = "lyd"; break;
+		case 155: key = "E" ; mode = "lyd"; break;
+		case 154: key = "A" ; mode = "lyd"; break;
+		case 153: key = "D" ; mode = "lyd"; break;
+		case 152: key = "G" ; mode = "lyd"; break;
+		case 151: key = "C" ; mode = "lyd"; break;
+		case 150: key = "F" ; mode = "lyd"; break;
 		case 149: key = "B-"; mode = "lyd"; break;
 		case 148: key = "E-"; mode = "lyd"; break;
 		case 147: key = "A-"; mode = "lyd"; break;
@@ -1550,13 +1553,13 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		case 187: key = "G#"; mode = "mix"; break;
 		case 186: key = "C#"; mode = "mix"; break;
 		case 185: key = "F#"; mode = "mix"; break;
-		case 184: key = "B"; mode = "mix"; break;
-		case 183: key = "E"; mode = "mix"; break;
-		case 182: key = "A"; mode = "mix"; break;
-		case 181: key = "D"; mode = "mix"; break;
-		case 180: key = "G"; mode = "mix"; break;
-		case 179: key = "C"; mode = "mix"; break;
-		case 178: key = "F"; mode = "mix"; break;
+		case 184: key = "B" ; mode = "mix"; break;
+		case 183: key = "E" ; mode = "mix"; break;
+		case 182: key = "A" ; mode = "mix"; break;
+		case 181: key = "D" ; mode = "mix"; break;
+		case 180: key = "G" ; mode = "mix"; break;
+		case 179: key = "C" ; mode = "mix"; break;
+		case 178: key = "F" ; mode = "mix"; break;
 		case 177: key = "B-"; mode = "mix"; break;
 		case 176: key = "E-"; mode = "mix"; break;
 		case 175: key = "A-"; mode = "mix"; break;
@@ -1568,13 +1571,13 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		case 215: key = "g#"; mode = "aeo"; break;
 		case 214: key = "c#"; mode = "aeo"; break;
 		case 213: key = "f#"; mode = "aeo"; break;
-		case 212: key = "b"; mode = "aeo"; break;
-		case 211: key = "e"; mode = "aeo"; break;
-		case 210: key = "a"; mode = "aeo"; break;
-		case 209: key = "d"; mode = "aeo"; break;
-		case 208: key = "g"; mode = "aeo"; break;
-		case 207: key = "c"; mode = "aeo"; break;
-		case 206: key = "f"; mode = "aeo"; break;
+		case 212: key = "b" ; mode = "aeo"; break;
+		case 211: key = "e" ; mode = "aeo"; break;
+		case 210: key = "a" ; mode = "aeo"; break;
+		case 209: key = "d" ; mode = "aeo"; break;
+		case 208: key = "g" ; mode = "aeo"; break;
+		case 207: key = "c" ; mode = "aeo"; break;
+		case 206: key = "f" ; mode = "aeo"; break;
 		case 205: key = "b-"; mode = "aeo"; break;
 		case 204: key = "e-"; mode = "aeo"; break;
 		case 203: key = "a-"; mode = "aeo"; break;
@@ -1586,23 +1589,25 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 		case 243: key = "g#"; mode = "loc"; break;
 		case 242: key = "c#"; mode = "loc"; break;
 		case 241: key = "f#"; mode = "loc"; break;
-		case 240: key = "b"; mode = "loc"; break;
-		case 239: key = "e"; mode = "loc"; break;
-		case 238: key = "a"; mode = "loc"; break;
-		case 237: key = "d"; mode = "loc"; break;
-		case 236: key = "g"; mode = "loc"; break;
-		case 235: key = "c"; mode = "loc"; break;
-		case 234: key = "f"; mode = "loc"; break;
+		case 240: key = "b" ; mode = "loc"; break;
+		case 239: key = "e" ; mode = "loc"; break;
+		case 238: key = "a" ; mode = "loc"; break;
+		case 237: key = "d" ; mode = "loc"; break;
+		case 236: key = "g" ; mode = "loc"; break;
+		case 235: key = "c" ; mode = "loc"; break;
+		case 234: key = "f" ; mode = "loc"; break;
 		case 233: key = "b-"; mode = "loc"; break;
 	}
-
 
 	//identify spine
 	s = "";
 	std::string staffids = "";
 	for(int i=0; i < kernTokens.size() / 2; i++ ) {
-		if (i == 0 ) s = s + "**kern" + "\t" + "**loc" + "\t"; else s = s + "**text" + "\t" + "**loc" + "\t";
-		staffids = staffids + "*staff1" + "\t*\t";
+		if (i == 0 )
+			s = s + "**kern" + "\t";
+		else
+			s = s + "**text" + "\t";
+		staffids = staffids + "*staff1" + "\t";
 	}
 	//remove last tab.
 	s = s.substr(0,s.size()-1);
@@ -1613,7 +1618,7 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	//time signature
 	s = "";
 	for(int i=0; i < kernTokens.size() / 2; i++ ) {
-		if ( i == 0 ) s = s + initialTimeSignature.getKernTimeSignature() + "\t*\t"; else s = s + "*\t*\t";
+		if ( i == 0 ) s = s + initialTimeSignature.getKernTimeSignature() + "\t"; else s = s + "*\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
@@ -1625,7 +1630,7 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	ss >> midiTempo_str;
 	s = "";
 	for(int i=0; i < kernTokens.size() / 2; i++ ) {
-		if ( i == 0 ) s = s + "*MM" + midiTempo_str + "\t*\t"; else s = s + "*\t*\t";
+		if ( i == 0 ) s = s + "*MM" + midiTempo_str + "\t"; else s = s + "*\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
@@ -1642,18 +1647,19 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 	int ks = abs(tempkey);
 	s = "";
 	for( int i=0; i< kernTokens.size() / 2; i++ ) {
-		if ( i == 0) s = s + "*k[" + keys.substr(0,2*ks) + "]\t*\t"; else s = s + "*\t*\t";
+		if ( i == 0) s = s + "*k[" + keys.substr(0,2*ks) + "]\t"; else s = s + "*\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
 
 	//key (if major or minor or mode)
-	//!!!!!!!! FOR NOW: do not export mode. music21 cannot parse!
-	mode = "";
+	////!!!!!!!! FOR NOW: do not export mode. music21 cannot parse!
+	//8 april 2014: do it anyway for MTC, anticipating music21 te be able to parse this
+	//mode = "";
 	if ( key.size() > 0 ) {
 		s = "";
 		for( int i=0; i< kernTokens.size() / 2; i++ ) {
-			if ( i == 0) s = s + "*" + key + ":" + mode + "\t*\t"; else s = s + "*\t*\t";
+			if ( i == 0) s = s + "*" + key + ":" + mode + "\t"; else s = s + "*\t";
 		}
 		s = s.substr(0,s.size()-1);
 		res.push_back(s);
@@ -1671,7 +1677,7 @@ vector<string> SongLine::getKernEndSignature() const {
 	//identify spine
 	s = "";
 	for(int i=0; i < kernTokens.size() / 2; i++ ) {
-		s = s + "*-" + "\t*-\t";
+		s = s + "*-" + "\t";
 	}
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
