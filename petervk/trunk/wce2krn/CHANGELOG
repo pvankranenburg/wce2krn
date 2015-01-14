@@ -1,3 +1,14 @@
+Version 1.66
+- If meter invisible, in **kern output, meter indication as global comment (!! *M4/4)
+
+Version 1.64
+- Now -w generates lilypond for MTC instead of meertens web
+- -w: always include a title
+- -w: for instrumental melodies: hardbreaks and softbreaks result in \breathe in lilypond
+- -w: for folk songs: one phrase per system
+- -w: add NLB-id to footer. No record and strophe indication at top
+- removed \let from the lilypond preamble to be compatible with version 2.18
+
 Version 1.62
 - Mode is now exported to krn (for MTC)
 - Location spines are no longer exported to *kern

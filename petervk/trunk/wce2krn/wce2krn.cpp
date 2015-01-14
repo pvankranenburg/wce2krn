@@ -20,11 +20,10 @@ void print_usage() {
 	cout << "Usage: wce2krn [-k] [-r] [-s] [-l] [-v] [-h] [wcefile]" << endl;
 	cout << "Reads wce-file and generates *kern file" << endl;
 	cout << " -k: generate kernfile." << endl;
-	cout << " -r: generate relative lilypond file." << endl;
 	cout << " -208: generate lilypond 2.8 compatible lilypond file (default)." << endl;
 	cout << " -210: generate lilypond 2.10 compatible lilypond file (default is lilypond 2.8)." << endl;
 	cout << " -211: generate lilypond 2.11 compatible lilypond file (default is lilypond 2.8)." << endl;
-	cout << " -w: generate lilypond for presentation on the web (long page & no title)." << endl;
+	cout << " -w: generate lilypond for Meertens Tune Collections." << endl;
 	//cout << " -a: generate absolute lilypond file (not implemented)!" << endl;
 	cout << " -l: generate file(s) with only the lyrics." << endl;
 	cout << " -s: spit in lines." << endl;
@@ -65,7 +64,7 @@ int main (int argc, char * const argv[]) {
 		else if ( arg == "-210" ) ly_ver = 10;
 		else if ( arg == "-211" ) ly_ver = 11;
 		else if ( arg == "-a" ) absly = true;
-		else if ( arg == "-w" ) weblily = true;
+		else if ( arg == "-w" ) { weblily = true; ly_ver = 16; }
 		else if ( arg == "-p" ) printContents = true;
 		else if ( arg == "-e" ) suppresslog = true;
 		else if ( arg == "-h" ) { print_usage(); exit(0); }

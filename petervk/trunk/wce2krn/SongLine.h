@@ -99,7 +99,7 @@ public:
 	int getWCELineNumber() const { return WCELineNumber; }
 	bool endsWithBarLine() const;
 	//bool changeMeterLastBar(int num, int den); //TODO for \stopbar problem
-	std::string getNLBIdentifier() const;
+	std::string getNLBIdentifier(bool escape_underscore=false) const;
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 
@@ -108,7 +108,7 @@ public:
 	vector<string> getLyEndSignature(int ly_ver, bool lines, bool weblily) const;
 
 	vector<string> getKernLine(bool lines) const;
-	vector<string> getKernBeginSignature(bool lines) const;
+	vector<string> getKernBeginSignature(bool lines, bool meterinvisible) const;
 	vector<string> getKernEndSignature() const;
 
 	string getLyricsLine(int line) const; //line 0 is first text line
