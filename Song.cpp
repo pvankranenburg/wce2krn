@@ -256,7 +256,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					clog << "Writing " << s << endl;
 				}
 				switch(repr) {
-					case SongLine::KERN: part = si->getKernBeginSignature(lines); break;
+					case SongLine::KERN: part = si->getKernBeginSignature(lines, wcefile.getMeterInvisible()); break;
 					case SongLine::ABSLY: part = si->getLyBeginSignature(true, lines, weblily, ly_ver); break;
 					case SongLine::RELLY: part = si->getLyBeginSignature(false, lines, weblily, ly_ver); break;
 					//case SongLine::TEXT: do nothing
@@ -271,10 +271,12 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 					part = si->getKernLine(lines);
 
-					if (stdoutput)
+					if (stdoutput) {
 						if (!lines) cout << "!! verse " << line << endl;
-					else
+					}
+					else {
 						if (!lines) out << "!! verse " << line << endl;
+					}
 
 					for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 						if (stdoutput) cout << *part_it << endl;

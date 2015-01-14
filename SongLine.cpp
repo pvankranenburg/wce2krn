@@ -998,21 +998,32 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 		cerr << getLocation() << ": Warning: only a \"-\" under a note. Should be an \"_\"?" << endl;
 	}
 
+	string hyphen="-";
+	//string hyphen="";
+
+	//string delimiterA="["; //to keep words that go with single note together
+	//string delimiterB="]";
+	string delimiterA="";
+	string delimiterB="";
+
+	tok = delimiterA + tok + delimiterB;
+
 	switch (ts) {
 		case RelLyToken::IN_WORD: {
-			if ( repr == KERN ) tok = "-" + tok + "-"; //else ok
-			if ( repr == TEXT ) tok = tok + "-";
+			if ( repr == KERN ) tok = hyphen + tok + hyphen; //else ok
+			if ( repr == TEXT ) tok = tok + hyphen;
 			break;
 		}
 
 		case RelLyToken::BEGIN_WORD: {
-			if ( repr == KERN ) tok = tok + "-";
-			if ( repr == TEXT ) tok = tok + "-";
+			if ( repr == KERN ) tok = tok + hyphen;
+			if ( repr == TEXT ) tok = tok + hyphen;
 			break;
 		}
 
 		case RelLyToken::END_WORD: {
-			if ( repr == KERN ) tok = "-" + tok; else tok = tok + " ";
+			if ( repr == KERN ) tok = hyphen + tok;
+			else                tok = tok + " ";
 			break;
 		}
 
@@ -1240,20 +1251,21 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("%");
 	if ( ly_ver == 10 ) res.push_back("\\version\"2.10.0\"");
 	else if ( ly_ver == 11 ) res.push_back("\\version\"2.11.0\"");
+	else if ( ly_ver == 16 ) res.push_back("\\version\"2.16\"");
 	else res.push_back("\\version\"2.8.2\"");
 
 	if ( weblily ) {
 		res.push_back("#(append! paper-alist '((\"long\" . (cons (* 210 mm) (* 2000 mm)))))");
 		res.push_back("#(set-default-paper-size \"long\")");
-		res.push_back("sb = { }");
+		res.push_back("sb = {\\breathe}");
 	}
 	else
 		res.push_back("sb = {\\breathe}");
 
 	if ( weblily ) {
 		if (instrumental) {
-			res.push_back("mBreak = { }");
-			res.push_back("bBreak = { }"); //see getLyLine()
+			res.push_back("mBreak = {\\breathe }");
+			res.push_back("bBreak = {\\breathe }"); //see getLyLine()
 		} else {
 			res.push_back("mBreak = { \\bar \"\" \\break }");
 			res.push_back("bBreak = { \\break }"); //see getLyLine()
@@ -1267,8 +1279,8 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	}
 
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
-	res.push_back("\\let gl=\\glissando");
-	res.push_back("\\let itime={\\override Staff.TimeSignature #'stencil = ##f }");
+	res.push_back("gl=\\glissando");
+	res.push_back("itime={\\override Staff.TimeSignature #'stencil = ##f }");
 	//** for instrumental music
 	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
 	res.push_back("fine = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{Fine}}}");
@@ -1288,27 +1300,32 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	string songtitle = "";
 	string piece = "";
 	//cout << "title: " << title << endl;
-	if ( weblily ) {
-		if ( !lines ) {
-			if ( title.size() != 0 && title.compare(0,3,"NLB") ) { //only produce given title if it is not an NLB number. do not construct one
-				//cout << title << endl;
-				songtitle = "title = \"" + title + "\"";
-			}
-		}
-	} else { //not weblily
-		// construct a 'piece' with recordnumber. Always!
-		piece = "piece = \"Record " + record + " - Strophe " + strophe;
+	//if ( weblily ) {
+	//	if ( !lines ) {
+	//		if ( title.size() != 0 && title.compare(0,3,"NLB") ) { //only produce given title if it is not an NLB number. do not construct one
+	//			//cout << title << endl;
+	//			songtitle = "title = \"" + title + "\"";
+	//		}
+	//	}
+	//}
+	//else
+	{   if (!weblily) piece = "piece = \"Record " + record + " - Strophe " + strophe;
 		if ( lines ) {
 			stringstream s;
 			s << phraseNo;
 			string str_phraseNo = "";
 			s >> str_phraseNo;
-			piece = piece + " - Phrase " + str_phraseNo + "\"";
+			if (!weblily) piece = piece + " - Phrase " + str_phraseNo + "\"";
 		} else {
-			piece = piece + "\"";
+			if (!weblily) piece = piece + "\"";
 		}
 		if ( title.size() != 0 ) { //use provided title if given for 'title' field.
 			songtitle = "title = \"" + title + "\"";
+		} else {
+			if (weblily)
+				songtitle = "";
+			else
+				songtitle = "title = \"[" + this->getNLBIdentifier() + "]\"";
 		}
 	}
 	if ( songtitle.size() != 0 ) {
@@ -1394,7 +1411,7 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 	// if for web, add url
 
 	if (weblily && !lines) {
-		res.push_back("\\markup { \\vspace #0 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller http://www.liederenbank.nl/image.php?recordid="+record+"} } }");
+		res.push_back("\\markup { \\vspace #0 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller \""+this->getNLBIdentifier()+" - http://www.liederenbank.nl/liedpresentatie.php?zoek="+record+"\" } } }");
 	}
 
 	// \markup { \with-color #grey \fill-line { \center-column { \smaller http://www.liederenbank.nl/image.php?recordid=167802 } } }
@@ -1437,7 +1454,7 @@ vector<string> SongLine::getKernLine(bool lines) const {
 	return res;
 }
 
-vector<string> SongLine::getKernBeginSignature(bool lines) const {
+vector<string> SongLine::getKernBeginSignature(bool lines, bool meterinvisible) const {
 
 	vector<string> res;
 	string s;
@@ -1617,6 +1634,7 @@ vector<string> SongLine::getKernBeginSignature(bool lines) const {
 
 	//time signature
 	s = "";
+	if (meterinvisible) s = "!!";
 	for(int i=0; i < kernTokens.size() / 2; i++ ) {
 		if ( i == 0 ) s = s + initialTimeSignature.getKernTimeSignature() + "\t"; else s = s + "*\t";
 	}
@@ -2004,12 +2022,14 @@ bool SongLine::endsWithBarLine() const {
 	return (relLyTokens[0].back()).getIdentity() == RelLyToken::BARLINE;
 }
 
-string SongLine::getNLBIdentifier() const {
+string SongLine::getNLBIdentifier(bool escape_underscore) const {
 	string recid = record;
 	string strid = strophe;
 	while ( recid.size() < 6 ) recid = "0"+recid;
 	while ( strid.size() < 2 ) strid = "0"+strid;
-	return string("NLB"+recid+"_"+strid);
+	string underscore = "_";
+	if (escape_underscore) underscore = "\\_";
+	return string("NLB"+recid+underscore+strid);
 }
 
 bool SongLine::checkTies() const {
