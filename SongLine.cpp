@@ -1860,12 +1860,12 @@ bool SongLine::checkMelisma() const {
 					 //( ties_ann[i] != RelLyToken::START_TIE ) &&
 					 ( ties_ann[i] != RelLyToken::CONTINUE_TIE ) &&
 					 ( ties_ann[i] != RelLyToken::END_TIE ) ) {
-						if ( relLyTokens[0][i].getPitchClass() != lastPC )
-							cerr << getLocation() << ": Error: slur missing at notes: " << relLyTokens[0][lastNoteIndex].getToken()
+						//if ( relLyTokens[0][i].getPitchClass() != lastPC )
+							cerr << getLocation() << ": Warning: slur or tie missing at melisma: " << relLyTokens[0][lastNoteIndex].getToken()
 							     << " - " << relLyTokens[0][i].getToken() << endl;
-						else
-							cerr << getLocation() << ": Error: tie missing at notes: " << relLyTokens[0][lastNoteIndex].getToken()
-							     << " - " << relLyTokens[0][i].getToken() << endl;
+						//else
+						//	cerr << getLocation() << ": Warning: tie missing at notes: " << relLyTokens[0][lastNoteIndex].getToken()
+						//	     << " - " << relLyTokens[0][i].getToken() << endl;
 						res = false;
 				}
 			}
