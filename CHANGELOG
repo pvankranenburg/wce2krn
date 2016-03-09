@@ -1,5 +1,9 @@
+Version 1.70
+- Generated kernfile does not longer start with all-
+- 's' at begin of line is now handled properly wrt text setting (RelLyToken:isRest() debugged)
+
 Version 1.68
-- missing slur on melisma now generates (better understandable) warning instead of error.
+- missing slur or melisma now generates (better understandable) warning instead of error.
 
 Version 1.66
 - If meter invisible, in **kern output, meter indication as global comment (!! *M4/4)

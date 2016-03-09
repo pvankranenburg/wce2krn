@@ -231,7 +231,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 		path = "";
 	}
 
-	string outname = path + "all-" + basename + ext;
+	string outname = path + basename + ext;
 	ofstream out;
 
 	if (!lines && repr != SongLine::TEXT && !stdoutput) {

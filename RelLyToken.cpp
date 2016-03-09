@@ -458,8 +458,9 @@ bool RelLyToken::isRest() const {
 	
 	if ( getIdentity() == NOTE ) {
 		if ( token.find_first_of("r") != string::npos ) { res = true; }
+		if ( getAccidental() == NO_ACCIDENTAL ) // 's' is also in 'es' and 'is'
+			if ( token.find_first_of("s") != string::npos ) { res = true; }
 	}
-	
 	return res;
 }
 
