@@ -598,7 +598,7 @@ void SongLine::translate() {
 					kernTokens[2*i].push_back( "." );
 					kernTokens[2*i+1].push_back( "." );
 					// rest at end of line could be tolerated
-					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' ) relLyTokens[i].push_back( RelLyToken("", "", 0, 0, RelLyToken::TEXT, false) );
+					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' || relLyTokens[0][relly_index].getPitchClass() == 's' ) relLyTokens[i].push_back( RelLyToken("", "", 0, 0, RelLyToken::TEXT, false) );
 					// any case: annotate
 					text_ann[i-1].push_back( RelLyToken::NO_WORD );
 				} else {
@@ -641,7 +641,7 @@ void SongLine::translate() {
 						lyricsLines[i-1] = lyricsLines[i-1] + toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, TEXT );
 						// annotation
 						//if rest or empty: NO_WORD
-						if ( relLyTokens[0][relly_index].getPitchClass() == 'r' )
+						if ( relLyTokens[0][relly_index].getPitchClass() == 'r' || relLyTokens[0][relly_index].getPitchClass() == 's' )
 							text_ann[i-1].push_back(RelLyToken::NO_WORD);
 						else if ( relLyTokens[i][relly_index].getToken().size() == 0 )
 							text_ann[i-1].push_back(RelLyToken::NO_WORD);
