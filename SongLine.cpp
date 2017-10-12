@@ -27,7 +27,6 @@ using namespace std;
 #define yyFlexLexer TextFlexLexer
 #include <FlexLexer.h>
 
-
 SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, RelLyToken::TieStatus initialTie, RelLyToken::SlurStatus initialSlur, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, bool instr, vector<string> fField) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
@@ -235,7 +234,8 @@ void SongLine::translate() {
 		id = (*rl_it).getIdentity();
 		//cout << (*rl_it).getToken() << " : " << id << endl;
 		switch(id) {
-			case RelLyToken::NOTE: {
+			case RelLyToken::NOTE:
+			case RelLyToken::CHORD: {
 
 				// new bar? : raise barnumber and write barlines to kern
 				if ( !meterInvisible ) {
@@ -256,7 +256,7 @@ void SongLine::translate() {
 				}
 				//cout << (*rl_it).getToken() << ": note" << endl;
 				//now convert to abs ly and convert to kern
-				//triplet (status is set by TIMES_COMMAND below. reset here, if brace is before note, otherwhise after creating note)
+				//triplet (status is set by TIMES_COMMAND below. reset here, if brace is before note, otherwise after creating note)
 				if ( currentTripletStatus && (*rl_it).containsClosingBraceBeforeNote() ) currentTripletStatus = false;
 				//duration:
 				if ( (*rl_it).getDurationBase() != 0 ) {
@@ -274,17 +274,26 @@ void SongLine::translate() {
 					}
 					if ( (*rl_it).getTie() == RelLyToken::START_TIE) {
 						currentTieStatus = RelLyToken::CONTINUE_TIE;
-					}
-					else
+					} else {
 						currentTieStatus = RelLyToken::END_TIE;
+					}
 				}
-				else if ( currentTieStatus == RelLyToken::END_TIE || currentTieStatus == RelLyToken::NO_TIE )
-					if ( (*rl_it).getTie() == RelLyToken::START_TIE )
+				else if ( currentTieStatus == RelLyToken::END_TIE || currentTieStatus == RelLyToken::NO_TIE ) {
+					if ( (*rl_it).getTie() == RelLyToken::START_TIE ) {
 						currentTieStatus = RelLyToken::START_TIE;
-					else
+					} else {
 						currentTieStatus = RelLyToken::NO_TIE;
+					}
+				}
 				//slur
 				if (currentSlurStatus == RelLyToken::END_SLUR) currentSlurStatus = RelLyToken::NO_SLUR;
+				//check nested slurs:
+				if ( (currentSlurStatus == RelLyToken::START_SLUR || currentSlurStatus == RelLyToken::IN_SLUR)
+						&& (*rl_it).getSlur() == RelLyToken::START_SLUR ) {
+					cerr << getLocation() << ": Error: Nested slurs are not allowed: " << (*rl_it).getToken() <<  endl;
+					exit(1);
+				}
+				//
 				if ( (*rl_it).getSlur() != RelLyToken::NO_SLUR ) //there is slurinfo, just copy
 					currentSlurStatus = (*rl_it).getSlur();
 				else {
@@ -463,9 +472,9 @@ void SongLine::translate() {
 				if (lastPitchClass != 's' && lastPitchClass != 'r') finalLastPitchClass = lastPitchClass;
 				string gracestring = (*rl_it).getToken();
 				string::size_type grpos1, grpos2;
-				//remove "\grace{" and "}"
+				//remove "\grace{" and "}" or "\app{" or "\vs{" or "\slashedGrace{"
 				if ( ( grpos1 = gracestring.find("{") ) == string::npos ) {
-					cerr << getLocation() << ": Error: \"{\" missing in gracenote. This should never happen." << endl;
+					cerr << getLocation() << ": Error: \"{\" missing in gracenote. This should never happen:" << endl;
 					exit(-1);
 				}
 				if ( ( grpos2 = gracestring.find("}") ) == string::npos ) {
@@ -767,7 +776,7 @@ void SongLine::breakWcelines() {
 		  bool eerste = true;
 		  while(tok != 0){
 
-			//cout << lexer->YYText() << " " << tok << endl ;
+			cout << lexer->YYText() << " " << tok << endl ;
 
 			if ( tok == -1 ) {
 			  ctoken = lexer->YYText();
@@ -780,7 +789,7 @@ void SongLine::breakWcelines() {
 				//clog << getLocation() << ": INSTR: " << lexer->YYText() << endl;
 				//ignore
 			}
-			else if ( tok == 5 ) { //grace
+			else if ( tok == 5 ) { //grace or app
 				ctoken = lexer->YYText();
 				//put this with "\grace{" and "}" int relLyTokens
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::GRACE, is_music));
@@ -842,6 +851,35 @@ void SongLine::breakWcelines() {
 				ctoken = lexer->YYText();
 				cerr << "\\stopbar not yet implemented (" << ctoken << ")" << endl;
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::STOPBAR, is_music));
+		  	}
+		  	else if ( tok == 12 ) { //chord
+				ctoken = lexer->YYText();
+				RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::CHORD, false, is_music);
+				relLyTokens.back().push_back(rlt);
+				//cout << "chord: " << ctoken << endl;
+				//cout << "location: " << getLocation() << endl;
+		  	}
+		  	else if ( tok == 13 ) { // single '('  should be attached to last note
+				ctoken = lexer->YYText();
+				//find last note
+				int ix = relLyTokens.back().size() -1;
+				//cout << ix << endl;
+				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+					ix--;
+				if ( ix < 0 ) cerr << getLocation() << ": Warning: ( symbol could not be attached to a note." << endl;
+				else
+					(relLyTokens.back())[ix].addSlurBegin();
+		  	}
+		  	else if ( tok == 14 ) { // single ')'  should be attached to last note
+				ctoken = lexer->YYText();
+				//find last note
+				int ix = relLyTokens.back().size() -1;
+				//cout << ix << endl;
+				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+					ix--;
+				if ( ix < 0 ) cerr << getLocation() << ": Warning: ) symbol could not be attached to a note." << endl;
+				else
+					(relLyTokens.back())[ix].addSlurEnd();
 		  	}
 			else {
 			  ctoken = lexer->YYText();
@@ -981,16 +1019,17 @@ RationalTime SongLine::rationalDuration(int duration, int dots, bool triplet) co
 string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation repr) const {
 	pvktrim(tok);
 
-	if ( tok.size() == 0 )
+	if ( tok.size() == 0 ) {
 		if ( repr == KERN ) return "."; else return "";
-	if ( tok == "_" )
+	}
+	if ( tok == "_" ) {
 		if ( repr == KERN ) {
 			if ( ts == RelLyToken::END_WORD || ts == RelLyToken::SINGLE_WORD || ts == RelLyToken::END_WORD_CONT || ts == RelLyToken::SINGLE_WORD_CONT ) return "."; // return "|";
 			else if ( ts == RelLyToken::IN_WORD || ts == RelLyToken::BEGIN_WORD || ts == RelLyToken::IN_WORD_CONT || ts == RelLyToken::BEGIN_WORD_CONT ) return "."; // return "||";
 			else return ".";
 		}
 		else return "";
-
+	}
 	if ( tok.find(" --") != string::npos) tok.erase(tok.find(" --"));
 
 	//if only a dash, print a warning. Should be an underscore.
@@ -1031,6 +1070,7 @@ string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation re
 			if ( repr == TEXT ) tok = tok + " ";
 			break;
 		}
+		default: {}; //other possibilities handled above ("_")
 	}
 
 	//remove " and &quot;
@@ -1280,6 +1320,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("gl=\\glissando");
+	res.push_back("app = #(define-music-function (parser location notes) (ly:music?) #{ \\appoggiatura $notes #} )");
 	res.push_back("itime={\\override Staff.TimeSignature #'stencil = ##f }");
 	//** for instrumental music
 	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
@@ -1809,6 +1850,7 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 		case RelLyToken::DOUBLE_SHARP:
 			pos = pos + 4;
 			break;
+		default: {};
 	}
 
 	while ( pos < lyline.size() )
@@ -1925,7 +1967,8 @@ void SongLine::createAnnotations() {
 	int field_width = 17;
 
 	for ( int i=0; i<relLyTokens[0].size(); i++ ) {
-		part = (relLyTokens[0][i].getToken() + "*");
+		//part = (relLyTokens[0][i].getToken() + "*");
+		part = (relLyTokens[0][i].getToken());
 		columnize(part, field_width); st = st + part;
 		part = RelLyToken::printIdentity(relLyTokens[0][i].getIdentity());
 		columnize(part, field_width); st = st + part;

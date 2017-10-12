@@ -1,3 +1,12 @@
+Version 1.72
+- Chords are parsed. FIRST note is exported to **kern
+- single '(', ')', '[' and ']' are attached to previous note
+- -. is allowed for staccato
+- dynamic marks \p+ and \f+ are allowed
+- bugfix in recognition of alteration in lilylexer.ll
+- Appoggiatura added: \app
+- Check for nested slurs added
+
 Version 1.70
 - Generated kernfile does not longer start with all-
 - 's' at begin of line is now handled properly wrt text setting (RelLyToken:isRest() debugged)
