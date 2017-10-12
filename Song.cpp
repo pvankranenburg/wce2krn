@@ -259,7 +259,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					case SongLine::KERN: part = si->getKernBeginSignature(lines, wcefile.getMeterInvisible()); break;
 					case SongLine::ABSLY: part = si->getLyBeginSignature(true, lines, weblily, ly_ver); break;
 					case SongLine::RELLY: part = si->getLyBeginSignature(false, lines, weblily, ly_ver); break;
-					//case SongLine::TEXT: do nothing
+					case SongLine::TEXT: {}
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
@@ -324,7 +324,10 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 					part = si->getLyLine(true, lines, ly_ver);
 
-				break;
+					break;
+
+				case SongLine::TEXT:
+					{};
 
 			}
 
@@ -340,6 +343,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					case SongLine::KERN: part = si->getKernEndSignature(); break;
 					case SongLine::ABSLY:
 					case SongLine::RELLY: part = si->getLyEndSignature(ly_ver, lines, weblily); break;
+					case SongLine::TEXT: {};
 				}
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;

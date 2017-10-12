@@ -11,6 +11,7 @@
 #define RELLYTOKEN_H
 
 #include<string>
+#include<vector>
 using namespace std;
 
 #include "TimeSignature.h"
@@ -19,7 +20,7 @@ using namespace std;
 class RelLyToken {
 public:
 	
-	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, BARLINE, STOPBAR, UNKNOWN };
+	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, CHORD, BARLINE, STOPBAR, UNKNOWN };
 	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, IN_SLUR, NO_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
 	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
@@ -48,6 +49,10 @@ public:
 	
 	void addTie(); //adds a tie to the note.
 	void addClosingBrace(); //adds a closing brace to the note.
+	void addSlurBegin(); //adds a slur begin ( to the note
+	void addSlurEnd(); //adds a slur begin ( to the note
+
+	vector<RelLyToken> splitChord() const;
 	
 	Identity getIdentity() const;
 	char getPitchClass() const;
@@ -57,6 +62,7 @@ public:
 	bool getInterpretedPitch() const; // true if pitch is interpreted (crossed note head)
 	bool getNotDotted() const; // true if no duration is given
 	bool getGlissandoEnd() const; // true if glissando ends on this note.
+	string getLocation() const { return location; }
 	SlurStatus getSlur() const;
 	TieStatus getTie() const;
 	Accidental getAccidental() const;
@@ -74,12 +80,14 @@ public:
 	
 	//pitchclass, tiestatus, accidental en braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
 	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
+	string createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
+	string createKernChordNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
 	string createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const;
 
 	string getKernBarLine() const;
 
 private:
-	Identity computeIdentity(bool is_music) const;
+	//Identity computeIdentity(bool is_music) const;
 	
 	string token;
 	Identity id;
