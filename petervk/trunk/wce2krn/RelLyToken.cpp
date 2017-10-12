@@ -17,17 +17,21 @@
 #include <cassert>
 using namespace std;
 
+//used to split chord notes
+#undef yyFlexLexer
+#define yyFlexLexer ChordNoteFlexLexer
+#include <FlexLexer.h>
+
 RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool hassoftbreak, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos), softBreak(hassoftbreak) {
-	
-	//id = computeIdentity(is_music);
+
 }
 
-RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()), softBreak(r.hasSoftBreak()) {
-	//id = computeIdentity();
+RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()), softBreak(r.hasSoftBreak()), location(r.getLocation()) {
+
 }
 
 RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0), softBreak(false) {
-	//id = UNKNOWN;
+
 }
 
 void RelLyToken::addTie() {
@@ -38,6 +42,14 @@ void RelLyToken::addClosingBrace() {
 	token = token + " }";
 }
 
+void RelLyToken::addSlurBegin() {
+	token = token + "(";
+}
+
+void RelLyToken::addSlurEnd() {
+	token = token + ")";
+}
+
 RelLyToken& RelLyToken::operator=(const RelLyToken& r) {
 	if ( &r != this ) {
 	}
@@ -46,81 +58,6 @@ RelLyToken& RelLyToken::operator=(const RelLyToken& r) {
 	return *this;
 }
 
-RelLyToken::Identity RelLyToken::computeIdentity(bool is_music) const {
-	
-	// if not music (dus text), return TEXT
-	if ( !is_music ) return TEXT;
-		
-	Identity res = UNKNOWN;
-	
-	//cout << token << endl;
-	
-	string lt = token; //changable copy
-	pvktrim(lt); //to be sure
-
-	//NB first check for 'times' and then for 'time', because 'time' is in 'times'
-	
-	string::size_type pos;
-	if( ( (pos = lt.find("\\times 2/3")) != string::npos) || ( (pos = lt.find("\\times2/3")) != string::npos) ) {
-		//make sure there is only the times command with maybe a brace.
-		//cout << lt << " - " << flush;
-		if ( (pos = lt.find("\\times 2/3")) != string::npos) lt.erase(pos, 10);
-		if ( (pos = lt.find("\\times2/3")) != string::npos) lt.erase(pos, 9);
-		//cout << lt << endl << flush;
-		pvktrim(lt);
-		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
-			res = TIMES_COMMAND;
-			return res;
-		} else {
-			cerr << location << ": Warning: Unknown token: " << token << endl;
-			return UNKNOWN;
-		}
-	}
-	if( (pos = lt.find("\\time")) != string::npos ) {
-		// make sure there is no note after the time command
-		//cout << lt << " - ";
-		lt.erase(pos, 5);
-		pvktrim(lt);
-		//cout << lt << endl;
-		if ( lt.find_first_of("abcdefgrs") == string::npos ) { // there is no note
-			res = TIME_COMMAND;
-			return res;
-		} else {
-			cerr << location << ": Warning: Unknown token: " << token << endl;
-			return UNKNOWN;
-		}
-	}
-	
-	//now find out if it is a note
-	//remove all allowed nonnote characters so that only the notename remains
-	//cout << lt << " - ";
-	pvktrim(lt);
-	while( (pos = lt.find_first_of("{}().~0123456789,' ")) != string::npos )
-		{ lt.erase(pos,1); }
-	//cout << lt << " - ";
-	if ( (pos = lt.find("\\x")) != string::npos ) {
-		lt.erase(pos,2);
-		//if ( pos != 0 ) cerr << location << ": Warning: \\x not at beginning of token " << token << endl; //not good in case of \gl\x or { \x
-	}
-	//cout << lt << " - ";
-	if ( (pos = lt.find("\\gl")) != string::npos ) {
-		lt.erase(pos,3);
-		if ( pos != 0 )
-			cerr << location << ": Warning: \\gl not at beginning of token " << token << endl;
-	}
-	//cout << lt << endl;
-	//now there sould be only one pitch, rest ('r') or space ('s') left
-	if ( lt.find_first_of("abcdefgrs") != string::npos ) { res = NOTE; return res; }
-	
-	//warning for empty token // only if in melody ---> moved to SongLine::breakWcelines()
-	//take new trim of token
-	//lt = token;
-	//pvktrim(lt);
-	//if ( is_music && (lt.size() == 0) )
-	//	cerr << location << ": Warning: empty token " << token << endl;
-	
-	return res;
-}
 
 RelLyToken::Identity RelLyToken::getIdentity() const {
 	return id;
@@ -137,6 +74,7 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 		case FLAT:         res << "es"; break;
 		case SHARP:        res << "is"; break;
 		case DOUBLE_SHARP: res << "isis"; break;
+		default: {};
 	}
 	//octave
 	if ( getPitchClass() != 'r' && getPitchClass() != 's' ) {
@@ -156,6 +94,7 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 	switch(slur) {
 		case START_SLUR: res << "("; break;
 		case END_SLUR: res << ")"; break;
+		default: {}
 	}
 	
 	string s;
@@ -180,6 +119,24 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 }
 
 string RelLyToken::createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
+	if (getIdentity() == NOTE ) {
+		return createKernSingleNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
+	}
+	else if (getIdentity() == CHORD) {
+		return createKernChordNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
+	}
+	else {
+		return ".";
+	}
+}
+
+string RelLyToken::createKernChordNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
+	cerr << location << " Warning: Only first note of chord exported to **kern: " << token << endl;
+	vector<RelLyToken> notes = splitChord();
+	return notes[0].createKernNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
+}
+
+string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
 	stringstream res;
 	//open sub
 	//open phrase
@@ -213,6 +170,7 @@ string RelLyToken::createKernNote(int octave, int duration, int dots, bool tripl
 		case FLAT:         res << "-"; break;
 		case SHARP:        res << "#"; break;
 		case DOUBLE_SHARP: res << "##"; break;
+		default: {}
 	}
 	//Glissando end?
 	if (getGlissandoEnd()) // yes
@@ -238,7 +196,7 @@ string RelLyToken::createKernNote(int octave, int duration, int dots, bool tripl
 }
 
 int RelLyToken::getDurationBase() const {
-	if (getIdentity() != NOTE ) return -1;
+	if (getIdentity() != NOTE && getIdentity() != CHORD) return -1;
 	string duration = "";
 	string::size_type pos;
 	string lt = token; //changable
@@ -261,27 +219,66 @@ bool RelLyToken::getNotDotted() const { //return true if no duration is given
 }
 
 int RelLyToken::getOctaveCorrection() const {
-	string lt = token; //changable
-	string::size_type pos;
-	int res = 0;
-	while( (pos = lt.find("'")) != string::npos ) { res++; lt.erase(pos,1); }
-	while( (pos = lt.find(",")) != string::npos ) { res--; lt.erase(pos,1); }
-	return res;
+	if (getIdentity() == NOTE) {
+		string lt = token; //changable
+		string::size_type pos;
+		int res = 0;
+		while( (pos = lt.find("'")) != string::npos ) { res++; lt.erase(pos,1); }
+		while( (pos = lt.find(",")) != string::npos ) { res--; lt.erase(pos,1); }
+		return res;
+	}
+	else if (getIdentity() == CHORD) {
+		vector<RelLyToken> notes = splitChord();
+		return notes[0].getOctaveCorrection();
+	}
+	else
+		return 0;
+}
+
+vector<RelLyToken> RelLyToken::splitChord() const {
+	vector<RelLyToken> notes;
+	string flexline = token;
+	istringstream iss(flexline);
+	FlexLexer* lexer;
+	lexer = new ChordNoteFlexLexer(&iss);
+	int tok = lexer->yylex();
+	while(tok != 0){
+		if (tok == 2) {
+			  string ctoken = lexer->YYText();
+			  pvktrim(ctoken);
+			  RelLyToken rlt = RelLyToken(ctoken, location, WCE_LineNumber, WCE_Pos, RelLyToken::NOTE, false, true);
+			  notes.push_back(rlt);
+		}
+		tok = lexer->yylex();
+	}
+
+	//for (int i=0; i<notes.size(); i++)
+	//	cout << notes[i].getToken() << " ";
+	//cout << endl;
+
+	return notes;
 }
 
 char RelLyToken::getPitchClass() const {
-	if (getIdentity() != NOTE) return '.'; //not sure what to return
-	string::size_type pos;
-	//remove \x or \gl
-	string t = token;
-	if ( (pos = t.find("\\x")) != string::npos ) t.erase(pos,2);
-	if ( (pos = t.find("\\gl")) != string::npos ) t.erase(pos,3); 
-	if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return '.';
-	return (char)t[pos];
+	if (getIdentity() == NOTE) {
+		string::size_type pos;
+		//remove \x or \gl
+		string t = token;
+		if ( (pos = t.find("\\x")) != string::npos ) t.erase(pos,2);
+		if ( (pos = t.find("\\gl")) != string::npos ) t.erase(pos,3);
+		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return '.';
+		return (char)t[pos];
+	}
+	else if (getIdentity() == CHORD ) { //return pitch class of first note ??
+		vector<RelLyToken> notes = splitChord();
+		return notes[0].getPitchClass();
+	}
+	else
+		return '.';
 }
 
 RelLyToken::SlurStatus RelLyToken::getSlur() const {
-	if ( id != NOTE ) return NO_SLUR_INFO;
+	if ( id != NOTE && id != CHORD ) return NO_SLUR_INFO;
 	SlurStatus res = NO_SLUR;
 	string::size_type pos;
 	if ( (pos = token.find("(")) != string::npos) res = START_SLUR;
@@ -290,7 +287,7 @@ RelLyToken::SlurStatus RelLyToken::getSlur() const {
 }
 
 RelLyToken::TieStatus RelLyToken::getTie() const {
-	if ( id != NOTE ) return NO_TIE_INFO;
+	if ( id != NOTE && id != CHORD) return NO_TIE_INFO;
 	if ( token.find("~") != string::npos ) return START_TIE; else return NO_TIE;
 	//never used:
 	return NO_TIE_INFO;
@@ -363,7 +360,6 @@ bool RelLyToken::getInterpretedPitch() const {
 	bool res = false;
 	if ( token.find("\\x") != string::npos ) // \x found
 		res = true;
-	
 	return res;
 }
 
@@ -446,6 +442,7 @@ string RelLyToken::printIdentity(Identity i) {
 		case TIMES_COMMAND: return "TIMES_COMMAND";
 		case TEXT: return "TEXT";
 		case GRACE: return "GRACE";
+		case CHORD: return "CHORD";
 		case BARLINE: return "BARLINE";
 		case STOPBAR: return "STOPBAR";
 		case UNKNOWN: return "UNKNOWN";

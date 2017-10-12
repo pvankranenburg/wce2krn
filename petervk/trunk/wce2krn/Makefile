@@ -13,6 +13,7 @@ wce2krn :  RationalTime_i386.o \
 		   WCE_File_i386.o \
 		   lex.Lily_i386.o \
 		   lex.Text_i386.o \
+		   lex.ChordNote_i386.o \
 		   pvkutilities_i386.o \
 		   wce2krn_i386.o
 	g++ $(FLAGS) -o wce2krn RationalTime_i386.o \
@@ -23,6 +24,7 @@ wce2krn :  RationalTime_i386.o \
 				   WCE_File_i386.o \
 				   lex.Lily_i386.o \
 				   lex.Text_i386.o \
+				   lex.ChordNote_i386.o \
 				   pvkutilities_i386.o \
 				   wce2krn_i386.o
 
@@ -61,6 +63,8 @@ lex.Lily_i386.o : lex.Lily.cc
 lex.Text_i386.o : lex.Text.cc
 	g++ $(FLAGS) -Wno-deprecated -c -o lex.Text_i386.o lex.Text.cc 
 
+lex.ChordNote_i386.o : lex.ChordNote.cc
+	g++ $(FLAGS) -Wno-deprecated -c -o lex.ChordNote_i386.o lex.ChordNote.cc
 
 ##########################################
 #
@@ -72,6 +76,9 @@ lex.Lily.cc : lilylexer.ll
 
 lex.Text.cc : textlexer.ll
 	flex textlexer.ll
+
+lex.ChordNote.cc : chordnotelexer.ll
+	flex chordnotelexer.ll
 
 ##########################################
 #
