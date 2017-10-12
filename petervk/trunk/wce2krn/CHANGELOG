@@ -1,3 +1,6 @@
+Version 1.72.1
+- Suppressed debug output from lexer.
+
 Version 1.72
 - Chords are parsed. FIRST note is exported to **kern
 - single '(', ')', '[' and ']' are attached to previous note
