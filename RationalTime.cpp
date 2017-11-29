@@ -9,6 +9,7 @@
 
 #include<iostream>
 #include<cstdlib>
+#include<sstream>
 using namespace std;
 
 #include "RationalTime.h"
@@ -158,6 +159,9 @@ RationalTime& RationalTime::operator=(const RationalTime& r) {
 }
 
 std::string RationalTime::toString() const {
-	std::string res = std::to_string(numerator) + "/" + std::to_string(denominator);
+	stringstream ss;
+	ss << numerator << "/" << denominator;
+	std::string res;
+	ss >> res;
 	return res;
 }
