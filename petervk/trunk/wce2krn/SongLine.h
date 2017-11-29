@@ -23,7 +23,8 @@ public:
 	SongLine(vector<string> lines,
 	         RationalTime upb,
 	         TimeSignature timesig,
-	         int duration,
+	         string clef,
+			 int duration,
 	         int dots,
 	         int octave,
 	         char pitchclass,
@@ -71,6 +72,7 @@ public:
 	int getInitialDots() const {return initialDots;}
 	int getInitialBarnumber() const {return initialBarnumber;}
 	bool getInitialTripletStatus() const {return initialTripletStatus; }
+	string getInitialClef() const {return initialClef; }
 
 	TimeSignature getFinalTimeSignature() const {return finalTimeSignature;}
 	RationalTime getFinalUpbeat() const {return finalUpbeat;}
@@ -81,6 +83,7 @@ public:
 	int getFinalBarnumber() const {return finalBarnumber;}
 	int getKeySignature() const { return keySignature;}
 	bool getFinalTripletStatus() const { return finalTripletStatus; }
+	string getFinalClef() const { return finalClef; }
 	RelLyToken::TieStatus getFinalTieStatus() const { return finalTieStatus; }
 	RelLyToken::SlurStatus getFinalSlurStatus() const { return finalSlurStatus; }
 
@@ -150,6 +153,8 @@ private:
 	int finalDuration;
 	const int initialDots;
 	int finalDots;
+	const string initialClef;
+	string finalClef;
 	RelLyToken::TieStatus initialTieStatus;
 	RelLyToken::TieStatus finalTieStatus;
 	RelLyToken::SlurStatus initialSlurStatus;
