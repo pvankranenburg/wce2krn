@@ -1,26 +1,38 @@
-Version 1.72.1
+Version 1.74 (20171129)
+- Highest note of a chord is exported to **kern
+- Makefile now installs default to /usr/local/bin
+- \acciaccatura added: \sv
+- \slashedGrace accepted. { } still required
+- added \mf and \mp
+- fixed bug in recognition of single ~
+- fixed bug in finding last note to attach {, (, ~ etc. (could also be a CHORD)
+- \itime redefined. Now syntax is same as \time
+- added "\clef treble" and "\clef bass"
+- fixed bug in duration after grace notes. Number of dots also updated.
+
+Version 1.72.1 (20171012)
 - Suppressed debug output from lexer.
 
-Version 1.72
+Version 1.72 (20171012)
 - Chords are parsed. FIRST note is exported to **kern
 - single '(', ')', '[' and ']' are attached to previous note
 - -. is allowed for staccato
 - dynamic marks \p+ and \f+ are allowed
 - bugfix in recognition of alteration in lilylexer.ll
-- Appoggiatura added: \app
+- \appoggiatura added: \app
 - Check for nested slurs added
 
-Version 1.70
+Version 1.70 (20160308)
 - Generated kernfile does not longer start with all-
 - 's' at begin of line is now handled properly wrt text setting (RelLyToken:isRest() debugged)
 
-Version 1.68
+Version 1.68 (20150225)
 - missing slur or melisma now generates (better understandable) warning instead of error.
 
-Version 1.66
+Version 1.66 (20150114)
 - If meter invisible, in **kern output, meter indication as global comment (!! *M4/4)
 
-Version 1.64
+Version 1.64 (?)
 - Now -w generates lilypond for MTC instead of meertens web
 - -w: always include a title
 - -w: for instrumental melodies: hardbreaks and softbreaks result in \breathe in lilypond
@@ -28,18 +40,18 @@ Version 1.64
 - -w: add NLB-id to footer. No record and strophe indication at top
 - removed \let from the lilypond preamble to be compatible with version 2.18
 
-Version 1.62
+Version 1.62 (20140408)
 - Mode is now exported to krn (for MTC)
 - Location spines are no longer exported to *kern
 
-Version 1.60
+Version 1.60 (20140206)
 - Added global comments to krn for MTC
 
-Version 1.58
+Version 1.58 (20140128)
 - Named staffs in humdrum output (*staff1)
 - added \tv and \qv for tertia / quarta volta
 
-Version 1.56
+Version 1.56 (?)
 - Soft and hard breaks result in ";" (fermata) added in *kern
 - Only hard breaks result in { } in *kern
 - Modes are now exported to kern (but for now without the mode indication as music21 cannot parse that)
@@ -48,94 +60,94 @@ Version 1.56
 - Added \xv for ending volta beam
 - Added definitions for \pv, \sv, and \xv to Lilypond beginsignature
 
-Version 1.55
+Version 1.55 (20121206)
 - Now both soft and hard break result in { } in *kern
 - added ! for forcing accidentals in lilypond
 
-Version 1.54.2
+Version 1.54.2 (20110414)
 - bugfix in finding first note of line
 
-Version 1.54.1
+Version 1.54.1 (20110331)
 - alterations are now possible in the \key command (fis \major etc)
 
-Version 1.54
+Version 1.54 (20110331)
 - \key is accepted in lilypond input
 
-Version 1.52.2
+Version 1.52.3 (20110126)
 - webpreviews should not have a title
 
-Version 1.52.2
+Version 1.52.2 (20110125)
 - forgot closing } for layoutblock if '-s'
 
-Version 1.52.1
+Version 1.52.1 (20110124)
 - added ragged-right and ragged-last for single lines (apparently ly 2.13 needs that)
 
-Version 1.52
+Version 1.52 (20110124)
 - weblily now inserts phrasebreaks if there are lyrics (mBreak = {\bar ""\break}),
   otherwise no explicit breaks (mBreak = { }).
 - geen url bij -w -s
 
-Version 1.50
+Version 1.50 (20101213)
 - _\markup{bla {bla} bla} and ^\markup{bla {bla} bla} now possible.
 
-Version 1.48
+Version 1.48 (20101205)
 - don't show titles starting with NLB for web presentation (-w)
 - add url to ly for web presentation (-w)
 - duration made relative to duration of last note in grace (as in lilypond)
 -- before "a16 \grace {c8} b" --> "a16 \grace {c8} b16"
 -- now: "a16 \grace {c8} b" --> "a16 \grace {c8} b8"
 
-Version 1.46
+Version 1.46 (20101101)
 - \mordent added
 - \itime added for invisible meter change
 - \uplines and \upline added
 - \stopbar added (TODO: insert meter changes in kern output <- problem: how to insert if start of bar is in previous line?)
 
-Version 1.44
+Version 1.44 (20090913)
 - Now ties and slurs can go across phrase boundaries.
 
-Version 1.42
+Version 1.42 (20090616)
 - Key indication in kern output. Only if minor or major.
 - some bugfixes
 
-Version 1.40.4
+Version 1.40.4 (20081114)
 - small improvement in detecting of notes following barline.
 
-Version 1.40.3
+Version 1.40.3 (20081106)
 - fixed bug in lily lexer. in "{ \ficta <note>"  the { was not recognized. Will now be added to next note.
 
-Version 1.40.2
+Version 1.40.2 (20080911)
 - fixed bug in conversion of xml entities when contents field has only one line.
 
-Version 1.40.1
+Version 1.40.1 (20080619)
 - fixed bugs in the titles.
 
-Version 1.40
+Version 1.40 (20080615)
 - if title is provided it is kept for meertensweb
 
-Version 1.38.1
+Version 1.38.1 (20080516)
 - correct import of xml entities.
 - ~ after ornament or text now accepted a b^"+" ~ b
 - } after ornament or text now accepted \times { a b c^"+" }
 
-Version 1.38
+Version 1.38 (20080425)
 - eachPhraseNewStaff added.
 - bugfix: linebreaking in lilypond now respects lines in input again
 
-Version 1.36.1
+Version 1.36.1 (20080424)
 - bugfix in lilylexer [\^_]\".*\"{ws}* -> [\^_]\"[^\"]*\"{ws}*
 - editorial remarks replaced by footer field.
 
-Version 1.36
+Version 1.36 (20080423)
 - fermata added
 - included editorial notes into lilypond output
 - more explanative error message in case of unrecognized dot.
 
-Version 1.34.1
+Version 1.34.1 (20080422)
 - now provided barlines are respected
 - typo in lilylexer \trill -> \\trill
 
-Version 1.34
+Version 1.34 (20080417)
 - added input filter for instrumental music
 	- only grace notes and [, ] need further processing.
 - added code to compute octave after grace note(s)
@@ -143,80 +155,80 @@ Version 1.34
 - bugfix: input with only one line of music now works.
 - added: title field.
 
-Version 1.32.1
+Version 1.32.1 (?)
 - solved some g++ 4.1 issues
 
-Version 1.32
+Version 1.32 (20080220)
 - added spine with positions in wce score field
 - added command line option to generate lilypond 2.10. Currently, this doesn't change anything except the version number in the lilypond \version statement
 - added closing barline to kern for meterless songs as workaround for bug in hum2mid.
 - added closing barline to kern for last line of all songs.
 
-Version 1.30
+Version 1.30 (20080214)
 - Added flex analyser for text as well
 
-Version 1.28
+Version 1.28 (20070206)
 - Added flex analyzer for tabless (instrumental) input.
 
-Version 1.26.3
+Version 1.26.3 (20080115)
 - Bugfix: typo pyrigian -> phrygian
 
-Version 1.26.2
+Version 1.26.2 (20080114)
 - Bugfix: when meterInvisible, individual lines should not have upbeat
 
-Version 1.26.1
+Version 1.26.1 (20080114)
 - Bugfix: mixolydian didn't work.
 
-Version 1.26
+Version 1.26 (20080108)
 - All modes are now supported (ionian, dorian, ..., locrian)
 - When splitting the phrases, the phrase number is in the printed title in lilypond
 - if no record number is provided, extract it from the file name
 
-Version 1.24
+Version 1.24 (20071128)
 - added newlines at the end of all files to prevent warning of linux g++
 - removed extra tokens at end of #include directive in RelLyToken.cpp
 - fixed bug in counting of lines
 
-Version 1.22
+Version 1.22 (20071127)
 - handle triples across linebreaks in lilypond.
 
-Version 1.20
+Version 1.20 (20071126)
 - option for lilypond on the web (-w command line option). Suitable for conversion to png
 - now barlines are printed at line breaks. And an ending barline is added to the last line of the song
 
-Version 1.18
+Version 1.18 (?)
 - added identifier of song (record number + strophe number) to lilypond output.
 - if no FirstNoteRelativeTo in input, g' is assumed.
 - removed 'locale loc("")' from SongLine::inheritFirstLynoteDuration (?)
 
-Version 1.16
+Version 1.16 (20071107)
 - relative to first note now can be other note than g'
 - duration at beginning of line now inserted after 'is', 'es', 'isis' or 'eses'
 - all minor and major keys up to 7 sharps or 7 flats are now possible
 - &quot; in inputfile is converted to "
 
-Version 1.14
+Version 1.14 (20071106)
 - triplet across line break now possible
 - no missing tie error message when only pitch classes are same (e.g. fis and f)
 - no missing tie error message when slur and tie end at the same note
 
-Version 1.12.1
+Version 1.12.1 (20071105)
 - bugfix for clog buffer
 
-Version 1.12
+Version 1.12 (20071105)
 - added command line option to suppress log messages (redirect clog to /dev/null)
 
-Version 1.10
+Version 1.10 (20071101)
 - separate warning messages for tie missing and slur missing
 
-Version 1.8
+Version 1.8 (20071025)
 - More clever way of checking empty tokens
 - permit empty tokens at end of line to cope with Excel based wce files
 
-Version 1.6
+Version 1.6 (20071018)
 - line with '===...' shorter to fit in terminal window
 - filename added to error and warning messages
 - added error message if \time or \times has text
 
-Version 1.4
+Version 1.4 (20071011)
 ... verzonken in der tijden nacht ...

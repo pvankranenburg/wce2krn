@@ -85,7 +85,7 @@ lex.ChordNote.cc : chordnotelexer.ll
 # INSTALL 
 #
 
-install: wce2krn
+wc_install: wce2krn
 	strip wce2krn
 	cd ~/SVN/music/binary/mac/universal/bin; svn update wce2krn
 	cp wce2krn ~/SVN/music/binary/mac/universal/bin
@@ -93,10 +93,19 @@ install: wce2krn
 
 ##########################################
 #
+# INSTALL 
+#
+
+install: wce2krn
+	strip wce2krn
+	cp wce2krn /usr/local/bin
+
+##########################################
+#
 # RELEASE 
 #
 
-release: install
+release: wc_install
 	cd ../wce2krn; svn update
 	cp *.cpp ../wce2krn
 	cp *.h ../wce2krn

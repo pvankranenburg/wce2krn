@@ -10,6 +10,8 @@
 #ifndef RATIONALTIME_H
 #define RATIONALTIME_H
 
+#include <string>
+
 class RationalTime {
 public:
 	RationalTime();
@@ -40,6 +42,8 @@ public:
 	bool operator!=( int i ) const;	
 	bool operator>( RationalTime r ) const;
 	bool operator>=( RationalTime r ) const;
+
+	std::string toString() const;
 
 private:
 	int numerator;

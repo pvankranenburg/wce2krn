@@ -23,10 +23,12 @@ using namespace std;
 #include <FlexLexer.h>
 
 RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool hassoftbreak, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos), softBreak(hassoftbreak) {
-
+	if (getIdentity() == CHORD) {
+			notes = splitChord();
+	}
 }
 
-RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()), softBreak(r.hasSoftBreak()), location(r.getLocation()) {
+RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()), softBreak(r.hasSoftBreak()), location(r.getLocation()), notes(r.getNotes()) {
 
 }
 
@@ -64,6 +66,7 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 }
 
 string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const {
+
 	stringstream res;
 	//first pitch:
 	res << getPitchClass();
@@ -118,11 +121,44 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 	return s;
 }
 
+int RelLyToken::computeOctave(int previous_octave, char previous_pitch, int octcorrection, char pitch) const {
+
+	/*
+	if (getIdentity()==CHORD) {
+		cout << "previous_octave: " << previous_octave << endl;
+		cout << "previous_pitch: " << previous_pitch << endl;
+		cout << "octcorrection: " << octcorrection << endl;
+		cout << "pitch: " << pitch << endl;
+	}
+	*/
+
+	int res = previous_octave;
+	const char relativeRoot=((pitch>='c') ? pitch : (pitch+7)); // representation shifted for a and b
+	const char lastRelativeRoot=((previous_pitch>='c') ? previous_pitch : (previous_pitch+7));
+
+	if ( pitch != 'r' && pitch != 's' ) {
+		int diff = relativeRoot - lastRelativeRoot;
+		if (abs(diff) > 3) {
+			if (diff > 0 ) res--; else res++;
+		}
+	}
+
+	res += octcorrection;
+
+	/*
+	if (getIdentity()==CHORD) {
+		cout << "res_octave: " << res << endl;
+	}
+	*/
+
+	return res;
+}
+
+
 string RelLyToken::createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
 	if (getIdentity() == NOTE ) {
 		return createKernSingleNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
-	}
-	else if (getIdentity() == CHORD) {
+	} else if (getIdentity() == CHORD) {
 		return createKernChordNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
 	}
 	else {
@@ -130,10 +166,18 @@ string RelLyToken::createKernNote(int octave, int duration, int dots, bool tripl
 	}
 }
 
-string RelLyToken::createKernChordNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
-	cerr << location << " Warning: Only first note of chord exported to **kern: " << token << endl;
-	vector<RelLyToken> notes = splitChord();
-	return notes[0].createKernNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
+string RelLyToken::createKernChordNote(int octave_of_first, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
+	//cerr << location << " Warning: Only first note of chord exported to **kern: " << token << endl;
+	if (notes.size() > 0) {
+		vector<Pitchclass_Octave> allNotes = getAllOfChord(octave_of_first);
+		int ih = getIndexHighestOfChord();
+		//cout << ih << endl;
+		return notes[ih].createKernNote(allNotes[ih].octave, duration, dots, triplet, slur, tie, opensub, closesub);
+	}
+	else {
+		cerr << location << " Error: RelLyToken::createKernChordNote() invoked, while notes.size() == " << notes.size() << endl;
+		exit(1);
+	}
 }
 
 string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
@@ -218,6 +262,13 @@ bool RelLyToken::getNotDotted() const { //return true if no duration is given
 	return res;
 }
 
+string RelLyToken::getClefType() const { //return the clef type for a clef change.
+	string res = "treble";
+	if (token.find("bass") != string::npos ) res = "bass";
+	return res;
+}
+
+// in case of chord. Give Octave correction of first note
 int RelLyToken::getOctaveCorrection() const {
 	if (getIdentity() == NOTE) {
 		string lt = token; //changable
@@ -228,8 +279,10 @@ int RelLyToken::getOctaveCorrection() const {
 		return res;
 	}
 	else if (getIdentity() == CHORD) {
-		vector<RelLyToken> notes = splitChord();
-		return notes[0].getOctaveCorrection();
+		if (notes.size() > 0)
+			return notes[0].getOctaveCorrection();
+		else
+			return 0;
 	}
 	else
 		return 0;
@@ -243,6 +296,7 @@ vector<RelLyToken> RelLyToken::splitChord() const {
 	lexer = new ChordNoteFlexLexer(&iss);
 	int tok = lexer->yylex();
 	while(tok != 0){
+		//cout << tok << " " << lexer->YYText() << endl;
 		if (tok == 2) {
 			  string ctoken = lexer->YYText();
 			  pvktrim(ctoken);
@@ -256,7 +310,67 @@ vector<RelLyToken> RelLyToken::splitChord() const {
 	//	cout << notes[i].getToken() << " ";
 	//cout << endl;
 
+	if (notes.size() < 2 ) {
+		cerr << location << " Error: Chord contains " << notes.size() << " note(s): " << token << endl;
+		exit(1);
+	}
+
 	return notes;
+}
+
+//int previous_octave, char previous_pitch, int octcorrection, char pitch
+vector<Pitchclass_Octave> RelLyToken::getAllOfChord(int initialoctave) const {
+	vector<Pitchclass_Octave> res;
+	for (int i=0; i<notes.size(); i++) {
+		int oct;
+		if ( i==0 )
+			oct = initialoctave;
+		else
+			oct = computeOctave( res.back().octave, res.back().pitchclass, notes[i].getOctaveCorrection(), notes[i].getPitchClass() );
+		char pc = notes[i].getPitchClass();
+		Pitchclass_Octave note = Pitchclass_Octave( pc, oct );
+		res.push_back(note);
+	}
+	return res;
+}
+
+// c d e f g a b ->
+
+int RelLyToken::getIndexHighestOfChord() const {
+	vector<Pitchclass_Octave> all = getAllOfChord(0);
+	int res = -1;
+	Pitchclass_Octave max;
+
+	max.octave = 0;
+	max.pitchclass = 'c';
+
+	if ( all.size() > 0 ) {
+		max.octave = all[0].octave;
+		max.pitchclass = all[0].pitchclass;
+		res = 0;
+	} else {
+		cerr << location << " Error: Empty chord" << endl;
+		exit(1);
+	}
+
+	for ( int i=0; i<all.size(); i++) {
+		if (all[i].octave > max.octave) {
+			max = all[i];
+			res = i;
+		}
+		if (all[i].octave == max.octave) {
+			char cmp_note = all[i].pitchclass;
+			if ( cmp_note < 'c' ) cmp_note += 5; // convert a and b to h and i
+			char cmp_max = max.pitchclass;
+			if ( cmp_max < 'c' ) cmp_max += 5;
+			if ( cmp_note > cmp_max ) {
+				max = all[i];
+				res = i;
+			}
+		}
+		//cout << i << " " << res << endl;
+	}
+	return res;
 }
 
 char RelLyToken::getPitchClass() const {
@@ -269,9 +383,12 @@ char RelLyToken::getPitchClass() const {
 		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return '.';
 		return (char)t[pos];
 	}
-	else if (getIdentity() == CHORD ) { //return pitch class of first note ??
-		vector<RelLyToken> notes = splitChord();
-		return notes[0].getPitchClass();
+	else if (getIdentity() == CHORD ) { //return pitch class of first note? YES
+		if (notes.size() > 0) {
+			return notes[0].getPitchClass();
+		}
+		else
+			return '.';
 	}
 	else
 		return '.';
@@ -445,6 +562,7 @@ string RelLyToken::printIdentity(Identity i) {
 		case CHORD: return "CHORD";
 		case BARLINE: return "BARLINE";
 		case STOPBAR: return "STOPBAR";
+		case CLEF_COMMAND: return "CLEF_COMMAND";
 		case UNKNOWN: return "UNKNOWN";
 	}
 	return "";

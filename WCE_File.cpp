@@ -12,7 +12,7 @@
 #include <cstdlib>
 using namespace std;
 
-WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), eachPhraseNewStaff(true), record("unknown") {
+WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), eachPhraseNewStaff(true), record("unknown"), initialClef("treble") {
 	
 	
 	string line; //line from wce file

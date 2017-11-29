@@ -78,6 +78,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	//cout << "Instrumental: " << instr << endl;
 
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
+		//cout << "i: " << i << endl;
 		//cout << wcelines[i] << endl;
 		if (lineprofile[i] && i<lineprofile.size()) { // dataline
 			singleline.push_back(wcelines[i]);
@@ -91,6 +92,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 					songLines.push_back(SongLine(singleline,
 							      translateUpbeat(wcefile.getUpbeat()),
 								  translateTimeSignature(wcefile.getTimeSignature()),
+								  wcefile.getInitialClef(),
 								  4,
 								  0,
 								  wcefile.getFirstNoteRelativeToOctave(),
@@ -120,6 +122,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 					songLines.push_back(SongLine(singleline,
 							      (songLines.back()).getFinalUpbeat(), //from previous line
 								  (songLines.back()).getFinalTimeSignature(),
+								  (songLines.back()).getFinalClef(),
 								  (songLines.back()).getFinalDuration(),
 								  (songLines.back()).getFinalDots(),
 								  (songLines.back()).getFinalOctave(),
