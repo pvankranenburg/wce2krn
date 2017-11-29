@@ -30,8 +30,10 @@ TimeSignature::TimeSignature(string ts) {
 	denominator = convertToInt(ts.substr(pos+1));
 	*/
 	//cout << ts << endl;
-	if ( ( pos = ts.find("\\time") ) != string::npos ) // time gevonden
+	if ( ( pos = ts.find("\\time") ) != string::npos ) // \time gevonden
 		ts.erase(0,pos+5); //verwijder \time
+	if ( ( pos = ts.find("\\itime") ) != string::npos ) // \itime gevonden
+		ts.erase(0,pos+6); //verwijder \time
 	pvktrim(ts);
 	//cout << pos << endl;
 	//cout << ts << endl;

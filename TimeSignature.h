@@ -17,7 +17,7 @@ using namespace std;
 class TimeSignature {
 public:
 	TimeSignature();
-	TimeSignature(string ts); //input is lilypond time signature (with or without "\time ").
+	TimeSignature(string ts); //input is lilypond time signature (with or without "\time " or "\itime ").
 	                          //no whitespace at begin or end allowed!
 	TimeSignature(int num, int den) : numerator(num), denominator(den) {};
 	

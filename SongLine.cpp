@@ -27,13 +27,14 @@ using namespace std;
 #define yyFlexLexer TextFlexLexer
 #include <FlexLexer.h>
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, int duration, int dots, int octave, char pitchclass, bool initialtriplet, RelLyToken::TieStatus initialTie, RelLyToken::SlurStatus initialSlur, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, bool instr, vector<string> fField) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, string clef, int duration, int dots, int octave, char pitchclass, bool initialtriplet, RelLyToken::TieStatus initialTie, RelLyToken::SlurStatus initialSlur, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, bool instr, vector<string> fField) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
 																   initialDuration(duration),
 																   initialDots(dots),
 																   initialOctave(octave),
+																   initialClef(clef),
 																   initialLastPitchClass(pitchclass),
 																   initialTripletStatus(initialtriplet),
 																   initialTieStatus(initialTie),
@@ -44,6 +45,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   finalTimeSignature(timesig),
 																   finalUpbeat(RationalTime(0,1)),
 																   finalOctave(4),
+																   finalClef(clef),
 																   finalDuration(0),
 																   finalDots(0),
 																   finalLastPitchClass(pitchclass),
@@ -70,6 +72,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 SongLine::SongLine() : wcelines(vector<string>()),
 					   initialUpbeat(RationalTime(0,1)),
 					   initialTimeSignature(TimeSignature()),
+					   initialClef("treble"),
 					   initialDuration(0),
 					   initialDots(0),
 					   initialOctave(4),
@@ -177,9 +180,11 @@ void SongLine::translate() {
 	breakWcelines();
 
 	//initialization of context
-	int currentOctave = initialOctave;
+	int currentOctave = 0;
+	int lastOctave = initialOctave; // we need both current and last octave to compute octaves
 	char lastPitchClass = initialLastPitchClass;
 	int currentDuration = initialDuration;
+	string currentClef = initialClef;
 	int currentDots = initialDots;
 	TimeSignature currentTimeSignature = initialTimeSignature;
 	int currentBarnumber = initialBarnumber;
@@ -254,7 +259,9 @@ void SongLine::translate() {
 						timeInBar = RationalTime(0,1);
 					}
 				}
+
 				//cout << (*rl_it).getToken() << ": note" << endl;
+
 				//now convert to abs ly and convert to kern
 				//triplet (status is set by TIMES_COMMAND below. reset here, if brace is before note, otherwise after creating note)
 				if ( currentTripletStatus && (*rl_it).containsClosingBraceBeforeNote() ) currentTripletStatus = false;
@@ -265,7 +272,7 @@ void SongLine::translate() {
 					currentDots = (*rl_it).getDots();
 				}
 				//octave
-				currentOctave = computeOctave( currentOctave, (*rl_it).getPitchClass(), lastPitchClass, (*rl_it).getOctaveCorrection() );
+				currentOctave = (*rl_it).computeOctave(lastOctave, lastPitchClass, (*rl_it).getOctaveCorrection(), (*rl_it).getPitchClass());
 				//tie
 				//RelLyToken::TieStatus rt = (*rl_it).getTie();
 				if ( currentTieStatus == RelLyToken::START_TIE || currentTieStatus == RelLyToken::CONTINUE_TIE ) {
@@ -340,6 +347,8 @@ void SongLine::translate() {
 				indexLastKernNote = kernTokens[0].size()-1;
 				//set LastPitchclass
 				if ((*rl_it).getPitchClass() != 'r' && (*rl_it).getPitchClass() != 's' ) lastPitchClass = (*rl_it).getPitchClass();
+				//set LastOctave for next note
+				lastOctave = currentOctave;
 				//set time
 				timeInBar = timeInBar + rationalDuration(currentDuration, currentDots, currentTripletStatus);
 				// set tripletstatus to false if closingbrace after note
@@ -404,6 +413,26 @@ void SongLine::translate() {
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
 			} break;
 
+			case RelLyToken::CLEF_COMMAND: {
+				//cout << (*rl_it).getToken() << ": clef" << endl;
+				token = (*rl_it).getToken(); //just copy for ly output
+				absLyTokens[0].push_back((*rl_it).getToken());
+
+				//what is new clef?
+				currentClef = (*rl_it).getClefType();
+				string krnclef = "*clefG2";
+				if (currentClef == "bass") krnclef = "*clefF4";
+
+				//write in **kern
+				kernTokens[0].push_back(krnclef);
+				kernTokens[1].push_back("*");
+
+				//annotation has also to be done here
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+			} break;
+
+
 			case RelLyToken::TEXT: {
 				cerr << getLocation() << ": Error: Text in melody line: \"" << (*rl_it).getToken() << "\"" << endl;
 				exit(1);
@@ -412,7 +441,6 @@ void SongLine::translate() {
 			case RelLyToken::BARLINE: {
 				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
-
 			} break;
 
 			case RelLyToken::STOPBAR: {
@@ -488,9 +516,10 @@ void SongLine::translate() {
 				SongLine grace   (gracelines,
 							      RationalTime(0,1), //from previous line
 								  currentTimeSignature,
+								  currentClef,
 								  8,
 								  0,
-								  currentOctave,
+								  lastOctave,
 								  lastPitchClass,
 								  false,
 								  currentTieStatus,
@@ -513,9 +542,10 @@ void SongLine::translate() {
 
 				//grace.printAnnotations();
 				//cout << grace.getInitialOctave() << " - " << grace.getFinalOctave() << endl;
-				currentOctave = grace.getFinalOctave();
+				lastOctave = grace.getFinalOctave();
 				lastPitchClass = grace.getFinalLastPitchClass();
 				currentDuration = grace.getFinalDuration();
+				currentDots = grace.getFinalDots();
 
 				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
@@ -530,16 +560,21 @@ void SongLine::translate() {
 
 	// add the { and } phrase markers to the kern melody
 	// NB also add fermata (can be read by music21)
+	// BUT no fermata if there is already a softbreak... (which could happen).
 	if ( indexFirstKernNote != -1 && indexLastKernNote != -1 ) {
 		kernTokens[0][indexFirstKernNote] = "{" + kernTokens[0][indexFirstKernNote];
-		kernTokens[0][indexLastKernNote] = kernTokens[0][indexLastKernNote] + ";}";
+		//check whether already a ";" on last kern note
+		if ( kernTokens[0][indexLastKernNote].find_first_of(";") != string::npos ) {
+			kernTokens[0][indexLastKernNote] = kernTokens[0][indexLastKernNote] + "}";
+		} else
+			kernTokens[0][indexLastKernNote] = kernTokens[0][indexLastKernNote] + ";}";
 	}
 
 	//add fermata to last lilypond note
 
-
-	finalOctave = currentOctave;
+	finalOctave = lastOctave;
 	finalDuration = currentDuration;
+	finalClef = currentClef;
 	finalDots = currentDots;
 	finalTimeSignature = currentTimeSignature;
 	finalTripletStatus = currentTripletStatus;
@@ -738,7 +773,7 @@ void SongLine::writeToStdout() const {
 	cout << wcelines.size() << " lines" << endl;
 	vector<string>::const_iterator it;
 	for( it = wcelines.begin(); it != wcelines.end(); it++)
-		cout << "line: " << *it << endl;
+		cout << getNLBIdentifier() << " phrase " << phraseNo << ": " << *it << endl;
 }
 
 
@@ -815,7 +850,7 @@ void SongLine::breakWcelines() {
 		  		//cout << "separate tie" << endl;
 		  		int ix = relLyTokens.back().size() -1;
 		  		//cout << ix << endl;
-		  		while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+		  		while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE && (relLyTokens.back())[ix].getIdentity() != RelLyToken::CHORD )
 		  			ix--;
 		  		if ( ix < 0 ) cerr << getLocation() << ": Warning: tie symbol could not be attached to a note." << endl;
 		  		else
@@ -825,7 +860,7 @@ void SongLine::breakWcelines() {
 		  		//cout << "separate closing brace" << endl;
 		  		int ix = relLyTokens.back().size() -1;
 		  		//cout << ix << endl;
-		  		while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+		  		while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE && (relLyTokens.back())[ix].getIdentity() != RelLyToken::CHORD )
 		  			ix--;
 		  		if ( ix < 0 ) cerr << getLocation() << ": Warning: closing brace symbol could not be attached to a note." << endl;
 		  		else
@@ -840,7 +875,7 @@ void SongLine::breakWcelines() {
 		  		//find last note
 				int ix = relLyTokens.back().size() -1;
 				//cout << ix << endl;
-				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE && (relLyTokens.back())[ix].getIdentity() != RelLyToken::CHORD )
 					ix--;
 				if ( ix < 0 ) cerr << getLocation() << ": Warning: softbreak symbol could not be attached to a note." << endl;
 				else
@@ -864,7 +899,7 @@ void SongLine::breakWcelines() {
 				//find last note
 				int ix = relLyTokens.back().size() -1;
 				//cout << ix << endl;
-				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE && (relLyTokens.back())[ix].getIdentity() != RelLyToken::CHORD )
 					ix--;
 				if ( ix < 0 ) cerr << getLocation() << ": Warning: ( symbol could not be attached to a note." << endl;
 				else
@@ -875,11 +910,15 @@ void SongLine::breakWcelines() {
 				//find last note
 				int ix = relLyTokens.back().size() -1;
 				//cout << ix << endl;
-				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE )
+				while ( ix >= 0 && (relLyTokens.back())[ix].getIdentity() != RelLyToken::NOTE && (relLyTokens.back())[ix].getIdentity() != RelLyToken::CHORD )
 					ix--;
 				if ( ix < 0 ) cerr << getLocation() << ": Warning: ) symbol could not be attached to a note." << endl;
 				else
 					(relLyTokens.back())[ix].addSlurEnd();
+		  	}
+		  	else if ( tok == 15 ) { //CLEF change
+				ctoken = lexer->YYText();
+				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::CLEF_COMMAND, is_music));
 		  	}
 			else {
 			  ctoken = lexer->YYText();
@@ -933,6 +972,9 @@ void SongLine::breakWcelines() {
 		  int tok = lexer->yylex();
 		  bool eerste = true;
 		  while(tok != 0){
+
+			//cout << lexer->YYText() << " " << tok << endl ;
+
 			if ( tok == -1 ) {
 			  cerr << getLocation() << ": Warning: Unrecognized token: " << lexer->YYText() << endl;
 			} else if ( tok == 2 ) { //whitespace.
@@ -1321,7 +1363,8 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("gl=\\glissando");
 	res.push_back("app = #(define-music-function (parser location notes) (ly:music?) #{ \\appoggiatura $notes #} )");
-	res.push_back("itime={\\override Staff.TimeSignature #'stencil = ##f }");
+	res.push_back("vs = #(define-music-function (parser location notes) (ly:music?) #{ \\acciaccatura $notes #} )");
+	res.push_back("itime = #(define-music-function (parser location timesig) (fraction?) #{ \\once\\override Staff.TimeSignature #'stencil = ##f \\time $timesig #} )");
 	//** for instrumental music
 	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
 	res.push_back("fine = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{Fine}}}");
@@ -1405,6 +1448,8 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	meterss << initialTimeSignature.getNumerator() << "/" << initialTimeSignature.getDenominator();
 	meterss >> meter;
 	res.push_back("\\time " + meter);
+
+	res.push_back("\\clef " + initialClef);
 
 	//tempo
 	res.push_back("\\tempo " + lyTempo);
@@ -1672,6 +1717,15 @@ vector<string> SongLine::getKernBeginSignature(bool lines, bool meterinvisible) 
 	staffids = staffids.substr(0,staffids.size()-1);
 	res.push_back(s);
 	res.push_back(staffids);
+
+	//clef
+	s = "*clefG2";
+	if (initialClef == "bass") s = "*clefF4";
+	for(int i=0; i < kernTokens.size() / 2; i++ ) {
+		if ( i == 0 ) s = s + "\t"; else s = s + "*\t";
+	}
+	s = s.substr(0,s.size()-1);
+	res.push_back(s);
 
 	//time signature
 	s = "";

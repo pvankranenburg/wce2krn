@@ -156,3 +156,8 @@ RationalTime& RationalTime::operator=(const RationalTime& r) {
 	}
 	return *this;
 }
+
+std::string RationalTime::toString() const {
+	std::string res = std::to_string(numerator) + "/" + std::to_string(denominator);
+	return res;
+}

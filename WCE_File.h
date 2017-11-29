@@ -32,6 +32,7 @@ public:
 	string getWCEVersion() const;
 	string getTitle() const { return title; }
 	bool getMeterInvisible() const;
+	string getInitialClef() { return initialClef; }
 	string getRecord() const { return record; }
 	string getStrophe() const { return strophe; }
 	int getFirstNoteRelativeToOctave() const;
@@ -57,6 +58,7 @@ private:
 	string WCEVersion;
 	string title;
 	string firstNoteRelativeTo;
+	string initialClef;
 	bool meterInvisible;
 	bool eachPhraseNewStaff;
 	string record;

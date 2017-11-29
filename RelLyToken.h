@@ -17,10 +17,18 @@ using namespace std;
 #include "TimeSignature.h"
 #include "pvkutilities.h"
 
+//struct for pitch and octave
+struct Pitchclass_Octave {
+	Pitchclass_Octave() : pitchclass('c'), octave(4) {};
+	Pitchclass_Octave(char p, int o) : pitchclass(p), octave(o) {};
+	char pitchclass;
+	int octave;
+};
+
 class RelLyToken {
 public:
 	
-	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, CHORD, BARLINE, STOPBAR, UNKNOWN };
+	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, CHORD, BARLINE, STOPBAR, CLEF_COMMAND, UNKNOWN };
 	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, IN_SLUR, NO_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
 	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
@@ -56,9 +64,16 @@ public:
 	
 	Identity getIdentity() const;
 	char getPitchClass() const;
-	int getOctaveCorrection() const; // 0 if no octave correction
+	int getOctaveCorrection() const; // 0 if no octave correction; for chord return octavecorrection of first note
 	int getDurationBase() const; // 0 if no durations is given
 	int getDots() const; // return number of dots
+	string getClefType() const; //return the clef type for a clef change.
+	int computeOctave(int previous_octave, char previous_pitch, int octcorrection, char pitch) const;
+	vector<RelLyToken> getNotes() const { return notes; }
+	//Pitchclass_Octave getHighestOfChord(int initialoctave) const;
+	int getIndexHighestOfChord() const;
+	vector<Pitchclass_Octave> getAllOfChord(int initialoctave) const;
+	//Pitchclass_Octave getRelative() const; //get the pitch and octave that is context for next note.
 	bool getInterpretedPitch() const; // true if pitch is interpreted (crossed note head)
 	bool getNotDotted() const; // true if no duration is given
 	bool getGlissandoEnd() const; // true if glissando ends on this note.
@@ -78,7 +93,7 @@ public:
 	
 	TimeSignature getTimeSignature() const; //do only invoke if identity is TIME_COMMAND
 	
-	//pitchclass, tiestatus, accidental en braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
+	//pitchclass, tiestatus, accidental and braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
 	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
 	string createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
 	string createKernChordNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
@@ -97,6 +112,7 @@ private:
 	const int WCE_LineNumber;
 	const int WCE_Pos;
 	bool softBreak;
+	vector<RelLyToken> notes; //contains the notes of a chord
 };
 
 #endif
