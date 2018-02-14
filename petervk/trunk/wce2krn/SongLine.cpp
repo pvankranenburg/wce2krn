@@ -27,7 +27,7 @@ using namespace std;
 #define yyFlexLexer TextFlexLexer
 #include <FlexLexer.h>
 
-SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, string clef, int duration, int dots, int octave, char pitchclass, bool initialtriplet, RelLyToken::TieStatus initialTie, RelLyToken::SlurStatus initialSlur, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, bool instr, vector<string> fField) :
+SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig, string clef, int duration, int dots, int octave, char pitchclass, bool initialtriplet, RelLyToken::TieStatus initialTie, RelLyToken::SlurStatus initialSlur, int keysig, int mtempo, string lytempo, int barnumber, bool meterinvisible, bool eachphrasenewstaff, string filename, int phraseno, int numphrases, string recordno, string stropheno, string str_title, int wcelineno, bool instr, RelLyToken::GraceType gt, vector<string> fField) :
 																   wcelines(lines),
 																   initialUpbeat(upb),
 																   initialTimeSignature(timesig),
@@ -65,6 +65,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   title(str_title),
 																   WCELineNumber(wcelineno),
 																   instrumental(instr),
+																   graceType(gt),
 																   footerField(fField) {
 	translate();
 }
@@ -95,6 +96,7 @@ SongLine::SongLine() : wcelines(vector<string>()),
 					   title(""),
 					   WCELineNumber(0),
 					   instrumental(true),
+					   graceType(RelLyToken::NOGRACE),
 					   footerField(vector<string>()) {
 	translate();
 }
@@ -231,6 +233,12 @@ void SongLine::translate() {
 			timeInBar = RationalTime(0,1);
 		}
 	}
+
+	//cout << "----" << endl;
+	//cout << getLocation() << " initialtimeinbar: " << timeInBar.toString() << endl;
+	//cout << getLocation() << " initialupbeat: " << initialUpbeat.toString() << endl;
+
+
 	for( rl_it = (relLyTokens[0]).begin(); rl_it != (relLyTokens[0]).end(); rl_it++ ) {
 		//rellytoken = (*rl_it).getToken();
 
@@ -243,6 +251,7 @@ void SongLine::translate() {
 			case RelLyToken::CHORD: {
 
 				// new bar? : raise barnumber and write barlines to kern
+				// This will only be executed if no explicit bar command was entered (see below).
 				if ( !meterInvisible ) {
 					if ( timeInBar > currentTimeSignature.getRationalTime() ) {
 						cerr << getLocation() << ": Error: bar too long: " << currentBarnumber << endl;
@@ -295,20 +304,23 @@ void SongLine::translate() {
 				//slur
 				if (currentSlurStatus == RelLyToken::END_SLUR) currentSlurStatus = RelLyToken::NO_SLUR;
 				//check nested slurs:
-				if ( (currentSlurStatus == RelLyToken::START_SLUR || currentSlurStatus == RelLyToken::IN_SLUR)
-						&& (*rl_it).getSlur() == RelLyToken::START_SLUR ) {
+				/*
+				if ( (currentSlurStatus == RelLyToken::START_SLUR || currentSlurStatus == RelLyToken::ENDSTART_SLUR || currentSlurStatus == RelLyToken::IN_SLUR)
+						&& ((*rl_it).getSlur() == RelLyToken::START_SLUR || (*rl_it).getSlur() == RelLyToken::ENDSTART_SLUR)  ) {
 					cerr << getLocation() << ": Error: Nested slurs are not allowed: " << (*rl_it).getToken() <<  endl;
 					exit(1);
 				}
+				*/
 				//
 				if ( (*rl_it).getSlur() != RelLyToken::NO_SLUR ) //there is slurinfo, just copy
 					currentSlurStatus = (*rl_it).getSlur();
 				else {
 					//so, no slur info
 					//determine whether in slur or not, if so, status is IN_SLUR, otherwise leave currentstatus untouched.
-					if ( currentSlurStatus == RelLyToken::START_SLUR || currentSlurStatus == RelLyToken::IN_SLUR)
+					if ( currentSlurStatus == RelLyToken::START_SLUR || currentSlurStatus == RelLyToken::ENDSTART_SLUR || currentSlurStatus == RelLyToken::IN_SLUR)
 						currentSlurStatus = RelLyToken::IN_SLUR;
 				}
+
 				// make annotation
 				slurs_ann.push_back(currentSlurStatus);
 				ties_ann.push_back(currentTieStatus);
@@ -332,7 +344,8 @@ void SongLine::translate() {
 												currentSlurStatus,
 												currentTieStatus,
 												newSubPhrase, //if previous note has softbreak
-												closeSubPhrase); //if current note has softbreak
+												closeSubPhrase, //if current note has softbreak
+												graceType);
 				kernTokens[0].push_back(token);
 				kernTokens[1].push_back( (*rl_it).getWCEPosition() );
 				token = (*rl_it).createAbsLyNote(currentOctave,
@@ -353,8 +366,7 @@ void SongLine::translate() {
 				timeInBar = timeInBar + rationalDuration(currentDuration, currentDots, currentTripletStatus);
 				// set tripletstatus to false if closingbrace after note
 				RationalTime t = rationalDuration(currentDuration, currentDots, currentTripletStatus);
-				//cout << token << " bar:" << currentBarnumber << " " << timeInBar.getNumerator() << "/" << timeInBar.getDenominator() <<
-				//	" " << t.getNumerator() << "/" << t.getDenominator() << endl;
+				//cout << token << " bar:" << currentBarnumber << " " << timeInBar.toString() << " " << t.toString() << endl;
 				if ( currentTripletStatus && (*rl_it).containsClosingBraceAfterNote() ) currentTripletStatus = false;
 				//set subphrase
 				newSubPhrase = false;
@@ -439,47 +451,36 @@ void SongLine::translate() {
 			} break;
 
 			case RelLyToken::BARLINE: {
-				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
-				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
-			} break;
+				//cout << (*rl_it).getBarLineType() << endl;
 
-			case RelLyToken::STOPBAR: {
-				//this is not ready
-				//See QUESTIONS below
-
-				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
-				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
-				cerr << "TODO: IMPLEMENT STOPBAR!" << endl;
-				TimeSignature tempts(timeInBar.getNumerator(),timeInBar.getDenominator());
-
-				//insert, or replace (TODO) this time signature at the start of the current measure
-				// WHAT IF THE START OF THE MEASURE IS IN THE PREVIOUS SONGLINE?
-				//search back till kerntoken starting with =
-				vector<string>::iterator kt_it0 = kernTokens[0].end()-1;
-				vector<string>::iterator kt_it1 = kernTokens[1].end()-1;
-				while ( ( (*kt_it0).at(0) != '=' ) ) { if (kt_it0 == kernTokens[0].begin()) break; kt_it0--; kt_it1--; cout << "y"; }
-				if ( kt_it0 == kernTokens[0].begin() ) { cerr << "Error: cannot find start of the bar containing \\stopbar" << endl; exit(1); }
-				kt_it0++; kt_it1++; //now points to the element BEFORE which the meter change should be inserted
-				//check whether kt_it0 points to a meter change. If so, replace, else insert
-				if ( (*kt_it0).at(0) == '*' && (*kt_it0).at(0) == 'M') {
-					*kt_it0 = tempts.getKernTimeSignature();
-					*kt_it1 = *(kt_it1+1);
-				} else {
-					kernTokens[0].insert(kt_it0, tempts.getKernTimeSignature() );
-					kernTokens[1].insert(kt_it1, *kt_it1 );
+				if ((*rl_it).getBarLineType()==RelLyToken::UNKNOWNBAR) {
+					cerr << getLocation() << " Error: unknown bar line type: " << (*rl_it).getToken() << " Ignoring." << endl;
 				}
-				//start a new bar
-				//and insert the right time signature EXCEPT WHEN IT IS THE FINAL BAR! HOW TO CHECK?
-				stringstream ss;
-				currentBarnumber++;
-				ss << "=" << currentBarnumber;
-				string barstr = "";
-				ss >> barstr;
-				kernTokens[0].push_back(barstr);
-				kernTokens[1].push_back(barstr);
-				timeInBar = RationalTime(0,1);
-				kernTokens[0].push_back(currentTimeSignature.getKernTimeSignature());
-				kernTokens[1].push_back((*rl_it).getWCEPosition());
+
+
+				// new bar? : raise barnumber and write barlines to kern
+				if ( !meterInvisible ) {
+					if ( timeInBar > currentTimeSignature.getRationalTime() ) {
+						cerr << getLocation() << ": Error: bar too long: " << currentBarnumber << endl;
+					}
+					if ( timeInBar >= currentTimeSignature.getRationalTime() ) { // new bar
+						//write in **kern
+						stringstream ss;
+						currentBarnumber++;
+						string barstr = (*rl_it).getKernBarLine(currentBarnumber);
+						kernTokens[0].push_back(barstr);
+						kernTokens[1].push_back(barstr);
+						timeInBar = RationalTime(0,1);
+					} else { //bar in middle of measure
+						string barstr = (*rl_it).getKernBarLine(0,true);
+						kernTokens[0].push_back(barstr);
+						kernTokens[1].push_back(barstr);
+					}
+				}
+
+				//do slur and tie annotation
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
 			} break;
 
 			case RelLyToken::UNKNOWN: {
@@ -493,14 +494,15 @@ void SongLine::translate() {
 			case RelLyToken::GRACE: {
 				//clog << "GRACE detected" << endl;
 
-				//figure out the current octave after the grace notes
+				//figure out the current octave and duration after the grace notes
 				//make songline of gracenotes and ask for finallastpitchclass and final octave
 
+				//cout << "Processing gracenotes: " << (*rl_it).getToken() << endl;
 
 				if (lastPitchClass != 's' && lastPitchClass != 'r') finalLastPitchClass = lastPitchClass;
 				string gracestring = (*rl_it).getToken();
 				string::size_type grpos1, grpos2;
-				//remove "\grace{" and "}" or "\app{" or "\vs{" or "\slashedGrace{"
+				//remove "\grace{" and "}" or "\app{" or "\vs{" or "\slashedGrace{" or "\afterGrace{"
 				if ( ( grpos1 = gracestring.find("{") ) == string::npos ) {
 					cerr << getLocation() << ": Error: \"{\" missing in gracenote. This should never happen:" << endl;
 					exit(-1);
@@ -514,11 +516,11 @@ void SongLine::translate() {
 				vector<string> gracelines;
 				gracelines.push_back(gracestring);
 				SongLine grace   (gracelines,
-							      RationalTime(0,1), //from previous line
-								  currentTimeSignature,
+							      RationalTime(70000,1), //huge upbeat to prevent putting barline at the beginning
+								  TimeSignature(80000,1), //unreasonably large measure
 								  currentClef,
-								  8,
-								  0,
+								  currentDuration,
+								  currentDots,
 								  lastOctave,
 								  lastPitchClass,
 								  false,
@@ -538,6 +540,7 @@ void SongLine::translate() {
 								  title,
 								  WCELineNumber,
 								  instrumental,
+								  (*rl_it).getGraceType(), //grace
 								  footerField);
 
 				//grace.printAnnotations();
@@ -547,8 +550,40 @@ void SongLine::translate() {
 				currentDuration = grace.getFinalDuration();
 				currentDots = grace.getFinalDots();
 
-				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
-				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+				currentTieStatus = grace.finalTieStatus;
+				currentSlurStatus = grace.finalSlurStatus;
+
+				vector<string> gracekern = grace.getKernLine(false);
+				//for (int i=0; i<gracekern.size(); i++)
+				//	cout << "Graceline " << i << " : " << gracekern[i] << endl;
+
+				//add to kern
+				//issue: where to put a possible barline?
+				//in case of aftergrace, not here
+				//in other cases: here.
+				if ( (*rl_it).getGraceType() != RelLyToken::AFTER ) {
+					if ( timeInBar >= currentTimeSignature.getRationalTime() ) { // new bar
+						//write in **kern
+						stringstream ss;
+						currentBarnumber++;
+						ss << "=" << currentBarnumber;
+						string barstr = "";
+						ss >> barstr;
+						kernTokens[0].push_back(barstr);
+						kernTokens[1].push_back(barstr);
+						timeInBar = RationalTime(0,1);
+					}
+				}
+				//now write the kern notes
+				for (int i=0; i<gracekern.size(); i++) {
+					kernTokens[0].push_back(gracekern[i]);
+					kernTokens[1].push_back((*rl_it).getWCEPosition());
+				}
+
+				//ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				//slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+				ties_ann.push_back(currentTieStatus);
+				slurs_ann.push_back(currentSlurStatus);
 			} break;
 
 			default: {
@@ -558,10 +593,12 @@ void SongLine::translate() {
 		}
 	}
 
+	// TODO: canonical order violated
 	// add the { and } phrase markers to the kern melody
 	// NB also add fermata (can be read by music21)
 	// BUT no fermata if there is already a softbreak... (which could happen).
-	if ( indexFirstKernNote != -1 && indexLastKernNote != -1 ) {
+	// All this NOT for grace notes
+	if ( indexFirstKernNote != -1 && indexLastKernNote != -1 && graceType == RelLyToken::NOGRACE) {
 		kernTokens[0][indexFirstKernNote] = "{" + kernTokens[0][indexFirstKernNote];
 		//check whether already a ";" on last kern note
 		if ( kernTokens[0][indexLastKernNote].find_first_of(";") != string::npos ) {
@@ -588,6 +625,10 @@ void SongLine::translate() {
 		finalUpbeat = currentTimeSignature.getRationalTime() - timeInBar;
 		finalBarnumber = currentBarnumber;
 	}
+	//DEBUG
+	//cout << getLocation() << " finaltimeinbar: " << timeInBar.toString() << endl;
+	//cout << getLocation() << " finalupbeat: " << finalUpbeat.toString() << endl;
+
 	if (meterInvisible) finalUpbeat = RationalTime(0,1);
 
 	//now do text lines (if any). Take kern as reference. (10-10-2007: was wrong decision. ly shoud be taken as ref because it is the input...
@@ -687,8 +728,10 @@ void SongLine::translate() {
 						//if rest or empty: NO_WORD
 						if ( relLyTokens[0][relly_index].getPitchClass() == 'r' || relLyTokens[0][relly_index].getPitchClass() == 's' )
 							text_ann[i-1].push_back(RelLyToken::NO_WORD);
-						else if ( relLyTokens[i][relly_index].getToken().size() == 0 )
+						else if ( relLyTokens[i][relly_index].getToken().size() == 0 ) {
 							text_ann[i-1].push_back(RelLyToken::NO_WORD);
+							cerr << getLocation() << ": Error: Lyric line too short." << endl;
+						}
 						else
 							text_ann[i-1].push_back(currentTextStatus);
 
@@ -786,12 +829,21 @@ void SongLine::breakWcelines() {
 
 	string::size_type pos;
 	string ctoken = "";
-	vector<string>::const_iterator it;
+	vector<string>::iterator it;
 	int pos_in_line = 0;
 	int line_offset = 0;
-	for( it = wcelines.begin(); it != wcelines.end(); it++) {
+
+	//quick hack to colorize and make visible 's'
+	bool colorize = false;
+	//bool colorize = true;
+	vector<RestPos> rests;
+	//////////////////////////////////////////////
+
+//	for( it = wcelines.begin(); it != wcelines.end(); it++) {
+	for( size_t wce_ix=0; wce_ix < wcelines.size(); wce_ix++) {
 		relLyTokens.push_back(emptyline);
-		line = *it;
+		//line = *it;
+		line = wcelines[wce_ix];
 
 		//ask flex
 		string flexline = line + " "; //add whitespace at end!!
@@ -811,7 +863,7 @@ void SongLine::breakWcelines() {
 		  bool eerste = true;
 		  while(tok != 0){
 
-			//cout << lexer->YYText() << " " << tok << endl ;
+			//cout << lexer->YYText() << " ; pos: " << pos_in_line << " ; tok: " << tok << endl ;
 
 			if ( tok == -1 ) {
 			  ctoken = lexer->YYText();
@@ -881,12 +933,6 @@ void SongLine::breakWcelines() {
 				else
 					(relLyTokens.back())[ix].setSoftBreak();
 		  	}
-		  	else if ( tok == 10 ) { //stop the current bar!
-		  		//cout << "separate opening brace" << endl;
-				ctoken = lexer->YYText();
-				cerr << "\\stopbar not yet implemented (" << ctoken << ")" << endl;
-				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::STOPBAR, is_music));
-		  	}
 		  	else if ( tok == 12 ) { //chord
 				ctoken = lexer->YYText();
 				RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::CHORD, false, is_music);
@@ -920,24 +966,43 @@ void SongLine::breakWcelines() {
 				ctoken = lexer->YYText();
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::CLEF_COMMAND, is_music));
 		  	}
-			else {
+		  	else if ( tok==17 ) { //Volta
+		  		//ignore for now
+		  	}
+			else { //Note (tok==1) OR Aftergrace (tok==16)
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
-			  if ( tok == 1 && addOpeningBrace ) { ctoken = "{ " + ctoken; addOpeningBrace = false; }
-			  //add token to list of tokens
-			  //cout << "WCELineNumber : " << WCELineNumber << endl;
-			  //cout << getLocation() << endl;
-			  //cout << "pos_in_line : " << pos_in_line << endl;
-			  //cout << ctoken << endl;
-			  //cout << "1" << endl;
+
+			  string aftergr = "";
+			  if (tok==16) { //in case of afterGrace, split note and afterGrace
+				  aftergr = "\\afterGrace ";
+				  int grix1 = ctoken.find_first_of("{");
+				  string grnotes = ctoken.substr(grix1, string::npos);
+				  aftergr = aftergr + grnotes;
+				  ctoken.erase(grix1);
+				  ctoken.erase(0,11); //we KNOW that ctoken starts with \afterGrace
+				  pvktrim(ctoken);
+				  //ADD THE AFTERGRACE AFTER THE NOTE. NOT HERE
+				  //(relLyTokens.back()).push_back(RelLyToken(aftergr, getLocation(), WCELineNumber, pos_in_line, RelLyToken::GRACE, is_music));
+			  }
+
+			  if ( addOpeningBrace ) { ctoken = "{ " + ctoken; addOpeningBrace = false; }
 			  RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::NOTE, false, is_music);
-			  //cout << "2" << endl;
 			  relLyTokens.back().push_back(rlt);
-			  //cout << "3" << endl;
-			  //cout << relLyTokens.back().back().getPitchClass() << endl;
-			  //cout << "4" << endl;
+
+			  if (colorize) {
+				  if (rlt.isRest() && rlt.getPitchClass() == 's') {
+					  string::size_type colorpos = pos_in_line;
+					  string::size_type pitchclasspos = colorpos + rlt.getPosOfPitchClass() + 1;
+					  rests.push_back(RestPos(pitchclasspos, colorpos));
+				  }
+			  }
+
+			  if (tok==16) { //now insert the aftergrace.
+				  (relLyTokens.back()).push_back(RelLyToken(aftergr, getLocation(), WCELineNumber, pos_in_line, RelLyToken::GRACE, is_music));
+			  }
+
 			}
-			//cout << "5" << endl;
 
 			//cout << tok << " - " << lexer->YYText() << " - " << pos_in_line << endl;
 
@@ -946,6 +1011,12 @@ void SongLine::breakWcelines() {
 
 		  }
 		  delete lexer;
+
+		  //now handle colored rests (work backwards to preserve indices):
+		  for (long int p=rests.size()-1; p >= 0; p--) {
+			  wcelines[wce_ix].replace(rests[p].pitchclasspos, 1, "r");
+			  wcelines[wce_ix].insert(rests[p].colorpos, "\\once\\override Rest.color = #red ");
+		  }
 
 		  //test whether anything follows repeat bar
 		  for ( int i = 0; i < (relLyTokens.back()).size(); i++ ) {
@@ -956,7 +1027,7 @@ void SongLine::breakWcelines() {
 		  		     (pos = tc.find(":|:")) != string::npos ) { // repeat barline :| or :|:
 
 		  			if ( i != ( (relLyTokens.back()).size() -1 ) )
-		  				cerr << getLocation() << ": Warning: Something follows repeat bar: " << line << endl;
+		  				cerr << getLocation() << ": Warning: Something follows repeat bar: " << endl;
 		  		}
 		  	}
 		  }
@@ -982,14 +1053,32 @@ void SongLine::breakWcelines() {
 			} else {
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
+
+			  /*
+			  cout << "------" << endl;
+			  cout << relLyTokens.size() << endl;
+			  cout << relLyTokens[0].size() << endl;
+			  for (int nn=0; nn<relLyTokens[0].size(); nn++)
+				  cout << relLyTokens[0][nn].getToken() << " ";
+			  cout << endl;
+			  cout << current_note_index << endl;
+			  cout << "======" << endl;
+			  */
+
+			  //test whether there are too many text tokens
+			  if ( current_note_index >= relLyTokens[0].size() ) {
+				  cerr << getLocation() << ": Error: too much text: " << ctoken << endl;
+				  exit(1);
+			  }
+
 			  //if not a note in corresponding music, add empty tokens first.
 			  while ( relLyTokens[0][current_note_index].getIdentity() != RelLyToken::NOTE || relLyTokens[0][current_note_index].isRest() ) {
-			  	(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber+line_offset, pos_in_line, RelLyToken::TEXT, is_music));
+				(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber+line_offset, pos_in_line, RelLyToken::TEXT, is_music));
 			  	current_note_index++;
-			  	if ( current_note_index > relLyTokens[0].size() ) {
-			  		cerr << getLocation() << ": Error: too much text: " << ctoken << endl;
-			  		exit(1);
-			  	}
+				if ( current_note_index >= relLyTokens[0].size() ) {
+					cerr << getLocation() << ": Error: too much text: " << ctoken << endl;
+					exit(1);
+				}
 			  }
 			  //add token to list of tokens
 			  (relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber+line_offset, pos_in_line, RelLyToken::TEXT, is_music));
@@ -1133,7 +1222,10 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines, int ly_ver) const{
 
 		// make sure first note has duration
 		// do this before changing the line (like adding \times 2/3 at the beginning)
-		inheritFirstLynoteDuration( res[0], initialDuration);
+		if (!inheritFirstLynoteDuration( res[0], initialDuration)) {
+			cerr << getLocation() << " Error: Problem checking duration of first note/rest." << endl;
+			exit(1);
+		}
 
 		if ( lines ) {
 			if ( initialTripletStatus ) {
@@ -1334,7 +1426,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	if ( ly_ver == 10 ) res.push_back("\\version\"2.10.0\"");
 	else if ( ly_ver == 11 ) res.push_back("\\version\"2.11.0\"");
 	else if ( ly_ver == 16 ) res.push_back("\\version\"2.16\"");
-	else res.push_back("\\version\"2.8.2\"");
+	else res.push_back("\\version\"2.18.2\"");
 
 	if ( weblily ) {
 		res.push_back("#(append! paper-alist '((\"long\" . (cons (* 210 mm) (* 2000 mm)))))");
@@ -1363,7 +1455,7 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("x = {\\once\\override NoteHead #'style = #'cross }");
 	res.push_back("gl=\\glissando");
 	res.push_back("app = #(define-music-function (parser location notes) (ly:music?) #{ \\appoggiatura $notes #} )");
-	res.push_back("vs = #(define-music-function (parser location notes) (ly:music?) #{ \\acciaccatura $notes #} )");
+	res.push_back("kvs = #(define-music-function (parser location notes) (ly:music?) #{ \\slashedGrace $notes #} )");
 	res.push_back("itime = #(define-music-function (parser location timesig) (fraction?) #{ \\once\\override Staff.TimeSignature #'stencil = ##f \\time $timesig #} )");
 	//** for instrumental music
 	res.push_back("ficta = {\\once\\set suggestAccidentals = ##t}");
@@ -1375,9 +1467,9 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	res.push_back("dsf = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.S. al Fine}}}");
 	res.push_back("dsc = {\\once\\override Score.RehearsalMark #'self-alignment-X = #1 \\mark \\markup {\\italic{D.S. al Coda}}}");
 	res.push_back("pv = {\\set Score.repeatCommands = #'((volta \"1\"))}");
-	res.push_back("sv = {\\set Score.repeatCommands = #'((volta \"2\"))}");
-	res.push_back("tv = {\\set Score.repeatCommands = #'((volta \"3\"))}");
-	res.push_back("qv = {\\set Score.repeatCommands = #'((volta \"4\"))}");
+	res.push_back("sv = {\\set Score.repeatCommands = #'((volta #f) (volta \"2\"))}");
+	res.push_back("tv = {\\set Score.repeatCommands = #'((volta #f) (volta \"3\"))}");
+	res.push_back("qv = {\\set Score.repeatCommands = #'((volta #f) (volta \"4\"))}");
 	res.push_back("xv = {\\set Score.repeatCommands = #'((volta #f))}");
 	//** end for instrumental music
 	res.push_back("\\header{ tagline = \"\"");
@@ -1523,17 +1615,22 @@ vector<string> SongLine::getKernLine(bool lines) const {
 
 	//add always closing barline to last line
 	//otherwise only add barline at end a line of a meterless song.
-	if ( phraseNo == numPhrases ) {
-		s = "";
-		for( int i=0; i < kernTokens.size(); i = i+2) s = s + "==|!" + "\t";
-		s = s.substr(0,s.size()-1); //remove last tab
-		res.push_back(s);
-	} else {
-		s = "";
-		if ( ( meterInvisible && lines ) || lines) {
+	//but not for grace notes
+
+	if (graceType == RelLyToken::NOGRACE) {
+
+		if ( phraseNo == numPhrases ) {
+			s = "";
 			for( int i=0; i < kernTokens.size(); i = i+2) s = s + "==|!" + "\t";
 			s = s.substr(0,s.size()-1); //remove last tab
 			res.push_back(s);
+		} else {
+			s = "";
+			if ( ( meterInvisible && lines ) || lines) {
+				for( int i=0; i < kernTokens.size(); i = i+2) s = s + "==|!" + "\t";
+				s = s.substr(0,s.size()-1); //remove last tab
+				res.push_back(s);
+			}
 		}
 	}
 
@@ -1836,11 +1933,16 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 			else
 				break;
 	}
-	else
-		return false; //no tokens
+	else {
+		cerr << getLocation() << " Error: No notes in phrase." << endl;
+		exit(1);
+	}
 
 	//index passed end?
-	if ( index >= relLyTokens[0].size() ) return false;
+	if ( index >= relLyTokens[0].size() ) {
+		cerr << getLocation() << " Error: No first note in phrase: " << lyline << endl;
+		exit(1);
+	}
 
 	//firstnote has duration?
 	if ( relLyTokens[0][index].getDurationBase() != 0 ) return true;
@@ -1857,7 +1959,8 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 
 	//ptichclass
 	if ( (pos = lyline.find_first_of("abcdefgsr", pos)) == string::npos) return false;
-		pos++;
+
+	pos++;
 
 	/*
 	-is
@@ -1950,26 +2053,22 @@ bool SongLine::checkMelisma() const {
 		     ( text_ann[0][i] == RelLyToken::END_WORD_CONT ) ||
 			 ( text_ann[0][i] == RelLyToken::IN_WORD_CONT ) ) {
 			if ( relLyTokens[0][i].getIdentity() == RelLyToken::NOTE ) {
-				if ( //( slurs_ann[i] != RelLyToken::START_SLUR ) &&
-				     ( slurs_ann[i] != RelLyToken::IN_SLUR ) &&
-					 ( slurs_ann[i] != RelLyToken::END_SLUR ) &&
-					 //( ties_ann[i] != RelLyToken::START_TIE ) &&
+				if ( ( slurs_ann[i] != RelLyToken::IN_SLUR ) &&
+					 ( slurs_ann[i] != RelLyToken::END_SLUR && slurs_ann[i] != RelLyToken::ENDSTART_SLUR) &&
 					 ( ties_ann[i] != RelLyToken::CONTINUE_TIE ) &&
 					 ( ties_ann[i] != RelLyToken::END_TIE ) ) {
-						//if ( relLyTokens[0][i].getPitchClass() != lastPC )
 							cerr << getLocation() << ": Warning: slur or tie missing at melisma: " << relLyTokens[0][lastNoteIndex].getToken()
 							     << " - " << relLyTokens[0][i].getToken() << endl;
-						//else
-						//	cerr << getLocation() << ": Warning: tie missing at notes: " << relLyTokens[0][lastNoteIndex].getToken()
-						//	     << " - " << relLyTokens[0][i].getToken() << endl;
 						res = false;
 				}
 			}
 		}
 		if ( i < relLyTokens[0].size() )
 			if (relLyTokens[0][i].getIdentity() == RelLyToken::NOTE ) {
-				lastPC = relLyTokens[0][i].getPitchClass(); //remember current pitch.
-				lastNoteIndex = i; //also remember index of last note
+				if(!relLyTokens[0][i].isRest()) {
+					lastPC = relLyTokens[0][i].getPitchClass(); //remember current pitch.
+					lastNoteIndex = i; //also remember index of last note
+				}
 			}
 
 	}
@@ -2134,21 +2233,25 @@ bool SongLine::checkTies() const {
 
 	if ( relLyTokens[0].size() < 2 ) return true; //apparently one note on the line
 
-	//walk trough note sequence. If slur end and previous note has slur start or in slur, and pitches are the same: should be a tie. Unless a slur and a tie end at the same note
+	//walk trough note sequence. If slur end and previous note has slur start XXor in slurXX, and pitches are the same: should be a tie. Unless a slur and a tie end at the same note
 	for( int i=1; i<relLyTokens[0].size(); i++ ) { //starting from the second token
 		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) continue; //only notes
-		if ( slurs_ann[i] == RelLyToken::END_SLUR ) {
+		if ( slurs_ann[i] == RelLyToken::END_SLUR || slurs_ann[i] == RelLyToken::ENDSTART_SLUR ) {
 			//search previous NOTE
 			int p = i-1;
 
-			while ( p>=0 && slurs_ann[p] != RelLyToken::START_SLUR && slurs_ann[p] != RelLyToken::IN_SLUR ) p--;
+			while ( p>=0 && (slurs_ann[p] != RelLyToken::START_SLUR && slurs_ann[p] != RelLyToken::ENDSTART_SLUR) && slurs_ann[p] != RelLyToken::IN_SLUR ) {
+				p--;
+				cout << i << " " << p << endl;
+			}
+
 			if ( p == -1 ) {
 				cerr << getLocation() << ": Error: slur ends at note: " << relLyTokens[0][i].getToken() << ", but no start" << endl;
 				continue; //no previous note
 			}
 			//now p has index of previous note
 			//
-			if ( slurs_ann[p] == RelLyToken::START_SLUR || slurs_ann[p] == RelLyToken::IN_SLUR )
+			if ( (slurs_ann[p] == RelLyToken::START_SLUR || slurs_ann[p] == RelLyToken::ENDSTART_SLUR) )
 				if ( relLyTokens[0][p].getPitchClass() == relLyTokens[0][i].getPitchClass() &&
 				     relLyTokens[0][p].getAccidental() == relLyTokens[0][i].getAccidental() &&
 					 relLyTokens[0][i].getOctaveCorrection() == 0 ) {

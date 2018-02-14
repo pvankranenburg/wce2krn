@@ -1,7 +1,28 @@
+Version 1.75
+- Bar lines are exported to **kern
+- Added code to display invisible rests in red
+- fixed bug in detecting too long text lines
+- now fist grace note inherits duration from previous regular note
+- \turn now accepted as ornament (not exported to **kern (as all ornaments/articulations))
+- segno, coda and fine also can be set under the staff ^\segno, _\segno, etc
+- afterGrace implemented
+- gracenotes now export to **kern
+- invisible rest now exported to kern as ryy
+- \sv, \tv, and \qv now close previous volta spanner (prevents warning from lilypond)
+- Barline type recognition upgraded to lilypond 2.18.2
+- Issue warning for old barline types
+- (unused) \stopbar removed from lily lexer
+- added ly crescendo and decrescendo commands
+- added \sfz dynamic
+- default version in lilypond output now is 2.18.2
+- \vs changed to \kvs
+- \kvs (formerly \vs) not translates to \slashedGrace
+- removed obsolete code for \stopbar
+
 Version 1.74 (20171129)
 - Highest note of a chord is exported to **kern
 - Makefile now installs default to /usr/local/bin
-- \acciaccatura added: \sv
+- \acciaccatura added: \vs
 - \slashedGrace accepted. { } still required
 - added \mf and \mp
 - fixed bug in recognition of single ~

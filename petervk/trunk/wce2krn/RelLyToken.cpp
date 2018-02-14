@@ -67,6 +67,8 @@ RelLyToken::Identity RelLyToken::getIdentity() const {
 
 string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const {
 
+	// what about (, [ etc.
+
 	stringstream res;
 	//first pitch:
 	res << getPitchClass();
@@ -97,6 +99,7 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 	switch(slur) {
 		case START_SLUR: res << "("; break;
 		case END_SLUR: res << ")"; break;
+		case ENDSTART_SLUR: res << ")("; break;
 		default: {}
 	}
 	
@@ -155,24 +158,24 @@ int RelLyToken::computeOctave(int previous_octave, char previous_pitch, int octc
 }
 
 
-string RelLyToken::createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
+string RelLyToken::createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub, GraceType gt) const {
 	if (getIdentity() == NOTE ) {
-		return createKernSingleNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
+		return createKernSingleNote(octave, duration, dots, triplet, slur, tie, opensub, closesub, gt);
 	} else if (getIdentity() == CHORD) {
-		return createKernChordNote(octave, duration, dots, triplet, slur, tie, opensub, closesub);
+		return createKernChordNote(octave, duration, dots, triplet, slur, tie, opensub, closesub, gt);
 	}
 	else {
 		return ".";
 	}
 }
 
-string RelLyToken::createKernChordNote(int octave_of_first, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
+string RelLyToken::createKernChordNote(int octave_of_first, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub, GraceType gt) const {
 	//cerr << location << " Warning: Only first note of chord exported to **kern: " << token << endl;
 	if (notes.size() > 0) {
 		vector<Pitchclass_Octave> allNotes = getAllOfChord(octave_of_first);
 		int ih = getIndexHighestOfChord();
 		//cout << ih << endl;
-		return notes[ih].createKernNote(allNotes[ih].octave, duration, dots, triplet, slur, tie, opensub, closesub);
+		return notes[ih].createKernNote(allNotes[ih].octave, duration, dots, triplet, slur, tie, opensub, closesub, gt);
 	}
 	else {
 		cerr << location << " Error: RelLyToken::createKernChordNote() invoked, while notes.size() == " << notes.size() << endl;
@@ -180,13 +183,14 @@ string RelLyToken::createKernChordNote(int octave_of_first, int duration, int do
 	}
 }
 
-string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const {
+string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub, GraceType gt) const {
 	stringstream res;
+	string editorial = "";
 	//open sub
 	//open phrase
 	//open slur
 	//if ( opensub ) res << "{"; // <- is now done with breath mark after note
-	if (slur == START_SLUR) res << "(";
+	if (slur == START_SLUR || slur == ENDSTART_SLUR) res << "(";
 	//open tie
 	if (tie == START_TIE) res << "[";
 	//duration
@@ -195,9 +199,12 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 	for (int i=0; i<dots; i++) res << ".";
 	//pitch and octave
 	char pc = getPitchClass();
-	if ( pc == 'r' || pc == 's' )
-		res << 'r';
-	else {
+	if ( pc == 'r' ) {
+		res << "r";
+	} else if ( pc == 's' ) {
+		res << "r";
+		editorial = "yy";
+	} else {
 		char pc_up = toupper(pc);
 		octave = octave - 3;
 		if (octave !=0 ) {
@@ -216,6 +223,14 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 		case DOUBLE_SHARP: res << "##"; break;
 		default: {}
 	}
+	//Grace note?
+	switch (gt) {
+	case NOGRACE: break;
+	case PLAINGRACE: res << "qq"; break;
+	case APP: res << "qq"; break;
+	case ACC: res << "q"; break;
+	case AFTER: res << "qq"; break;
+	}
 	//Glissando end?
 	if (getGlissandoEnd()) // yes
 		res << "H";
@@ -226,12 +241,14 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 	if (tie == END_TIE) res << "]";
 	if (tie == CONTINUE_TIE) res << "_";
 	//slur close
-	if (slur == END_SLUR) res << ")";
+	if (slur == END_SLUR || slur == ENDSTART_SLUR) res << ")";
 	
 	//subphrase
 	//if ( closesub ) res << "}";
 	//if ( closesub ) res << ",";
 	if ( closesub ) res << ";"; //fermata can be imported by music21
+
+	res << editorial;
 
 	string s;
 	res >> s;
@@ -383,9 +400,10 @@ char RelLyToken::getPitchClass() const {
 		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return '.';
 		return (char)t[pos];
 	}
-	else if (getIdentity() == CHORD ) { //return pitch class of first note? YES
+	else if (getIdentity() == CHORD ) { //return pitch class of highest note
 		if (notes.size() > 0) {
-			return notes[0].getPitchClass();
+			int ih = getIndexHighestOfChord();
+			return notes[ih].getPitchClass();
 		}
 		else
 			return '.';
@@ -394,12 +412,38 @@ char RelLyToken::getPitchClass() const {
 		return '.';
 }
 
+//return the index of the pitch class in the token string
+string::size_type RelLyToken::getPosOfPitchClass() const {
+	if (getIdentity() == NOTE) {
+		string::size_type pos;
+		//remove \x or \gl //not remove, this will change position. Change to something not a pitch class
+		string t = token;
+		//if ( (pos = t.find("\\x")) != string::npos ) t.erase(pos,2);
+		if ( (pos = t.find("\\gl")) != string::npos ) t[pos+1] = 'x'; // change \gl to \xl
+		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return pos;
+	}
+	else if (getIdentity() == CHORD ) { //return pos pitch class of highest note
+		if (notes.size() > 0) {
+			int ih = getIndexHighestOfChord();
+			return notes[ih].getPosOfPitchClass();
+		}
+		else
+			return string::npos;
+	}
+	return string::npos;
+}
+
 RelLyToken::SlurStatus RelLyToken::getSlur() const {
 	if ( id != NOTE && id != CHORD ) return NO_SLUR_INFO;
 	SlurStatus res = NO_SLUR;
 	string::size_type pos;
-	if ( (pos = token.find("(")) != string::npos) res = START_SLUR;
-	if ( (pos = token.find(")")) != string::npos) res = END_SLUR;
+	bool open = false;
+	bool close = false;
+	if ( (pos = token.find("(")) != string::npos) open = true;
+	if ( (pos = token.find(")")) != string::npos) close = true;
+	if (open && !close) res = START_SLUR;
+	if (!open && close) res = END_SLUR;
+	if (open && close) res = ENDSTART_SLUR;
 	return res;
 }
 
@@ -412,45 +456,103 @@ RelLyToken::TieStatus RelLyToken::getTie() const {
 
 //NOBARLINE, NORMALBAR, ENDBAR, DOUBLEBAR, BEGINREPEAT, ENDREPEAT, DOUBLEREPEAT
 
+void RelLyToken::getBarLinePositions(string::size_type & pos1, string::size_type & pos2) const {
+	if (id != BARLINE ) return;
+	pos1 = token.find_first_of("\"") +1;
+	pos2 = token.find_last_of("\"") -1;
+}
+
 RelLyToken::BarLineType RelLyToken::getBarLineType() const {
 	if (id != BARLINE ) return NOBARLINE;
-	string::size_type pos1 = token.find_first_of("\"");
-	string::size_type pos2 = token.find_last_of("\"");
+	//string::size_type pos1 = token.find_first_of("\"");
+	//string::size_type pos2 = token.find_last_of("\"");
+	string::size_type pos1, pos2;
+	getBarLinePositions(pos1, pos2);
 	if ( pos1 == string::npos || pos2 == string::npos) {
 		cerr << "Error in barline token: " << endl;
 		exit(-1);
 	}
-	if ( pos2 <= pos1 ) {
+	if ( pos2 < pos1 ) {
 		cerr << "Error in barline token: " << endl;
 		exit(-1);
 	}
-	string::size_type len = pos2 - pos1;
+	string::size_type len = pos2 - pos1 + 1;
 	string barline = token.substr(pos1,len);
 	pvktrim(barline);
+
+	// cout << "Barline: " << barline << endl;
+
+	if ( barline == "|:" )
+		cerr << location << "Warning: barline |: is deprecated. New code is: .|:";
+	if ( barline == ":|" )
+		cerr << location << "Warning: barline :| is deprecated. New code is: :|.";
+	if ( barline == ":|:" )
+		cerr << location << "Warning: barline :|: is deprecated. New code is: :..:";
+
 	if ( barline == "|" ) return NORMALBAR;
 	else if ( barline == "|." ) return ENDBAR;
 	else if ( barline == "||" ) return DOUBLEBAR;
-	else if ( barline == "|:" ) return BEGINREPEAT;
-	else if ( barline == ":|" ) return ENDREPEAT;
-	else if ( barline == ":|:" ) return DOUBLEREPEAT;
+	else if ( barline == "|:" || barline ==".|:" ) return BEGINREPEAT;
+	else if ( barline == ":|" || barline ==":|." ) return ENDREPEAT;
+	else if ( barline == ":|:" || barline ==":..:" ) return DOUBLEREPEAT;
+	else { return UNKNOWNBAR; }
 
 	return NOBARLINE;
 }
 
-string RelLyToken::getKernBarLine() const {
+RelLyToken::GraceType RelLyToken::getGraceType() const {
+	if (id != GRACE) return NOGRACE;
+	GraceType res = NOGRACE;
+	string::size_type pos;
+	if ( (pos = token.find("\\app")) != string::npos) res = APP; // --> kern qq (LEGACY)
+	if ( (pos = token.find("\\kvs")) != string::npos) res = ACC; // --> kern q
+	if ( (pos = token.find("\\grace")) != string::npos) res = PLAINGRACE; // --> kern qq
+	if ( (pos = token.find("\\afterGrace")) != string::npos) res = AFTER; // --> kern qq
+	return res;
+}
+
+string RelLyToken::getKernBarLine(const int barnumber, const bool unnumbered) const {
+
+	//cout << "creating barline " << getBarLineType() << endl;
+
+	stringstream ss;
+	switch(getBarLineType()) {
+	case NOBARLINE:
+	case UNKNOWNBAR:
+		ss << "."; break;
+	case NORMALBAR:
+	case BEGINREPEAT:
+	case ENDREPEAT:
+	case DOUBLEREPEAT:
+		ss << "="; break;
+	case DOUBLEBAR:
+	case ENDBAR:
+		ss << "=="; break;
+	}
+
+	if (!unnumbered)
+		ss << barnumber;
+
 	string res = "";
 	switch(getBarLineType()) {
-	case NOBARLINE: res = "|"; break;
-	case NORMALBAR: res = "="; break;
-	case ENDBAR: res = "==|!"; break;
-	case DOUBLEBAR: res = "=="; break;
-	case BEGINREPEAT: res = "==!|:"; break;
-	case ENDREPEAT: res = "==:|!"; break;
-	case DOUBLEREPEAT: res = "==:!!:"; break;
+	case UNKNOWNBAR: ss << ""; break;
+	case NOBARLINE: ss << ""; break;
+	case NORMALBAR: ss << "|"; break;
+	case ENDBAR: ss << "|!"; break;
+	case DOUBLEBAR: ss << "||"; break;
+	case BEGINREPEAT: ss << "!|:"; break;
+	case ENDREPEAT: ss << ":|!"; break;
+	case DOUBLEREPEAT: ss << ":!!:"; break;
 	}
-	return res;
 
+	string barstr = "";
+	ss >> barstr;
+
+	//cout << "ready: " << barstr << endl;
+
+	return barstr;
 }
+
 
 RelLyToken::Accidental RelLyToken::getAccidental() const {
 	
@@ -519,6 +621,7 @@ string RelLyToken::printSlurStatus(SlurStatus ss) {
 		case NO_SLUR_INFO: return "NO_SLUR_INFO";
 		case START_SLUR: return "START_SLUR";
 		case END_SLUR: return "END_SLUR";
+		case ENDSTART_SLUR: return "ENDSTART_SLUR";
 		case IN_SLUR: return "IN_SLUR";
 		case NO_SLUR: return "NO_SLUR";
 	}
@@ -561,7 +664,6 @@ string RelLyToken::printIdentity(Identity i) {
 		case GRACE: return "GRACE";
 		case CHORD: return "CHORD";
 		case BARLINE: return "BARLINE";
-		case STOPBAR: return "STOPBAR";
 		case CLEF_COMMAND: return "CLEF_COMMAND";
 		case UNKNOWN: return "UNKNOWN";
 	}
