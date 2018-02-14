@@ -1,4 +1,4 @@
-Version 1.75
+Version 1.76 (20180214)
 - Bar lines are exported to **kern
 - Added code to display invisible rests in red
 - fixed bug in detecting too long text lines
