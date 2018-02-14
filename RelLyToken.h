@@ -28,14 +28,15 @@ struct Pitchclass_Octave {
 class RelLyToken {
 public:
 	
-	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, CHORD, BARLINE, STOPBAR, CLEF_COMMAND, UNKNOWN };
-	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, IN_SLUR, NO_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
+	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, CHORD, BARLINE, CLEF_COMMAND, UNKNOWN };
+	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, ENDSTART_SLUR, IN_SLUR, NO_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
 	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
 	enum Accidental { DOUBLE_FLAT, FLAT, NO_ACCIDENTAL, NATURAL, SHARP, DOUBLE_SHARP };
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
 	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD, NO_WORD, BEGIN_WORD_CONT, SINGLE_WORD_CONT, END_WORD_CONT, IN_WORD_CONT, DONTKNOW };
-	enum BarLineType { NOBARLINE, NORMALBAR, ENDBAR, DOUBLEBAR, BEGINREPEAT, ENDREPEAT, DOUBLEREPEAT};
+	enum BarLineType { NOBARLINE, NORMALBAR, ENDBAR, DOUBLEBAR, BEGINREPEAT, ENDREPEAT, DOUBLEREPEAT, UNKNOWNBAR};
+	enum GraceType { PLAINGRACE, APP, ACC, AFTER, NOGRACE }; //make sure only one of this value corresponds with NOT grace notes
 
 	RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool softbreak, bool is_music = true);
 	RelLyToken();
@@ -64,6 +65,7 @@ public:
 	
 	Identity getIdentity() const;
 	char getPitchClass() const;
+	string::size_type getPosOfPitchClass() const;
 	int getOctaveCorrection() const; // 0 if no octave correction; for chord return octavecorrection of first note
 	int getDurationBase() const; // 0 if no durations is given
 	int getDots() const; // return number of dots
@@ -82,7 +84,9 @@ public:
 	TieStatus getTie() const;
 	Accidental getAccidental() const;
 	BraceStatus getBraceStatus() const;
+	void getBarLinePositions(string::size_type & pos1, string::size_type & pos2) const;
 	BarLineType getBarLineType() const;
+	GraceType getGraceType() const;
 	bool containsOpeningBrace() const {return (token.find("{") != string::npos); }
 	bool containsClosingBrace() const {return (token.find("}") != string::npos); }
 	bool containsClosingBraceBeforeNote() const;
@@ -94,12 +98,13 @@ public:
 	TimeSignature getTimeSignature() const; //do only invoke if identity is TIME_COMMAND
 	
 	//pitchclass, tiestatus, accidental and braces are already known. If token is rest ('r' or 's'), octave en slur not taken into account.
-	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
-	string createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
-	string createKernChordNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub) const;
+	string createKernNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub, GraceType gt) const;
+	string createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub, GraceType gt) const;
+	string createKernChordNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub, GraceType gt) const;
 	string createAbsLyNote(int octave, int duration, int dots, SlurStatus slur, TieStatus tie) const;
 
-	string getKernBarLine() const;
+	string getKernBarLine(const int barnumber, const bool unnumbered=false) const;
+	string getKernBarLineVisual() const;
 
 private:
 	//Identity computeIdentity(bool is_music) const;
