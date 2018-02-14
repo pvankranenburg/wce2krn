@@ -1,8 +1,3 @@
 TODO
-- warning if only 'x' in lyrics
-- free meter -> no meter in kern
-- toonsoort in krn *G:
-- alle depencies in makefile. (ook bijv Song -> SongLine)
-- Waarschuwing "only - under note" van SongLine::toText() naar ... (SongLine::breakWcelines()?)
-- more meaningful error messages after lexer
-- Waarschuwing f~    g (ipv g~        g)
+- In case of slur from grace note to main note, remove slur-closing ) from main note if grace notes not exported to krn.
+- In case of slur from main note to grace note, remove slur-opening ( from main note if grace notes not exported to krn.

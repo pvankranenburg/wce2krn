@@ -71,7 +71,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	//if anywhere in the profile there are two adjacent true, then not instrumental
 	bool prev = false;
 	for (i = 0; i < lineprofile.size(); i++) {
-		//cout << lineprofile[i] << endl;
+		//cout << i << " - " << lineprofile[i] << endl;
 		if ( prev && lineprofile[i] ) instr = false;
 		prev = lineprofile[i];
 	}
@@ -114,6 +114,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getTitle(),
 								  i-singleline.size(),
 								  instr,
+								  RelLyToken::NOGRACE, //not grace
 								  wcefile.getFooterField()));
 					singleline.clear();
 					phraseno++;
@@ -144,6 +145,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 								  wcefile.getTitle(),
 								  i-singleline.size(),
 								  instr,
+								  RelLyToken::NOGRACE, //not grace
 								  wcefile.getFooterField()));
 					//songLines.push_back(sl);
 					singleline.clear();
@@ -167,7 +169,8 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	for(it_sl=songLines.begin()+1; it_sl != songLines.end(); it_sl++) {
 		if ( (*it_sl).getWceLines().size() != (*(it_sl-1)).getWceLines().size() ) {
 			cerr << getLocation() << ": Error: all songlines should have the same number of textlines." << endl;
-			exit(1);
+
+			//exit(1);
 		}
 	}
 
@@ -243,12 +246,15 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 	}
 
 
-
-
 	if (songLines.size() > 0 && repr != SongLine::TEXT) {
 		//songlines
 		for ( si = songLines.begin(); si != songLines.end(); si++ ) {
 			//preamble
+
+			//cout << "processing " << (*si).getLocation() << endl;
+
+
+
 			if (lines || si == songLines.begin()) {
 				if ( lines && !stdoutput) {
 					if (out.is_open()) out.close();
@@ -267,7 +273,6 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 				for ( part_it = part.begin(); part_it != part.end(); part_it++ )
 					if (stdoutput) cout << *part_it << endl; else out << *part_it << endl;
 			}
-
 
 			switch (repr) {
 				case SongLine::KERN:

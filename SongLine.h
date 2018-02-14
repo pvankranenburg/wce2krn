@@ -45,7 +45,8 @@ public:
 	         string str_title,
 	         int wcelineno,
 	         bool instr,
-	         vector<string> fField); //if duration is 0, take duration from first note
+			 RelLyToken::GraceType gt,
+	         vector<string> fField);
 	SongLine();
 	//SongLine(const SongLine& sl);
 	SongLine& operator=(const SongLine& sl);
@@ -121,7 +122,7 @@ private:
 	vector<vector<RelLyToken> > relLyTokens; //the input broken into tokens.
 	vector<vector<string> > absLyTokens; //converted to abs ly
 	vector<vector<string> > kernTokens; //converted to kern
-	const vector<string> wcelines; //original wce lines (belonging to one song line)
+	vector<string> wcelines; //original wce lines (belonging to one song line)
 	vector<string> absLyLine; //lilypond line with absolute pitch and explicit note durations
 	//vector<Spine> KernLine; //kern representation of the line .
 	vector<string> lyricsLines; //lyrics in normal text representation.
@@ -177,6 +178,12 @@ private:
 	int WCELineNumber;
 	vector<string> footerField;
 	bool instrumental;
+	const RelLyToken::GraceType graceType;
+	struct RestPos { //used to show invisible rests in red
+		RestPos(unsigned long int p, unsigned long int c) : pitchclasspos(p), colorpos(c) {};
+		unsigned long int pitchclasspos; //position of pitch class. In case of 's' will be changed to 'r'
+		unsigned long int colorpos; //position where to insert code to change color of rest to red
+	};
 
 };
 
