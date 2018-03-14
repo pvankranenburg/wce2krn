@@ -2242,7 +2242,7 @@ bool SongLine::checkTies() const {
 
 			while ( p>=0 && (slurs_ann[p] != RelLyToken::START_SLUR && slurs_ann[p] != RelLyToken::ENDSTART_SLUR) && slurs_ann[p] != RelLyToken::IN_SLUR ) {
 				p--;
-				cout << i << " " << p << endl;
+				//cout << i << " " << p << endl;
 			}
 
 			if ( p == -1 ) {
