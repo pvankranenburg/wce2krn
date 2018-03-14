@@ -523,7 +523,7 @@ void SongLine::translate() {
 								  currentDots,
 								  lastOctave,
 								  lastPitchClass,
-								  false,
+								  false, //it makes no sense to have triplet duration values for grace notes.
 								  currentTieStatus,
 								  currentSlurStatus,
 								  getKeySignature(),
@@ -987,6 +987,16 @@ void SongLine::breakWcelines() {
 			  }
 
 			  if ( addOpeningBrace ) { ctoken = "{ " + ctoken; addOpeningBrace = false; }
+			  //UGLY Hack:
+			  //if a note in \afterGrace has free text, it still needs to be removed
+			  //e.g. \afterGrace b^"3)" {a b c} would result in:
+			  //b^"3)"           NOTE             END_SLUR         NO_TIE           2:131
+			  //\afterGrace {a b c}GRACE            NO_SLUR          NO_TIE           2:131
+			  //a                NOTE             NO_SLUR          NO_TIE           2:158
+			  //and the 3 would be interpreted as the duration
+
+			  removeTextFromNote(ctoken);
+
 			  RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::NOTE, false, is_music);
 			  relLyTokens.back().push_back(rlt);
 
@@ -2238,6 +2248,13 @@ bool SongLine::checkTies() const {
 		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) continue; //only notes
 		if ( slurs_ann[i] == RelLyToken::END_SLUR || slurs_ann[i] == RelLyToken::ENDSTART_SLUR ) {
 			//search previous NOTE
+
+			//check whether in slur:
+			if ( slurs_ann[i-1] == RelLyToken::NO_SLUR || slurs_ann[i-1] == RelLyToken::END_SLUR) {
+				cerr << getLocation() << ": Error: slur ends at note: " << relLyTokens[0][i].getToken() << ", but no start" << endl;
+				continue; //no previous note
+			}
+
 			int p = i-1;
 
 			while ( p>=0 && (slurs_ann[p] != RelLyToken::START_SLUR && slurs_ann[p] != RelLyToken::ENDSTART_SLUR) && slurs_ann[p] != RelLyToken::IN_SLUR ) {
