@@ -1,3 +1,6 @@
+Version 1.76.1 (20180314)
+- fixed bug: main note of \afterGrace now can get free text.
+
 Version 1.76 (20180214)
 - Bar lines are exported to **kern
 - Added code to display invisible rests in red
@@ -10,13 +13,12 @@ Version 1.76 (20180214)
 - invisible rest now exported to kern as ryy
 - \sv, \tv, and \qv now close previous volta spanner (prevents warning from lilypond)
 - Barline type recognition upgraded to lilypond 2.18.2
-- Issue warning for old barline types
 - (unused) \stopbar removed from lily lexer
 - added ly crescendo and decrescendo commands
 - added \sfz dynamic
 - default version in lilypond output now is 2.18.2
 - \vs changed to \kvs
-- \kvs (formerly \vs) not translates to \slashedGrace
+- \kvs (formerly \vs) now translates to \slashedGrace
 - removed obsolete code for \stopbar
 
 Version 1.74 (20171129)

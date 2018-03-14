@@ -23,6 +23,7 @@ braced			\{[^\}]*\}
 key				major|minor|ionian|dorian|phrygian|lydian|mixolydian|aeolian|locrian
 clef_command	\\clef
 clef_type		treble|bass
+tekst			[\^_]\"[^\"]*\"{ws}*
 
 %%
 [\^_]\"\*\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
@@ -40,7 +41,7 @@ clef_type		treble|bass
 \\grace{ws}*\{[^\}]*\}{ws}*							{/*clog << "GRACE  " << YYText() << endl; */ return 5; }
 \\app{ws}*\{[^\}]*\}{ws}*							{/*clog << "GRACE  " << YYText() << endl; */ return 5; }
 \\kvs{ws}*\{[^\}]*\}{ws}*							{/*clog << "GRACE  " << YYText() << endl; */ return 5; }
-\\afterGrace{ws}*({glis}|{cross})*{ws}*{note}{ws}*{braced}{ws}*	return 16; /*clog << "AFTERGRACE " << YYText() << endl;*/
+\\afterGrace{ws}*({glis}|{cross}|{ws})*{note}{ws}*{tekst}*{ws}*{braced}{ws}*	return 16; /*clog << "AFTERGRACE " << YYText() << endl;*/
 [\^_]?\\staccato{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]?\\staccatissimo{ws}*							{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 -\.{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
