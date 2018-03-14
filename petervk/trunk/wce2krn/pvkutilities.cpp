@@ -19,3 +19,14 @@ string& columnize(string& s, int length, char fill) {
 	while ( s.size() < length ) s = s + fill;
 	return s;
 }
+
+string& removeTextFromNote(string& external_token) {
+	string::size_type pos1, pos2;
+	//locate the texts (if any)
+	while( (pos1 = external_token.find("^\"")) != string::npos || (pos1 = external_token.find("_\"")) != string::npos ) {
+		//find end of text
+		pos2 = external_token.find_first_of('\"', pos1+2); //skip the ^" or _"
+		external_token.erase(pos1, pos2-pos1+1);
+	}
+	return external_token;
+}
