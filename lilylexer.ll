@@ -80,7 +80,7 @@ tekst			[\^_]\"[^\"]*\"{ws}*
 ({glis}|{cross}|\{)*{ws}*{note}{ws}*\}*				return 1; /*clog << "NOTE  " << YYText() << endl;*/
 ({glis}|{cross}|\{)*{ws}*{chord}{ws}*\}*			return 12; /*clog << "CHORD " << YYText() << endl;*/
 {time_command}{ws}*{digit}+"/"{digit}+{ws}*			return 2; /*clog << "TIME  " << YYText() << endl;*/
-{times_command}{ws}*{digit}+"/"{digit}+{ws}*		return 3; /*clog << "TIMES " << YYText() << endl;*/
+{times_command}{ws}*{digit}+"/"{digit}+{ws}*\{		return 3; /*clog << "TIMES " << YYText() << endl;*/
 {clef_command}{ws}*\"?{clef_type}\"?{ws}*			return 15; /*clog << "CLEF " << YYText() << endl;*/
 {ws}												{/*clog << "WHITESPACE" << endl; */ return -2; }
 .													return -1; /*cerr << "Unrecognized character: "<< YYText() << endl;*/
