@@ -679,12 +679,14 @@ void SongLine::translate() {
 			}
 		} else { // text or TIMES or UNKNOWN with corresponding kern token
 			for ( int i = 1; i<numLines; i++ ) {
-
 				if ( relly_index >= relLyTokens[i].size() ) {
+					//for ( int knn = 0; knn<kernTokens[2*i].size(); knn++) cout <<  kernTokens[2*i][knn] << endl;
 					kernTokens[2*i].push_back( "." );
 					kernTokens[2*i+1].push_back( "." );
 					// rest at end of line could be tolerated
-					if ( relLyTokens[0][relly_index].getPitchClass() == 'r' || relLyTokens[0][relly_index].getPitchClass() == 's' ) relLyTokens[i].push_back( RelLyToken("", "", 0, 0, RelLyToken::TEXT, false) );
+					if ( relly_index < relLyTokens[0].size() ) {
+						if ( relLyTokens[0][relly_index].getPitchClass() == 'r' || relLyTokens[0][relly_index].getPitchClass() == 's' ) relLyTokens[i].push_back( RelLyToken("", "", 0, 0, RelLyToken::TEXT, false) );
+					}
 					// any case: annotate
 					text_ann[i-1].push_back( RelLyToken::NO_WORD );
 				} else {
@@ -722,20 +724,28 @@ void SongLine::translate() {
 								currentTextStatus = RelLyToken::BEGIN_WORD_CONT;
 						}
 
+
 						// add translated text to appropriate vectors
 						kernTokens[2*i].push_back( toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, KERN ) );
 						kernTokens[2*i+1].push_back( relLyTokens[i][relly_index].getWCEPosition() );
 						lyricsLines[i-1] = lyricsLines[i-1] + toText( relLyTokens[i][relly_index].getToken(), currentTextStatus, TEXT );
 						// annotation
 						//if rest or empty: NO_WORD
-						if ( relLyTokens[0][relly_index].getPitchClass() == 'r' || relLyTokens[0][relly_index].getPitchClass() == 's' )
+
+						//for (int kk=0; kk<relLyTokens.size(); kk++)
+						//	cout << kk << " " << relLyTokens[kk].size() << endl;
+
+						if ( relLyTokens[0][relly_index].getPitchClass() == 'r' || relLyTokens[0][relly_index].getPitchClass() == 's' ) {
 							text_ann[i-1].push_back(RelLyToken::NO_WORD);
+						}
 						else if ( relLyTokens[i][relly_index].getToken().size() == 0 ) {
 							text_ann[i-1].push_back(RelLyToken::NO_WORD);
 							cerr << getLocation() << ": Error: Lyric line too short." << endl;
 						}
-						else
+						else {
 							text_ann[i-1].push_back(currentTextStatus);
+
+						}
 
 					} else { //TIMES or UNKNOWN
 						//if UNKNOWN: DONTKNOW
@@ -755,7 +765,9 @@ void SongLine::translate() {
 					else
 						absLyTokens[i].push_back( relLyTokens[i][relly_index].getToken() );
 				}
+
 			}
+
 			relly_index++;
 		}
 	}
