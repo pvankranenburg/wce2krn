@@ -77,9 +77,6 @@ lex.Lily.cc : lilylexer.ll
 lex.Text.cc : textlexer.ll
 	flex textlexer.ll
 
-lex.ChordNote.cc : chordnotelexer.ll
-	flex chordnotelexer.ll
-
 ##########################################
 #
 # INSTALL 

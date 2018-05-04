@@ -855,6 +855,9 @@ void SongLine::breakWcelines() {
 
 		string lexline = "";
 		bool addOpeningBrace = false; //true if an opening brace has to be added to the next note
+	       //Also set to true if the \times command was in input. The { should be re-added to next note!
+		   //reason: the { is scanned with the \times command, because otherwise the braced notes are detected as whole group, which
+		   //is intended for the afterGrace... UGLY.....
 
 		if ( is_music ) {
 		  pos_in_line = 0;
@@ -889,13 +892,12 @@ void SongLine::breakWcelines() {
 		  	}
 			else if ( tok == 2 ) { //time
 				ctoken = lexer->YYText();
-				//put this with "\grace{" and "}" int relLyTokens
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::TIME_COMMAND, is_music));
 		  	}
 			else if ( tok == 3 ) { //times
 				ctoken = lexer->YYText();
-				//put this with "\grace{" and "}" int relLyTokens
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::TIMES_COMMAND, is_music));
+				addOpeningBrace = true;
 		  	}
 		  	else if ( tok == -2 ) { //whitespace
 		  	}
