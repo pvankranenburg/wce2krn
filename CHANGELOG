@@ -1,3 +1,6 @@
+Version 1.78.1 (20180505)
+- bugfixes
+
 Version 1.78 (20180504)
 - fixed bug: duration inheritance in splitted lilypond also for chords
 - fixed bug: text syllables also allowed under chord
