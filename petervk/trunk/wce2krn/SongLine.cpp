@@ -665,7 +665,8 @@ void SongLine::translate() {
 
 			//possibly, there is a corresponding rel ly token (time / unknown). If so, add that to absLy
 			if ( relly_index < relLyTokens[0].size() ) {
-				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE ) {
+				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE &&
+				     relLyTokens[0][relly_index].getIdentity() != RelLyToken::CHORD ) {
 					for (int i = 1; i<numLines; i++ ) {
 						absLyTokens[i].push_back("");
 						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
@@ -687,7 +688,8 @@ void SongLine::translate() {
 					// any case: annotate
 					text_ann[i-1].push_back( RelLyToken::NO_WORD );
 				} else {
-					if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::NOTE ) {
+					if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::NOTE  ||
+						 relLyTokens[0][relly_index].getIdentity() == RelLyToken::CHORD ) {
 						//textstatus:
 
 						bool dash = ( relLyTokens[i][relly_index].getToken().find("--") != string::npos );
@@ -798,8 +800,6 @@ void SongLine::translate() {
 	checkMelisma();
 	//check ties
 	checkTies();
-	//check whether syllable under \time or \times
-	checkTextPlacing();
 
 }
 
@@ -826,8 +826,9 @@ void SongLine::breakWcelines() {
 	string token;
 	vector<RelLyToken> emptyline;
 	bool is_music = true; //first line is music line
+	bool aftergrace = false; //set to true if the \afterGrace command was in input. Then first braced is taken as grace notes.
 
-	string::size_type pos;
+	//string::size_type pos;
 	string ctoken = "";
 	vector<string>::iterator it;
 	int pos_in_line = 0;
@@ -966,36 +967,27 @@ void SongLine::breakWcelines() {
 				ctoken = lexer->YYText();
 				(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::CLEF_COMMAND, is_music));
 		  	}
+		  	else if ( tok==16) { //afterGrace command
+		  		aftergrace = true;
+		  	}
 		  	else if ( tok==17 ) { //Volta
 		  		//ignore for now
 		  	}
-			else { //Note (tok==1) OR Aftergrace (tok==16)
+		  	else if ( tok==18 ) { //braced (used for afterGrace)
+		  		ctoken = lexer->YYText();
+		  		if (!aftergrace ) {
+		  			cerr << getLocation() << ": Error: braced notes only allowed for grace and triplets: " << ctoken << endl;
+		  			exit(1);
+		  		}
+		  		string aftergr = "\\afterGrace " + ctoken;
+		  		(relLyTokens.back()).push_back(RelLyToken(aftergr, getLocation(), WCELineNumber, pos_in_line, RelLyToken::GRACE, is_music));
+		  		aftergrace = false;
+		  	}
+			else { //Note (tok==1)
 			  ctoken = lexer->YYText();
 			  pvktrim(ctoken);
 
-			  string aftergr = "";
-			  if (tok==16) { //in case of afterGrace, split note and afterGrace
-				  aftergr = "\\afterGrace ";
-				  int grix1 = ctoken.find_first_of("{");
-				  string grnotes = ctoken.substr(grix1, string::npos);
-				  aftergr = aftergr + grnotes;
-				  ctoken.erase(grix1);
-				  ctoken.erase(0,11); //we KNOW that ctoken starts with \afterGrace
-				  pvktrim(ctoken);
-				  //ADD THE AFTERGRACE AFTER THE NOTE. NOT HERE
-				  //(relLyTokens.back()).push_back(RelLyToken(aftergr, getLocation(), WCELineNumber, pos_in_line, RelLyToken::GRACE, is_music));
-			  }
-
 			  if ( addOpeningBrace ) { ctoken = "{ " + ctoken; addOpeningBrace = false; }
-			  //UGLY Hack:
-			  //if a note in \afterGrace has free text, it still needs to be removed
-			  //e.g. \afterGrace b^"3)" {a b c} would result in:
-			  //b^"3)"           NOTE             END_SLUR         NO_TIE           2:131
-			  //\afterGrace {a b c}GRACE            NO_SLUR          NO_TIE           2:131
-			  //a                NOTE             NO_SLUR          NO_TIE           2:158
-			  //and the 3 would be interpreted as the duration
-
-			  removeTextFromNote(ctoken);
 
 			  RelLyToken rlt = RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::NOTE, false, is_music);
 			  relLyTokens.back().push_back(rlt);
@@ -1007,11 +999,6 @@ void SongLine::breakWcelines() {
 					  rests.push_back(RestPos(pitchclasspos, colorpos));
 				  }
 			  }
-
-			  if (tok==16) { //now insert the aftergrace.
-				  (relLyTokens.back()).push_back(RelLyToken(aftergr, getLocation(), WCELineNumber, pos_in_line, RelLyToken::GRACE, is_music));
-			  }
-
 			}
 
 			//cout << tok << " - " << lexer->YYText() << " - " << pos_in_line << endl;
@@ -1081,8 +1068,10 @@ void SongLine::breakWcelines() {
 				  exit(1);
 			  }
 
-			  //if not a note in corresponding music, add empty tokens first.
-			  while ( relLyTokens[0][current_note_index].getIdentity() != RelLyToken::NOTE || relLyTokens[0][current_note_index].isRest() ) {
+			  //if not a (note or chord) in corresponding music, add empty tokens first.
+			  while ( (relLyTokens[0][current_note_index].getIdentity() != RelLyToken::NOTE &&
+					  relLyTokens[0][current_note_index].getIdentity() != RelLyToken::CHORD) ||
+					  relLyTokens[0][current_note_index].isRest() ) {
 				(relLyTokens.back()).push_back(RelLyToken("", getLocation(), WCELineNumber+line_offset, pos_in_line, RelLyToken::TEXT, is_music));
 			  	current_note_index++;
 				if ( current_note_index >= relLyTokens[0].size() ) {
@@ -1938,7 +1927,8 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 	if (relLyTokens.size() > 0) {
 
 		while ( index < relLyTokens[0].size() )
-			if ( relLyTokens[0][index].getIdentity() != RelLyToken::NOTE )
+			if ( relLyTokens[0][index].getIdentity() != RelLyToken::NOTE &&
+				 relLyTokens[0][index].getIdentity() != RelLyToken::CHORD )
 				index++;
 			else
 				break;
@@ -1957,7 +1947,6 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 	//firstnote has duration?
 	if ( relLyTokens[0][index].getDurationBase() != 0 ) return true;
 
-	RelLyToken::Accidental ac = relLyTokens[0][index].getAccidental();
 
 	//find index of end of first note
 	//while ( index > 0 ) {
@@ -1965,69 +1954,81 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 	//	index--;
 	//}
 
-	pos = relLyTokens[0][index].getWCE_Pos();
+	// THIS IS DIFFERENT FOR CHORDS AND NOTES
 
-	//ptichclass
-	if ( (pos = lyline.find_first_of("abcdefgsr", pos)) == string::npos) return false;
+	pos = relLyTokens[0][index].getWCE_Pos(); //initialisation of pos: start of lily line
 
-	pos++;
+	if ( relLyTokens[0][index].getIdentity() == RelLyToken::NOTE ) {
 
-	/*
-	-is
-	-isis
-	-es
-	-eses
-	es
-	as
-	eses
-	ases
-	*/
+		//ptichclass
+		if ( (pos = lyline.find_first_of("abcdefgsr", pos)) == string::npos) return false;
 
-	//alterations
-	/*
-	if ( pos+1 < lyline.size() { //not past line end
+		pos++;
 
-		if ( lyline[pos+1] == 's' ) { //es, as, eses, asas
-			if ( substr
+		/*
+		-is
+		-isis
+		-es
+		-eses
+		es
+		as
+		eses
+		ases
+		*/
+
+		//alterations
+		/*
+		if ( pos+1 < lyline.size() { //not past line end
+
+			if ( lyline[pos+1] == 's' ) { //es, as, eses, asas
+				if ( substr
+			}
+
+			if ( lyline[pos+1] == 'i' || lyline[pos+1] == 'e') { //-is -isis
+			}
 		}
+		*/
 
-		if ( lyline[pos+1] == 'i' || lyline[pos+1] == 'e') { //-is -isis
-		}
-	}
-	*/
+		string s = "s";
 
-	string s = "s";
+		RelLyToken::Accidental ac = relLyTokens[0][index].getAccidental();
 
-	switch( ac ) {
-		case RelLyToken::DOUBLE_FLAT:
-			if ( lyline[pos] == 's' ) // eses or ases
-				pos = pos + 3;
-			else
-				pos = pos + 4;
-			break;
-		case RelLyToken::FLAT:
-			if ( lyline[pos] == 's' ) // es or as
-				pos = pos + 1;
-			else
+		switch( ac ) {
+			case RelLyToken::DOUBLE_FLAT:
+				if ( lyline[pos] == 's' ) // eses or ases
+					pos = pos + 3;
+				else
+					pos = pos + 4;
+				break;
+			case RelLyToken::FLAT:
+				if ( lyline[pos] == 's' ) // es or as
+					pos = pos + 1;
+				else
+					pos = pos + 2;
+				break;
+			case RelLyToken::SHARP:
 				pos = pos + 2;
-			break;
-		case RelLyToken::SHARP:
-			pos = pos + 2;
-			break;
-		case RelLyToken::DOUBLE_SHARP:
-			pos = pos + 4;
-			break;
-		default: {};
+				break;
+			case RelLyToken::DOUBLE_SHARP:
+				pos = pos + 4;
+				break;
+			default: {};
+		}
+
+		while ( pos < lyline.size() )
+			if ( lyline.at(pos) == ',' || lyline.at(pos) == '\'' )
+				pos++;
+			else
+				break;
+
+		//here we should insert the duration
+
+	} else { //chords: easier. right after closing >
+		if ( (pos = lyline.find_first_of(">", pos)) == string::npos) return false;
+		pos++;
 	}
 
-	while ( pos < lyline.size() )
-		if ( lyline.at(pos) == ',' || lyline.at(pos) == '\'' )
-			pos++;
-		else
-			break;
-
-	//here we should insert the duration
-
+	//create the duration
 	ss << initialDuration;
 	for(int i=0; i<initialDots; i++) ss << '.';
 	ss >> strduration;
@@ -2062,7 +2063,7 @@ bool SongLine::checkMelisma() const {
 		     ( text_ann[0][i] == RelLyToken::SINGLE_WORD_CONT ) ||
 		     ( text_ann[0][i] == RelLyToken::END_WORD_CONT ) ||
 			 ( text_ann[0][i] == RelLyToken::IN_WORD_CONT ) ) {
-			if ( relLyTokens[0][i].getIdentity() == RelLyToken::NOTE ) {
+			if ( relLyTokens[0][i].getIdentity() == RelLyToken::NOTE || relLyTokens[0][i].getIdentity() == RelLyToken::CHORD ) {
 				if ( ( slurs_ann[i] != RelLyToken::IN_SLUR ) &&
 					 ( slurs_ann[i] != RelLyToken::END_SLUR && slurs_ann[i] != RelLyToken::ENDSTART_SLUR) &&
 					 ( ties_ann[i] != RelLyToken::CONTINUE_TIE ) &&
@@ -2086,39 +2087,6 @@ bool SongLine::checkMelisma() const {
 	return res;
 
 }
-
-bool SongLine::checkTextPlacing() const {
-	bool res = true;
-	string syl = "#";
-
-	if ( relLyTokens.size() < 2 ) { return true; } //no text. check not needed
-	if ( text_ann.size() < 1 ) { cerr << getLocation() << ": Error: no annotations" << endl; return false; }
-
-	//walk through the music annotation
-	//if \time or \times, no text should be in the lyrics
-	//only check first text line
-
-	for ( int i=0; i<relLyTokens[0].size(); i++ ) {
-		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) {
-			if ( i<text_ann[0].size() )
-				if ( text_ann[0][i] == RelLyToken::NO_WORD ) {
-					if ( i<relLyTokens[1].size() )
-						syl = relLyTokens[1][i].getToken();
-					else
-						syl = "";
-					pvktrim(syl);
-					if ( syl.size() != 0 )
-						cerr << getLocation() << ": Error: \\time or \\times should not have lyrics: " << syl << endl;
-				}
-			//else
-				//
-		}
-	}
-
-	return res;
-
-}
-
 
 void SongLine::createAnnotations() {
 	//stringstream ss;
@@ -2245,7 +2213,7 @@ bool SongLine::checkTies() const {
 
 	//walk trough note sequence. If slur end and previous note has slur start XXor in slurXX, and pitches are the same: should be a tie. Unless a slur and a tie end at the same note
 	for( int i=1; i<relLyTokens[0].size(); i++ ) { //starting from the second token
-		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE ) continue; //only notes
+		if ( relLyTokens[0][i].getIdentity() != RelLyToken::NOTE && relLyTokens[0][i].getIdentity() != RelLyToken::CHORD ) continue; //only notes
 		if ( slurs_ann[i] == RelLyToken::END_SLUR || slurs_ann[i] == RelLyToken::ENDSTART_SLUR ) {
 			//search previous NOTE
 

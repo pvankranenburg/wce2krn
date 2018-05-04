@@ -1,3 +1,11 @@
+Version 1.78 (20180504)
+- fixed bug: duration inheritance in splitted lilypond also for chords
+- fixed bug: text syllables also allowed under chord
+- fixed bug in detecting missing slur/tie in melisma: also works for chords now.
+- removed check text placing. Not necessary anymore (for a long time actually)
+- fixed bug in finding highest note in a chord
+- implemented a better way to deal with \afterGrace. Now the main note for the afterGrace is parsed like all other notes.
+
 Version 1.76.1 (20180314)
 - fixed bug: main note of \afterGrace now can get free text.
 
