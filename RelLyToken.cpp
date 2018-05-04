@@ -256,6 +256,7 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 	
 }
 
+//make sure this works both for notes and chords
 int RelLyToken::getDurationBase() const {
 	if (getIdentity() != NOTE && getIdentity() != CHORD) return -1;
 	string duration = "";
@@ -377,9 +378,9 @@ int RelLyToken::getIndexHighestOfChord() const {
 		}
 		if (all[i].octave == max.octave) {
 			char cmp_note = all[i].pitchclass;
-			if ( cmp_note < 'c' ) cmp_note += 5; // convert a and b to h and i
+			if ( cmp_note < 'c' ) cmp_note += 7; // convert a and b to h and i
 			char cmp_max = max.pitchclass;
-			if ( cmp_max < 'c' ) cmp_max += 5;
+			if ( cmp_max < 'c' ) cmp_max += 7;
 			if ( cmp_note > cmp_max ) {
 				max = all[i];
 				res = i;
