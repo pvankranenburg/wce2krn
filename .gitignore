@@ -2,10 +2,11 @@
 # Project specific excludes
 #
 
-.o
+*.o
 lex.ChordNote.cc
 lex.Lily.cc
 lex.Text.cc
+wce2krn
 
 #
 # Default excludes
