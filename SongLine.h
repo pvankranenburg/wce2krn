@@ -31,7 +31,7 @@ public:
 	         bool initialtriplet,
 	         RelLyToken::TieStatus initialTie,
 	         RelLyToken::SlurStatus initialSlur,
-	         int keysig,
+	         int initialKeysig,
 	         int mtempo,
 	         string lytempo,
 	         int barnumber,
@@ -74,6 +74,7 @@ public:
 	int getInitialBarnumber() const {return initialBarnumber;}
 	bool getInitialTripletStatus() const {return initialTripletStatus; }
 	string getInitialClef() const {return initialClef; }
+	int getInitialKeySignature() const { return initialKeySignature;}
 
 	TimeSignature getFinalTimeSignature() const {return finalTimeSignature;}
 	RationalTime getFinalUpbeat() const {return finalUpbeat;}
@@ -82,8 +83,8 @@ public:
 	int getFinalDuration() const {return finalDuration;}
 	int getFinalDots() const {return finalDots;}
 	int getFinalBarnumber() const {return finalBarnumber;}
-	int getKeySignature() const { return keySignature;}
 	bool getFinalTripletStatus() const { return finalTripletStatus; }
+	int getFinalKeySignature() const { return finalKeySignature; }
 	string getFinalClef() const { return finalClef; }
 	RelLyToken::TieStatus getFinalTieStatus() const { return finalTieStatus; }
 	RelLyToken::SlurStatus getFinalSlurStatus() const { return finalSlurStatus; }
@@ -135,12 +136,17 @@ private:
 	vector<string> annotations;
 
 	//some useful functions
+	int ixLastNote(vector<vector<RelLyToken> > rts, string warningMessage, int offset=-1 );
 	void breakWcelines(); //output goes into relLyTokens. Invoked in translate().
 	int computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const;
 	RationalTime rationalDuration(int duration, int dots, bool triplet) const;
 	string toText(string tok, RelLyToken::TextStatus ts, Representation repr)  const;
 	string upbeatToString(RationalTime t) const;
 	bool inheritFirstLynoteDuration( string& lyline, int duration) const;
+	void getKeyAndMode(int keysig, string& key, string& mode) const;
+	string getKernKey(int keysig) const;
+	string getKernKeySignature(int keysig) const;
+
 
 	const RationalTime initialUpbeat;
 	RationalTime finalUpbeat;
@@ -156,19 +162,20 @@ private:
 	int finalDots;
 	const string initialClef;
 	string finalClef;
+	const int initialBarnumber;
+	int finalBarnumber;
+	bool initialTripletStatus;
+	bool finalTripletStatus;
+	const int initialKeySignature;
+	int finalKeySignature;
 	RelLyToken::TieStatus initialTieStatus;
 	RelLyToken::TieStatus finalTieStatus;
 	RelLyToken::SlurStatus initialSlurStatus;
 	RelLyToken::SlurStatus finalSlurStatus;
-	const int keySignature;
 	const int midiTempo;
 	const string lyTempo;
-	const int initialBarnumber;
-	int finalBarnumber;
 	bool meterInvisible;
 	bool eachPhraseNewStaff;
-	bool initialTripletStatus;
-	bool finalTripletStatus;
 	string fileName;
 	string title;
 	int phraseNo;

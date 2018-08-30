@@ -25,7 +25,6 @@ public:
 	
 	TimeSignature translateTimeSignature(string lyTimeSignature) const;
 	RationalTime translateUpbeat(string lyUpbeat) const;
-	int translateKeySignature(string lyKey) const;
 	int translateMidiTempo(string lyKey) const;
 	string getLocation() const;
 	void printContents() const;

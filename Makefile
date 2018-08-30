@@ -123,5 +123,6 @@ clean :
 	rm *.o \
 	lex.Lily.cc \
 	lex.Text.cc \
+	lex.ChordNote.cc \
 	wce2krn
 

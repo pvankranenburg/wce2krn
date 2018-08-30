@@ -42,4 +42,6 @@ string& columnize(string& s, int length, char fill = ' ');
 
 string& removeTextFromNote(string& external_token);
 
+int translateKeySignature(string lykey);
+
 #endif

@@ -2,3 +2,4 @@ TODO
 - In case of slur from grace note to main note, remove slur-closing ) from main note if grace notes not exported to krn.
 - In case of slur from main note to grace note, remove slur-opening ( from main note if grace notes not exported to krn.
 - Nested braced aren't handled properly (e.g. \afterGrace g { \times 2/3 { a32 b a } c d } )
+- Glissandi cannot cross line breaks

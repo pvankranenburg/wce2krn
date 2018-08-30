@@ -22,17 +22,27 @@ using namespace std;
 #define yyFlexLexer ChordNoteFlexLexer
 #include <FlexLexer.h>
 
-RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool hassoftbreak, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos), softBreak(hassoftbreak) {
+RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool hassoftbreak, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos), softBreak(hassoftbreak), beginGlissando(false), fermata(false) {
 	if (getIdentity() == CHORD) {
 			notes = splitChord();
 	}
 }
 
-RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()), id(r.getIdentity()), WCE_LineNumber(r.getWCE_LineNumber()), WCE_Pos(r.getWCE_Pos()), softBreak(r.hasSoftBreak()), location(r.getLocation()), notes(r.getNotes()) {
+RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()),
+											  id(r.getIdentity()),
+											  location(r.getLocation()),
+											  WCE_LineNumber(r.getWCE_LineNumber()),
+											  WCE_Pos(r.getWCE_Pos()),
+											  softBreak(r.hasSoftBreak()),
+											  beginGlissando(r.getGlissandoBegin()),
+											  fermata(r.hasFermata()),
+											  notes(r.getNotes()),
+											  ornaments(r.getOrnaments()),
+											  articulations(r.getArticulations()) {
 
 }
 
-RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0), softBreak(false) {
+RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0), softBreak(false), beginGlissando(false) {
 
 }
 
@@ -183,13 +193,66 @@ string RelLyToken::createKernChordNote(int octave_of_first, int duration, int do
 	}
 }
 
+bool RelLyToken::isIn(Ornament o, vector<Ornament> orns) const {
+	bool res = false;
+	for (int i=0; i<orns.size(); i++) {
+		if ( orns[i] == o ) res = true;
+	}
+	return res;
+}
+
+bool RelLyToken::isIn(Articulation a, vector<Articulation> arts) const {
+	bool res = false;
+	for (int i=0; i<arts.size(); i++) {
+		if ( arts[i] == a ) res = true;
+	}
+	return res;
+}
+
+string RelLyToken::krnOrnaments() const {
+	//order should be: MmS$TtWwR OR O
+	stringstream res;
+
+	//first handle all cases that return O
+	if ( isIn(TRILL, ornaments) ) return "O";
+	if ( isIn(PRALL, ornaments) ) return "O";
+	if ( isIn(PRALLPRALL, ornaments) ) return "O";
+	if ( isIn(MORDENT, ornaments) ) return "O";
+	if ( isIn(DOUBLESLASH, ornaments) ) return "O";
+
+	//rest in right order
+	if ( isIn(TURN, ornaments) ) res << "S";
+
+	string s;
+	res >> s;
+	return s;
+}
+
+string RelLyToken::krnArticulations() const {
+	//order should be: z ' " ` ~ ^ : OR I
+	stringstream res;
+
+	//first handle all cases that return I
+	if ( isIn(STOPPED, articulations) ) return "I";
+
+	//rest in right order
+	if ( isIn(STACCATO, articulations) ) res << "'";
+	if ( isIn(STACCATISSIMO, articulations) ) res << "`";
+	if ( isIn(TENUTO, articulations) ) res << "~";
+	if ( isIn(ACCENT, articulations) ) res << "^";
+
+	string s;
+	res >> s;
+	return s;
+}
+
 string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool triplet, SlurStatus slur, TieStatus tie, bool opensub, bool closesub, GraceType gt) const {
 	stringstream res;
 	string editorial = "";
 	//open sub
 	//open phrase
 	//open slur
-	//if ( opensub ) res << "{"; // <- is now done with breath mark after note
+	//if ( opensub ) res << "{"; // handled in SongLine (subphrase and phrase)
 	if (slur == START_SLUR || slur == ENDSTART_SLUR) res << "(";
 	//open tie
 	if (tie == START_TIE) res << "[";
@@ -205,6 +268,9 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 		res << "r";
 		editorial = "yy";
 	} else {
+		//Interpreted pitch?
+		if (getInterpretedPitch()) // yes
+			res << "x";
 		char pc_up = toupper(pc);
 		octave = octave - 3;
 		if (octave !=0 ) {
@@ -215,14 +281,22 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 			res << pc_up; //octave-3=0
 	}
 	//accidental
+	if ( getFicta() ) res << "x";
 	Accidental ac = getAccidental();
 	switch(ac) {
 		case DOUBLE_FLAT:  res << "--"; break;
 		case FLAT:         res << "-"; break;
+		case NATURAL:      res << "n"; break;
 		case SHARP:        res << "#"; break;
 		case DOUBLE_SHARP: res << "##"; break;
 		default: {}
 	}
+	//Fermata? If in input
+	if ( hasFermata() ) {
+		res << ";";
+	}
+	//Ornaments
+	res << krnOrnaments();
 	//Grace note?
 	switch (gt) {
 	case NOGRACE: break;
@@ -231,27 +305,29 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 	case ACC: res << "q"; break;
 	case AFTER: res << "qq"; break;
 	}
+	//Articulations
+	res << krnArticulations();
+
+	//Glissando begin?
+	if (getGlissandoBegin()) //yes
+		res << "H";
 	//Glissando end?
 	if (getGlissandoEnd()) // yes
-		res << "H";
-	//Interpreted pitch?
-	if (getInterpretedPitch()) // yes
-		res << "x";
+		res << "h";
+
 	//tie close
 	if (tie == END_TIE) res << "]";
 	if (tie == CONTINUE_TIE) res << "_";
 	//slur close
 	if (slur == END_SLUR || slur == ENDSTART_SLUR) res << ")";
 	
-	//subphrase
-	//if ( closesub ) res << "}";
-	//if ( closesub ) res << ",";
-	if ( closesub ) res << ";"; //fermata can be imported by music21
-
 	res << editorial;
 
 	string s;
 	res >> s;
+
+	//cout << token << " -> " << s << endl;
+
 	return s;
 	
 }
@@ -394,10 +470,11 @@ int RelLyToken::getIndexHighestOfChord() const {
 char RelLyToken::getPitchClass() const {
 	if (getIdentity() == NOTE) {
 		string::size_type pos;
-		//remove \x or \gl
+		//remove \x or \gl or \ficta
 		string t = token;
 		if ( (pos = t.find("\\x")) != string::npos ) t.erase(pos,2);
 		if ( (pos = t.find("\\gl")) != string::npos ) t.erase(pos,3);
+		if ( (pos = t.find("\\ficta")) != string::npos ) t.erase(pos,6);
 		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return '.';
 		return (char)t[pos];
 	}
@@ -421,6 +498,9 @@ string::size_type RelLyToken::getPosOfPitchClass() const {
 		string t = token;
 		//if ( (pos = t.find("\\x")) != string::npos ) t.erase(pos,2);
 		if ( (pos = t.find("\\gl")) != string::npos ) t[pos+1] = 'x'; // change \gl to \xl
+		if ( (pos = t.find("\\ficta")) != string::npos ) {
+			t[pos] = 'x'; t[pos+1] = 'x'; t[pos+2] = 'x'; t[pos+3] = 'x'; t[pos+4] = 'x'; t[pos+5] = 'x'; //replace by 'xxxxxxx'
+		}
 		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return pos;
 	}
 	else if (getIdentity() == CHORD ) { //return pos pitch class of highest note
@@ -559,21 +639,27 @@ RelLyToken::Accidental RelLyToken::getAccidental() const {
 	
 	//NB special care for as, asas, es and eses
 	
-	int res = 0;
+	int acc = 0;
+	Accidental res = NO_ACCIDENTAL;
 	string lt = token;
 	string::size_type pos;
-	while( (pos = lt.find("is")) != string::npos ) { res++; lt.erase(pos,2); }
-	while( (pos = lt.find("as")) != string::npos ) { res--; lt.erase(pos,2); } // to find as and ases
-	while( (pos = lt.find("es")) != string::npos ) { res--; lt.erase(pos,2); }
-	switch(res) {
-		case -2: return DOUBLE_FLAT; break;
-		case -1: return FLAT; break;
-		case  0: return NO_ACCIDENTAL; break;
-		case  1: return SHARP; break;
-		case  2: return DOUBLE_SHARP; break;
-		default: return NO_ACCIDENTAL;
+	while( (pos = lt.find("is")) != string::npos ) { acc++; lt.erase(pos,2); }
+	while( (pos = lt.find("as")) != string::npos ) { acc--; lt.erase(pos,2); } // to find as and ases
+	while( (pos = lt.find("es")) != string::npos ) { acc--; lt.erase(pos,2); }
+	switch(acc) {
+		case -2: res = DOUBLE_FLAT; break;
+		case -1: res = FLAT; break;
+		case  0: res = NO_ACCIDENTAL; break;
+		case  1: res = SHARP; break;
+		case  2: res = DOUBLE_SHARP; break;
+		default: res = NO_ACCIDENTAL;
 	}
-	return NO_ACCIDENTAL;
+
+	// in case of \ficta and no accidental, an explicit editorial natural should be placed
+	if ( getFicta() && res == NO_ACCIDENTAL )
+		res = NATURAL;
+
+	return res;
 }
 
 bool RelLyToken::getInterpretedPitch() const {
@@ -590,6 +676,12 @@ bool RelLyToken::getGlissandoEnd() const {
 	return res;	
 }
 
+bool RelLyToken::getFicta() const {
+	bool res = false;
+	string::size_type pos;
+	if ( (pos = token.find("\\ficta")) != string::npos ) res = true;
+	return res;
+}
 
 bool RelLyToken::containsClosingBraceBeforeNote() const {
 	bool res = false;
@@ -625,6 +717,7 @@ string RelLyToken::printSlurStatus(SlurStatus ss) {
 		case ENDSTART_SLUR: return "ENDSTART_SLUR";
 		case IN_SLUR: return "IN_SLUR";
 		case NO_SLUR: return "NO_SLUR";
+		case START_NEW_SLUR: return "START_NEW_SLUR";
 	}
 	return "";
 }
@@ -666,6 +759,7 @@ string RelLyToken::printIdentity(Identity i) {
 		case CHORD: return "CHORD";
 		case BARLINE: return "BARLINE";
 		case CLEF_COMMAND: return "CLEF_COMMAND";
+		case KEY_COMMAND: return "KEY_COMMAND";
 		case UNKNOWN: return "UNKNOWN";
 	}
 	return "";

@@ -30,3 +30,69 @@ string& removeTextFromNote(string& external_token) {
 	}
 	return external_token;
 }
+
+int translateKeySignature(string lykey) {
+	int res = 0;
+	pvktrim(lykey);
+
+	//strip away "\key" if necessary
+	string::size_type poskey = lykey.find("\\key");
+	if (poskey != string::npos) {
+		lykey.erase(poskey, 4);
+	}
+	pvktrim(lykey);
+
+	if ( lykey.size() == 0 ) return res;
+
+	bool major = ( lykey.find("\\major") != string::npos );
+	bool minor = ( lykey.find("\\minor") != string::npos );
+	bool ionian = ( lykey.find("\\ionian") != string::npos );
+	bool locrian = ( lykey.find("\\locrian") != string::npos );
+	bool aeolian = ( lykey.find("\\aeolian") != string::npos );
+	bool mixolydian = ( lykey.find("\\mixolydian") != string::npos );
+	bool lydian = ( lykey.find("\\lydian") != string::npos );
+	bool phrygian = ( lykey.find("\\phrygian") != string::npos );
+	bool dorian = ( lykey.find("\\dorian") != string::npos );
+
+	if ( !major && !minor && !ionian && !locrian && !aeolian && !mixolydian && !lydian && !phrygian && !dorian ) {
+		cerr << "Warning: Bad key signature. Assuming c major." << endl;
+		return res;
+	}
+
+	string root = lykey.erase(lykey.find("\\"));
+	pvktrim (root);
+
+	if (root == "ces") { res = -7; }
+	if (root == "c") { res = 0; }
+	if (root == "cis") { res = 7; }
+	if (root == "des") { res = -5; }
+	if (root == "d") { res = 2; }
+	if (root == "dis") { res = 9; }
+	if (root == "es") { res = -3; }
+	if (root == "ees") { res = -3; }
+	if (root == "e") { res = 4;  }
+	if (root == "f") { res = -1; }
+	if (root == "fis") { res = 6; }
+	if (root == "ges") { res = -6; }
+	if (root == "g") { res = 1; }
+	if (root == "gis") { res = 8; }
+	if (root == "as") { res = -4; }
+	if (root == "aes") { res = -4; }
+	if (root == "a") { res = 3; }
+	if (root == "ais") { res = 10; }
+	if (root == "bes") { res = -2; }
+	if (root == "b") { res = 5; }
+
+	if (minor) res = res - 3 + 30;
+	if (ionian) res = res + 60;
+	if (dorian) res = res - 2 + 90;
+	if (phrygian) res = res -4 + 120;
+	if (lydian) res = res +1 + 150;
+	if (mixolydian) res = res -1 + 180;
+	if (aeolian) res = res -3 + 210;
+	if (locrian) res = res -5 + 240;
+
+	//cout << "ROOT " << root << " " << res << endl;
+
+	return res;
+}
