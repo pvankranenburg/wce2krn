@@ -281,7 +281,6 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 			res << "x";
 	}
 	//accidental
-	if ( getFicta() ) res << "x";
 	Accidental ac = getAccidental();
 	switch(ac) {
 		case DOUBLE_FLAT:  res << "--"; break;
@@ -291,6 +290,8 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 		case DOUBLE_SHARP: res << "##"; break;
 		default: {}
 	}
+	//ficta?
+	if ( getFicta() ) res << "x";
 	//Fermata? If in input
 	if ( hasFermata() ) {
 		res << ";";
