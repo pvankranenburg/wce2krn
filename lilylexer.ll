@@ -78,8 +78,8 @@ tekst			[\^_]\"[^\"]*\"{ws}*
 ~													return 7; /*clog << "TIE  " << YYText() << endl;*/
 \}													return 8; /*clog << "CLOSINGBRACE " << YYText() << endl;*/
 \{													return 9; /*clog << "OPENINGBRACE " << YYText() << endl;*/
-({ficta}|{glis}|{cross}|\{)*{ws}*{note}{ws}*\}*		return 1; /*clog << "NOTE  " << YYText() << endl;*/
-({ficta}|{glis}|{cross}|\{)*{ws}*{chord}{ws}*\}*	return 12; /*clog << "CHORD " << YYText() << endl;*/
+({ficta}{ws}*|{glis}{ws}*|{cross}{ws}*|\{{ws}*)*{note}{ws}*\}*		return 1; /*clog << "NOTE  " << YYText() << endl;*/
+({ficta}{ws}*|{glis}{ws}*|{cross}{ws}*|\{{ws}*)*{chord}{ws}*\}*	return 12; /*clog << "CHORD " << YYText() << endl;*/
 {time_command}{ws}*{digit}+"/"{digit}+{ws}*			return 2; /*clog << "TIME  " << YYText() << endl;*/
 {times_command}{ws}*{digit}+"/"{digit}+{ws}*\{		return 3; /*clog << "TIMES " << YYText() << endl;*/
 {clef_command}{ws}*\"?{clef_type}\"?{ws}*			return 15; /*clog << "CLEF " << YYText() << endl;*/
