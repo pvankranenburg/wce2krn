@@ -280,10 +280,10 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 					part = si->getKernLine(lines);
 
 					if (stdoutput) {
-						if (!lines) cout << "!! phrase " << line << endl;
+						if (!lines) cout << "!! segment " << line << endl;
 					}
 					else {
-						if (!lines) out << "!! phrase " << line << endl;
+						if (!lines) out << "!! segment " << line << endl;
 					}
 
 					for ( part_it = part.begin(); part_it != part.end(); part_it++ )

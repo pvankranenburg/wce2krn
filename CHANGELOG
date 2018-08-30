@@ -13,6 +13,10 @@ Version 1.79
 - added fermata to **kern output
 - in **kern: global comment for phrase start now is: "!! phrase x" (was: "!! verse x")
 - No longer fermata added at phrase end. Just global comments to indicate phrase end (can be read by music21)
+- Now upbeat is exported to ly also in case of invisible meter
+- Bugfix: No text syllables with grace notes
+- Bugfix: No longer two barlines at end in **kern output
+- Final barline no longer has bar number
 
 Version 1.78.1 (20180505)
 - bugfixes
