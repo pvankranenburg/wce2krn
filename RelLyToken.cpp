@@ -268,9 +268,6 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 		res << "r";
 		editorial = "yy";
 	} else {
-		//Interpreted pitch?
-		if (getInterpretedPitch()) // yes
-			res << "x";
 		char pc_up = toupper(pc);
 		octave = octave - 3;
 		if (octave !=0 ) {
@@ -279,6 +276,9 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 			}
 		} else
 			res << pc_up; //octave-3=0
+		//Interpreted pitch?
+		if (getInterpretedPitch()) // yes
+			res << "x";
 	}
 	//accidental
 	if ( getFicta() ) res << "x";
