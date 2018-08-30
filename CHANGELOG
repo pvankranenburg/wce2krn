@@ -1,7 +1,7 @@
 Version 1.79
 - removed warning "something following repeat bar"
 - key changes now exported to **kern
-- 'crossed' note now results in 'x' _before_ pitch class in **kern
+- 'crossed' note now results in 'x' _after_ pitch class in **kern
 - glissando results in 'h' and 'H' in **kern (except when gliss crosses phrase break).
 - ficta resuls in 'x' before the alteration in **kern
 - bugfix - double annotations with key command
@@ -11,7 +11,7 @@ Version 1.79
 - added ornaments to **kern output (but distinction halftone/wholetone mordent/trill/prall cannot be made! - all result in "O")
 - added articulations to **kern output
 - added fermata to **kern output
-- in **kern: global comment for phrase start now is: "!! phrase x" (was: "!! verse x")
+- in **kern: global comment for phrase start now is: "!! segment x" (was: "!! verse x")
 - No longer fermata added at phrase end. Just global comments to indicate phrase end (can be read by music21)
 - Now upbeat is exported to ly also in case of invisible meter
 - Bugfix: No text syllables with grace notes
