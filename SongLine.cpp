@@ -11,6 +11,8 @@
 #include "pvkutilities.h"
 #include "wce2krn.h"
 #include<string>
+#include<cctype>
+#include<algorithm>
 #include<iostream>
 #include<iomanip>
 #include<sstream>
@@ -726,37 +728,51 @@ void SongLine::translate() {
 	for ( krn_it = kernTokens[0].begin(); krn_it != kernTokens[0].end(); krn_it++) {
 		//now do the krn
 
-		//if not a corresponding token in ly: add token from melodyline.
+		//if comment, tandem or barline.
 		if ( (*krn_it).find_first_of("!=*") != string::npos ) {
-			if ( (*krn_it).find("*") == 0 )
+			if ( (*krn_it).find("*") == 0 ) //tandem
 				for ( int i = 1; i<numLines; i++ ) {
 					kernTokens[2*i].push_back( "*" );
 					kernTokens[2*i+1].push_back( "*" );
 				}
-			else
+			else //comment, barline
 				for ( int i = 1; i<numLines; i++ ) {
 					kernTokens[2*i].push_back( (*krn_it) );
 					kernTokens[2*i+1].push_back( (*krn_it) );
 				}
 
-			//possibly, there is a corresponding rel ly token (time / unknown). If so, add that to absLy
+			//possibly, there is a corresponding rel ly token (time / unknown / barline / ... ). If so, add that to absLy
 			if ( relly_index < relLyTokens[0].size() ) {
-				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE &&
-				     relLyTokens[0][relly_index].getIdentity() != RelLyToken::CHORD ) {
+				if ( (relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE &&
+				     relLyTokens[0][relly_index].getIdentity() != RelLyToken::CHORD) &&
+					 relLyTokens[0][relly_index].getIdentity() != RelLyToken::GRACE ) {
 					for (int i = 1; i<numLines; i++ ) {
 						absLyTokens[i].push_back("");
 						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
 							text_ann[i-1].push_back( RelLyToken::DONTKNOW );
-						else
+						else {
 							text_ann[i-1].push_back( RelLyToken::NO_WORD );
+						}
 					}
 					relly_index++;
 				}
+			}
+		} else if( (*krn_it).find_first_of("q") != string::npos ) { //grace note in **kern. Do not place a syllable
+			for (int i=1; i<numLines; i++) {
+				kernTokens[2*i].push_back(".");
+				kernTokens[2*i+1].push_back(".");
+				//Only increase relly_index if it points to grace. There could be more than one grace note
+				if (relLyTokens[0][relly_index].getGraceType() != RelLyToken::NOGRACE) {
+					for(int i=1; i<numLines;i++) text_ann[i-1].push_back(RelLyToken::NO_WORD);
+					relly_index++;
+				}
+
 			}
 		} else { // text or TIMES or UNKNOWN with corresponding kern token
 			for ( int i = 1; i<numLines; i++ ) {
 				if ( relly_index >= relLyTokens[i].size() ) {
 					//for ( int knn = 0; knn<kernTokens[2*i].size(); knn++) cout <<  kernTokens[2*i][knn] << endl;
+					cerr << getLocation() << ": Warning: Text line too short." << endl;
 					kernTokens[2*i].push_back( "." );
 					kernTokens[2*i+1].push_back( "." );
 					// rest at end of line could be tolerated
@@ -1825,17 +1841,25 @@ vector<string> SongLine::getKernLine(bool lines) const {
 		res.push_back(s);
 	}
 
-	//add always closing barline to last line
+	//add always closing barline to final line
 	//otherwise only add barline at end a line of a meterless song.
 	//but not for grace notes
 
 	if (graceType == RelLyToken::NOGRACE) {
 
 		if ( phraseNo == numPhrases ) {
+
+			//create it
 			s = "";
 			for( int i=0; i < kernTokens.size(); i = i+2) s = s + "==|!" + "\t";
 			s = s.substr(0,s.size()-1); //remove last tab
-			res.push_back(s);
+
+			//If there is no barline yet, add the closing barline, else remove the barnumbers from the last barline
+			if ( res.back().find("=") == string::npos )
+						res.push_back(s);
+			else {
+				res.back().erase(remove_if(res.back().begin(), res.back().end(), &::isdigit), res.back().end());
+			}
 		} else {
 			s = "";
 			if ( ( meterInvisible && lines ) || lines) {
@@ -2125,7 +2149,7 @@ string SongLine::upbeatToString(RationalTime t) const {
 	string res;
 
 	if (initialUpbeat == 0 ) return "";
-	if (meterInvisible) return "";
+	//if (meterInvisible) return ""; //better just put the upbeat in the ly
 
 	stringstream ss;
 
