@@ -3,7 +3,7 @@ Version 1.79
 - key changes now exported to **kern
 - 'crossed' note now results in 'x' _after_ pitch class in **kern
 - glissando results in 'h' and 'H' in **kern (except when gliss crosses phrase break).
-- ficta resuls in 'x' before the alteration in **kern
+- ficta resuls in 'x' after the alteration in **kern
 - bugfix - double annotations with key command
 - \app grace notes now automatically get a slur in **kern output
 - removed ^"*" from lilylexer
