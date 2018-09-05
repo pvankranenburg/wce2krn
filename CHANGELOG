@@ -6,6 +6,7 @@ Version 1.79
 - ficta resuls in 'x' after the alteration in **kern
 - bugfix - double annotations with key command
 - \app grace notes now automatically get a slur in **kern output
+- Encoding of grace notes now follows Humdrum User Guide (q/Q)
 - removed ^"*" from lilylexer
 - added ^"-" (tenuto) to lilylexer
 - added ornaments to **kern output (but distinction halftone/wholetone mordent/trill/prall cannot be made! - all result in semitone)

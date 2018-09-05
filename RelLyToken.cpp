@@ -300,11 +300,11 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 	res << krnOrnaments();
 	//Grace note?
 	switch (gt) {
-	case NOGRACE: break;
-	case PLAINGRACE: res << "qq"; break;
-	case APP: res << "qq"; break;
-	case ACC: res << "q"; break;
-	case AFTER: res << "qq"; break;
+		case NOGRACE: break;
+		case PLAINGRACE: res << "Q"; break;
+		case APP: res << "Q"; break;
+		case KVS: res << "q"; break;
+		case AFTER: res << "Q"; break;
 	}
 	//Articulations
 	res << krnArticulations();
@@ -586,10 +586,10 @@ RelLyToken::GraceType RelLyToken::getGraceType() const {
 	if (id != GRACE) return NOGRACE;
 	GraceType res = NOGRACE;
 	string::size_type pos;
-	if ( (pos = token.find("\\app")) != string::npos) res = APP; // --> kern qq (LEGACY)
-	if ( (pos = token.find("\\kvs")) != string::npos) res = ACC; // --> kern q
-	if ( (pos = token.find("\\grace")) != string::npos) res = PLAINGRACE; // --> kern qq
-	if ( (pos = token.find("\\afterGrace")) != string::npos) res = AFTER; // --> kern qq
+	if ( (pos = token.find("\\app")) != string::npos) res = APP;
+	if ( (pos = token.find("\\kvs")) != string::npos) res = KVS;
+	if ( (pos = token.find("\\grace")) != string::npos) res = PLAINGRACE;
+	if ( (pos = token.find("\\afterGrace")) != string::npos) res = AFTER;
 	return res;
 }
 
