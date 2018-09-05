@@ -36,7 +36,7 @@ public:
 	enum BraceStatus { OPEN_BRACE, CLOSE_BRACE };
 	enum TextStatus { SINGLE_WORD, BEGIN_WORD, END_WORD, IN_WORD, NO_WORD, BEGIN_WORD_CONT, SINGLE_WORD_CONT, END_WORD_CONT, IN_WORD_CONT, DONTKNOW };
 	enum BarLineType { NOBARLINE, NORMALBAR, ENDBAR, DOUBLEBAR, BEGINREPEAT, ENDREPEAT, DOUBLEREPEAT, UNKNOWNBAR};
-	enum GraceType { PLAINGRACE, APP, ACC, AFTER, NOGRACE }; //make sure only one of this value corresponds with NOT grace notes
+	enum GraceType { PLAINGRACE, APP, KVS, AFTER, NOGRACE }; //make sure only one of this value corresponds with NOT grace notes
 	enum Ornament { TRILL, PRALL, PRALLPRALL, MORDENT, TURN, DOUBLESLASH};
 	enum Articulation { STACCATO, STACCATISSIMO, ACCENT, STOPPED, TENUTO};
 

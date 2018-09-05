@@ -1059,7 +1059,7 @@ void SongLine::breakWcelines() {
 						//clog << getLocation() << ": INSTR: " << lexer->YYText() << endl;
 						//ignore
 					} break;
-					case 5 : { //grace or app
+					case 5 : { //grace or app or kvs (not afterGrace - see below)
 						ctoken = lexer->YYText();
 						//if app, a slur ending should be added to next note.
 						string::size_type app_pos;
