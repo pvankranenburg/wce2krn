@@ -183,7 +183,11 @@ string RelLyToken::createKernChordNote(int octave_of_first, int duration, int do
 	//cerr << location << " Warning: Only first note of chord exported to **kern: " << token << endl;
 	if (notes.size() > 0) {
 		vector<Pitchclass_Octave> allNotes = getAllOfChord(octave_of_first);
-		int ih = getIndexHighestOfChord();
+
+		//NB If you change this, also change the getOctaveCorrection() function!
+		//int ih = getIndexHighestOfChord();
+		int ih = 0; //always take first note as notated
+
 		//cout << ih << endl;
 		return notes[ih].createKernNote(allNotes[ih].octave, duration, dots, triplet, slur, tie, opensub, closesub, gt);
 	}
