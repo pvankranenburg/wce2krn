@@ -136,14 +136,14 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 
 int RelLyToken::computeOctave(int previous_octave, char previous_pitch, int octcorrection, char pitch) const {
 
-	/*
+
 	if (getIdentity()==CHORD) {
 		cout << "previous_octave: " << previous_octave << endl;
 		cout << "previous_pitch: " << previous_pitch << endl;
 		cout << "octcorrection: " << octcorrection << endl;
 		cout << "pitch: " << pitch << endl;
 	}
-	*/
+
 
 	int res = previous_octave;
 	const char relativeRoot=((pitch>='c') ? pitch : (pitch+7)); // representation shifted for a and b
@@ -185,8 +185,10 @@ string RelLyToken::createKernChordNote(int octave_of_first, int duration, int do
 		vector<Pitchclass_Octave> allNotes = getAllOfChord(octave_of_first);
 
 		//NB If you change this, also change the getOctaveCorrection() function!
+		//AND the getPitchClass() function!
+		//AND the getPosOfPitchClass()  function
 		//int ih = getIndexHighestOfChord();
-		int ih = 0; //always take first note as notated
+		int ih = 0; //always take first note as given in wce source
 
 		//cout << ih << endl;
 		return notes[ih].createKernNote(allNotes[ih].octave, duration, dots, triplet, slur, tie, opensub, closesub, gt);
@@ -482,10 +484,11 @@ char RelLyToken::getPitchClass() const {
 		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return '.';
 		return (char)t[pos];
 	}
-	else if (getIdentity() == CHORD ) { //return pitch class of highest note
+	else if (getIdentity() == CHORD ) { //return pitch class of --highest-- first note
 		if (notes.size() > 0) {
-			int ih = getIndexHighestOfChord();
-			return notes[ih].getPitchClass();
+			//int ih = getIndexHighestOfChord();
+			//return notes[ih].getPitchClass();
+			return notes[0].getPitchClass();
 		}
 		else
 			return '.';
@@ -507,10 +510,11 @@ string::size_type RelLyToken::getPosOfPitchClass() const {
 		}
 		if ( (pos = t.find_first_of("abcdefgsr")) == string::npos) return pos;
 	}
-	else if (getIdentity() == CHORD ) { //return pos pitch class of highest note
+	else if (getIdentity() == CHORD ) { //return pos pitch class of ---highest--- first note. QUESTION: what does it mean? It is not index in chord token.
 		if (notes.size() > 0) {
-			int ih = getIndexHighestOfChord();
-			return notes[ih].getPosOfPitchClass();
+			//int ih = getIndexHighestOfChord();
+			//return notes[ih].getPosOfPitchClass();
+			return notes[0].getPosOfPitchClass();
 		}
 		else
 			return string::npos;
