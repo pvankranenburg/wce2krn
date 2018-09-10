@@ -363,7 +363,7 @@ void Song::writeToDisk(string basename_full, SongLine::Representation repr, bool
 
 		if (out.is_open()) out.close();
 		ss.clear();
-		ss << path << "lyrics-" << basename << ".txt";
+		ss << path << basename << ".txt";
 		ss >> s;
 		if (!stdoutput) {
 			out.open(s.c_str());
