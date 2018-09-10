@@ -953,8 +953,8 @@ void SongLine::breakWcelines() {
 	int line_offset = 0;
 
 	//quick hack to colorize and make visible 's'
-	//bool colorize = false;
-	bool colorize = true;
+	bool colorize = false;
+	//bool colorize = true;
 	vector<RestPos> rests;
 	//////////////////////////////////////////////
 
