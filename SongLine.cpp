@@ -2288,7 +2288,12 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 }
 
 string SongLine::getLyricsLine( int line ) const {
-	return lyricsLines[line];
+	if (lyricsLines.size() > line )
+		return lyricsLines[line];
+	else {
+		cerr << getLocation() << ": Warning: No lyrics available for verse " << line << endl;
+		return "";
+	}
 }
 
 bool SongLine::checkMelisma() const {
