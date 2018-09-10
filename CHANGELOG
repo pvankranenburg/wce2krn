@@ -9,7 +9,7 @@ Version 1.79
 - Encoding of grace notes now follows Humdrum User Guide (q/Q)
 - removed ^"*" from lilylexer
 - added ^"-" (tenuto) to lilylexer
-- added ornaments to **kern output (but distinction halftone/wholetone mordent/trill/prall cannot be made! - all result in semitone)
+- added ornaments to **kern output (but distinction halftone/wholetone mordent/trill/prall cannot be made! Exporting Mm, Ww, or Tt)
 - added articulations to **kern output
 - added fermata to **kern output
 - in **kern: global comment for phrase start now is: "!! segment x" (was: "!! verse x")
