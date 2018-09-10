@@ -139,6 +139,7 @@ private:
 	int ixLastNote(vector<vector<RelLyToken> > rts, string warningMessage, int offset=-1 );
 	void breakWcelines(); //output goes into relLyTokens. Invoked in translate().
 	int computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const;
+	bool hasGrace(string krntoken) const;
 	RationalTime rationalDuration(int duration, int dots, bool triplet) const;
 	string toText(string tok, RelLyToken::TextStatus ts, Representation repr)  const;
 	string upbeatToString(RationalTime t) const;
