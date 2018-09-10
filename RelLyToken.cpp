@@ -213,11 +213,10 @@ string RelLyToken::krnOrnaments() const {
 	//order should be: MmS$TtWwR OR O
 	stringstream res;
 
-	//first handle all cases that return O
-	if ( isIn(TRILL, ornaments) ) return "t";
-	if ( isIn(PRALL, ornaments) ) return "m";
-	if ( isIn(PRALLPRALL, ornaments) ) return "t";
-	if ( isIn(MORDENT, ornaments) ) return "w";
+	if ( isIn(TRILL, ornaments) ) return "Tt";
+	if ( isIn(PRALL, ornaments) ) return "Mm";
+	if ( isIn(PRALLPRALL, ornaments) ) return "Tt";
+	if ( isIn(MORDENT, ornaments) ) return "Ww";
 	if ( isIn(DOUBLESLASH, ornaments) ) return "O";
 
 	//rest in right order
