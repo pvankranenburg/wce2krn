@@ -286,7 +286,7 @@ void SongLine::translate() {
 					currentDots = (*rl_it).getDots();
 				}
 				//octave
-				currentOctave = (*rl_it).computeOctave(lastOctave, lastPitchClass, (*rl_it).getOctaveCorrection(), (*rl_it).getPitchClass());
+				currentOctave = (*rl_it).computeOctave(lastOctave, lastPitchClass, (*rl_it).getOctaveCorrection(), (*rl_it).getRefPitchClass());
 				//tie
 				//RelLyToken::TieStatus rt = (*rl_it).getTie();
 				if ( currentTieStatus == RelLyToken::START_TIE || currentTieStatus == RelLyToken::CONTINUE_TIE ) {
@@ -383,7 +383,7 @@ void SongLine::translate() {
 				// set indexLastKernNote always. After finishing the line, this is correct
 				//indexLastKernNote = kernTokens[0].size()-1;
 				//set LastPitchclass
-				if ((*rl_it).getPitchClass() != 'r' && (*rl_it).getPitchClass() != 's' ) lastPitchClass = (*rl_it).getPitchClass();
+				if ((*rl_it).getPitchClass() != 'r' && (*rl_it).getPitchClass() != 's' ) lastPitchClass = (*rl_it).getRefPitchClass();
 				//set LastOctave for next note
 				lastOctave = currentOctave;
 				//set time
@@ -1333,35 +1333,6 @@ void SongLine::breakWcelines() {
 
 }
 
-int SongLine::computeOctave(int curoct, char pitch, char lastPitch, int octcorrection) const {
-	int res = curoct;
-
-	/*const char relativeRoot=((pitch>='c') ? pitch : (pitch+8)); // representation shifted for a and b
-	const char lastRelativeRoot=((lastPitch>='c') ? lastPitch : (lastPitch+8));
-
-	if (root!='r' && root!='s') {
-		char relative=relativeRoot-lastRelativeRoot;
-		if (relative>3) // an additional ' must be given in relative encoding, so we must remove it here
-			res--;
-		if (relative<-3) // analog
-			res++;
-	}
-	*/
-
-	const char relativeRoot=((pitch>='c') ? pitch : (pitch+7)); // representation shifted for a and b
-	const char lastRelativeRoot=((lastPitch>='c') ? lastPitch : (lastPitch+7));
-
-	if ( pitch != 'r' && pitch != 's' ) {
-		int diff = relativeRoot - lastRelativeRoot;
-		if (abs(diff) > 3) {
-			if (diff > 0 ) res--; else res++;
-		}
-	}
-
-	res += octcorrection;
-
-	return res;
-}
 
 bool SongLine::hasGrace(string krntoken) const {
 	if ( krntoken.find_first_of("q") != string::npos || krntoken.find_first_of("Q") != string::npos )
