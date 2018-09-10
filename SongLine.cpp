@@ -757,7 +757,7 @@ void SongLine::translate() {
 					relly_index++;
 				}
 			}
-		} else if( (*krn_it).find_first_of("q") != string::npos ) { //grace note in **kern. Do not place a syllable
+		} else if( hasGrace(*krn_it) ) { //grace note in **kern. Do not place a syllable
 			for (int i=1; i<numLines; i++) {
 				kernTokens[2*i].push_back(".");
 				kernTokens[2*i+1].push_back(".");
@@ -1361,6 +1361,13 @@ int SongLine::computeOctave(int curoct, char pitch, char lastPitch, int octcorre
 	res += octcorrection;
 
 	return res;
+}
+
+bool SongLine::hasGrace(string krntoken) const {
+	if ( krntoken.find_first_of("q") != string::npos || krntoken.find_first_of("Q") != string::npos )
+		return true;
+	else
+		return false;
 }
 
 RationalTime SongLine::rationalDuration(int duration, int dots, bool triplet) const {
