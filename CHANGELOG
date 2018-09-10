@@ -19,6 +19,7 @@ Version 1.79
 - Bugfix: No longer two barlines at end in **kern output
 - Final barline no longer has bar number
 - Fixed bug in export of lyrics.
+- Removed prefix lyrics- from lyrics output
 
 Version 1.78.1 (20180505)
 - bugfixes
