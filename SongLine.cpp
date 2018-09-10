@@ -364,7 +364,7 @@ void SongLine::translate() {
 				}
 
 				if (newSubPhrase) {
-					kernTokens[0].push_back("!! phrase sub");
+					kernTokens[0].push_back("!! segment sub");
 					kernTokens[1].push_back("");
 					token = "{" + token;
 				}
