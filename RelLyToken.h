@@ -79,6 +79,7 @@ public:
 	
 	Identity getIdentity() const;
 	char getPitchClass() const;
+	char getRefPitchClass() const;
 	string::size_type getPosOfPitchClass() const;
 	int getOctaveCorrection() const; // 0 if no octave correction; for chord return octavecorrection of first note
 	int getDurationBase() const; // 0 if no durations is given
