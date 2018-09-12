@@ -136,13 +136,14 @@ string RelLyToken::createAbsLyNote(int octave, int duration, int dots, SlurStatu
 
 int RelLyToken::computeOctave(int previous_octave, char previous_pitch, int octcorrection, char pitch) const {
 
-
+	/*
 	if (getIdentity()==CHORD) {
 		cout << "previous_octave: " << previous_octave << endl;
 		cout << "previous_pitch: " << previous_pitch << endl;
 		cout << "octcorrection: " << octcorrection << endl;
 		cout << "pitch: " << pitch << endl;
 	}
+	*/
 
 
 	int res = previous_octave;
