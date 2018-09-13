@@ -201,6 +201,7 @@ void SongLine::translate() {
 	//int indexFirstKernNote = -1; //complication: what if phrase starts with grace
 	//int indexLastKernNote = -1; //complication: what if phrase ends with aftergrace
 	bool newSubPhrase = false;
+	int subPhraseNo = 1; // 0 already out in Song.cpp
 
 	//now scan the relative lilypond tokens and translate to AbsoluteLilypond and Kern
 	//assume music in first line
@@ -364,9 +365,12 @@ void SongLine::translate() {
 				}
 
 				if (newSubPhrase) {
-					kernTokens[0].push_back("!! segment sub");
+					stringstream ss;
+					ss << getPhraseNo()-1 << "." << subPhraseNo;
+					kernTokens[0].push_back("!! segment " + ss.str());
 					kernTokens[1].push_back("");
 					token = "{" + token;
+					subPhraseNo++;
 				}
 
 				kernTokens[0].push_back(token);
