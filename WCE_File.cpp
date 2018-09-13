@@ -101,6 +101,11 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 			strophe = extractStringFromLine(line);
 			continue;
 		}
+		if( (pos = line.find("SignatureController-clefTextField")) != string::npos ) {
+			if (stdinput) getline(cin,line); else getline(infile,line);
+			initialClef = extractStringFromLine(line);
+			continue;
+		}
 		if( (pos = line.find("SignatureController-titleTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			title = extractStringFromLine(line);
