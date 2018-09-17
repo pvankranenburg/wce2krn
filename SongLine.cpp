@@ -1954,7 +1954,7 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 	// if for web, add url
 
 	if (weblily && !lines) {
-		res.push_back("\\markup { \\vspace #0 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller \""+this->getNLBIdentifier()+" - http://www.liederenbank.nl/liedpresentatie.php?zoek="+record+"\" } } }");
+		res.push_back("\\markup { \\vspace #1 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller \""+this->getNLBIdentifier()+" - http://www.liederenbank.nl/liedpresentatie.php?zoek="+record+"\" } } }");
 	}
 
 	// \markup { \with-color #grey \fill-line { \center-column { \smaller http://www.liederenbank.nl/image.php?recordid=167802 } } }
