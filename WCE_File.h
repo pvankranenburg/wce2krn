@@ -32,7 +32,7 @@ public:
 	string getWCEVersion() const;
 	string getTitle() const { return title; }
 	bool getMeterInvisible() const;
-	string getInitialClef() { return initialClef; }
+	string getInitialClef() const;
 	string getRecord() const { return record; }
 	string getStrophe() const { return strophe; }
 	int getFirstNoteRelativeToOctave() const;
