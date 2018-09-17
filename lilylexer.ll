@@ -54,11 +54,15 @@ tekst			[\^_]\"[^\"]*\"{ws}*
 [\^_]?\\accent{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 30; }
 [\^_]\"\/\/\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 26; }
 \\key{ws}+{pitchbase}{alteration}*{ws}*\\{mode}{ws}*	{ return 19; }
-[\^_]?\\segno{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-[\^_]?\\coda{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-[\^_]?\\fine{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-\\dc[fc]?{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
-\\ds[fc]?{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
+[\^_]?\\segno{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 34; }
+[\^_]?\\coda{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 35; }
+[\^_]?\\fine{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 36; }
+[\^_]?\\dc{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 37; }
+[\^_]?\\dcf{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 38; }
+[\^_]?\\dcc{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 39; }
+[\^_]?\\ds{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 40; }
+[\^_]?\\dsf{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 41; }
+[\^_]?\\dsc{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 42; }
 \\pv{ws}*											return 17;
 \\sv{ws}*											return 17;
 \\tv{ws}*											return 17;
