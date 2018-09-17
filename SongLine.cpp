@@ -2725,9 +2725,9 @@ void SongLine::repairFinalBarline() {
 
 		string::size_type pos;
 		if (  (pos = wcelines[0].rfind(":..:")) != string::npos ) {
-			cout << wcelines[0] << endl;
+			//cout << wcelines[0] << endl;
 			wcelines[0].replace(pos, 4, ":|.");
-			cout << wcelines[0] << endl;
+			//cout << wcelines[0] << endl;
 		}
 
 	}
