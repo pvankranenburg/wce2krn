@@ -20,6 +20,11 @@ Version 1.79
 - Final barline no longer has bar number
 - Fixed bug in export of lyrics.
 - Removed prefix lyrics- from lyrics output
+- Free text exported to **kern
+- Footnotes exported to **kern
+- Explicit barlines exported to **kern also in case of free meter
+- title of song exported to **kern
+- "+" now treated as free text. Not as articulation.
 
 Version 1.78.1 (20180505)
 - bugfixes
