@@ -96,6 +96,7 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 					if ( translateUpbeat(wcefile.getUpbeat()) == RationalTime(0,1) ) initialBarnumber = 1;
 					//cout << wcefile.getFirstNoteRelativeTo() << " " << wcefile.getFirstNoteRelativeToPitchClass() << endl;
 					//cout << "INITIAL CLEF: " << wcefile.getInitialClef() << endl;
+					//if (singleline.size() >0 ) cout << singleline[0] << endl;
 					songLines.push_back(SongLine(singleline,
 							      translateUpbeat(wcefile.getUpbeat()),
 								  translateTimeSignature(wcefile.getTimeSignature()),
