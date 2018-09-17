@@ -746,11 +746,11 @@ void SongLine::translate() {
 	for ( krn_it = kernTokens[0].begin(); krn_it != kernTokens[0].end(); krn_it++) {
 		//now do the krn
 
-		//if ( graceType == RelLyToken::NOGRACE )
-		//	cout << "[ " << (*krn_it) << " -- " << relLyTokens[0][relly_index].getToken() << " ]" << endl;
+		if ( graceType == RelLyToken::NOGRACE )
+			cout << "[ " << (*krn_it) << " -- " << relLyTokens[0][relly_index].getToken() << " ]" << endl;
 
 		//if tandem or barline.
-		if ( (*krn_it).find_first_of("=*") != string::npos ) {
+		if ( (*krn_it)[0] == '=' || (*krn_it)[0] == '*' ) {
 			if ( (*krn_it).find("*") == 0 ) //tandem
 				for ( int i = 1; i<numLines; i++ ) {
 					kernTokens[2*i].push_back( "*" );
