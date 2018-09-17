@@ -1936,16 +1936,17 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 	res.push_back("}"); //layout
 	res.push_back("}"); //score
 
+	bool do_footer = true;
 	if (!lines) {
 		if ( footerField.size() > 0 ) {
 			//first figure out whether there is something in it at all
-			bool doen = true;
+			do_footer = true;
 			if ( footerField.size() == 1) {
 				string tmpstr = footerField[0];
 				pvktrim(tmpstr);
-				if ( tmpstr.size() == 0 ) doen = false;
+				if ( tmpstr.size() == 0 ) do_footer = false;
 			}
-			if(doen) {
+			if(do_footer) {
 				for ( int i = 0; i < footerField.size(); i++ )
 					res.push_back( footerField[i] );
 			}
@@ -1954,7 +1955,10 @@ vector<string> SongLine::getLyEndSignature(int ly_ver, bool lines, bool weblily)
 	// if for web, add url
 
 	if (weblily && !lines) {
-		res.push_back("\\markup { \\vspace #1 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller \""+this->getNLBIdentifier()+" - http://www.liederenbank.nl/liedpresentatie.php?zoek="+record+"\" } } }");
+		if ( do_footer ) //only difference: vspace
+			res.push_back("\\markup { \\vspace #1 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller \""+this->getNLBIdentifier()+" - http://www.liederenbank.nl/liedpresentatie.php?zoek="+record+"\" } } }");
+		else
+			res.push_back("\\markup { \\vspace #0 } \\markup { \\with-color #grey \\fill-line { \\center-column { \\smaller \""+this->getNLBIdentifier()+" - http://www.liederenbank.nl/liedpresentatie.php?zoek="+record+"\" } } }");
 	}
 
 	// \markup { \with-color #grey \fill-line { \center-column { \smaller http://www.liederenbank.nl/image.php?recordid=167802 } } }
