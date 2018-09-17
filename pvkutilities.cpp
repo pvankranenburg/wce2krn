@@ -96,3 +96,50 @@ int translateKeySignature(string lykey) {
 
 	return res;
 }
+
+
+vector<string> formatFooterField( vector<string> footerField ) {
+	vector<string> res;
+
+	if ( footerField.size() < 1) { //empty
+
+	}
+
+	string::size_type pos;
+
+	//first line
+	//remove lilypond markup command
+	string firstline = footerField[0];
+	if ( ( pos = firstline.find_first_of("\\markup { \\wordwrap-string #\"")) != string::npos ) {
+		firstline.erase(pos, pos+29);
+		pvktrim(firstline); //there seems always be a space after the markup command....
+		if ( firstline.size() > 0 )
+			res.push_back(firstline);
+	}
+
+	//middle lines
+	for (int i=1; i<footerField.size()-1; i++) {
+		string line = footerField[i];
+		if (line.size() > 0) {
+			//there might be only \r in the line
+			if ( line.size() == 1 ) {
+				if ( line[0] == '\r' ) {
+					continue;
+				}
+			}
+			res.push_back(line);
+		}
+	}
+
+	//last line
+	//remove "
+	string lastline = footerField.back();
+	if ( ( pos = lastline.find_last_of("\"}")) != string::npos ) {
+		lastline.erase(pos, pos+2);
+		if ( lastline.size() > 0)
+			res.push_back(lastline);
+	}
+
+	return res;
+}
+

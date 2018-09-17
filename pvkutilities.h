@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <vector>
 using namespace std;
 
 class BadConversion : public std::runtime_error {
@@ -43,5 +44,7 @@ string& columnize(string& s, int length, char fill = ' ');
 string& removeTextFromNote(string& external_token);
 
 int translateKeySignature(string lykey);
+
+vector<string> formatFooterField( vector<string> footerField );
 
 #endif

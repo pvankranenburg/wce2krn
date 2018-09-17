@@ -249,7 +249,7 @@ void SongLine::translate() {
 		//rellytoken = (*rl_it).getToken();
 
 		//to note or not to note
-		//in each case the slur and tie annotation has to be updated, for keeping the annotations in sync with the melody.
+		//in each case the slur and tie annotation have to be updated, for keeping the annotations in sync with the melody.
 		id = (*rl_it).getIdentity();
 		//cout << (*rl_it).getToken() << " : " << id << endl;
 		switch(id) {
@@ -494,6 +494,14 @@ void SongLine::translate() {
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
 			} break;
 
+			case RelLyToken::FREETEXT: {
+				//insert free tekst as local comment
+				kernTokens[0].push_back("! " + (*rl_it).getFreeText());
+				kernTokens[1].push_back("!");
+				//do slur and tie annotation
+				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
+				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
+			} break;
 
 			case RelLyToken::TEXT: {
 				cerr << getLocation() << ": Error: Text in melody line: \"" << (*rl_it).getToken() << "\"" << endl;
@@ -732,24 +740,28 @@ void SongLine::translate() {
 	for ( krn_it = kernTokens[0].begin(); krn_it != kernTokens[0].end(); krn_it++) {
 		//now do the krn
 
-		//if comment, tandem or barline.
-		if ( (*krn_it).find_first_of("!=*") != string::npos ) {
+		//if ( graceType == RelLyToken::NOGRACE )
+		//	cout << "[ " << (*krn_it) << " -- " << relLyTokens[0][relly_index].getToken() << " ]" << endl;
+
+		//if tandem or barline.
+		if ( (*krn_it).find_first_of("=*") != string::npos ) {
 			if ( (*krn_it).find("*") == 0 ) //tandem
 				for ( int i = 1; i<numLines; i++ ) {
 					kernTokens[2*i].push_back( "*" );
 					kernTokens[2*i+1].push_back( "*" );
 				}
-			else //comment, barline
+			else //barline
 				for ( int i = 1; i<numLines; i++ ) {
 					kernTokens[2*i].push_back( (*krn_it) );
 					kernTokens[2*i+1].push_back( (*krn_it) );
 				}
 
-			//possibly, there is a corresponding rel ly token (time / unknown / barline / ... ). If so, add that to absLy
+			//for everything in relLyTokens[0] not corresponding to **kern data token, increase relly_index
 			if ( relly_index < relLyTokens[0].size() ) {
-				if ( (relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE &&
-				     relLyTokens[0][relly_index].getIdentity() != RelLyToken::CHORD) &&
-					 relLyTokens[0][relly_index].getIdentity() != RelLyToken::GRACE ) {
+				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE &&
+				     relLyTokens[0][relly_index].getIdentity() != RelLyToken::CHORD &&
+					 relLyTokens[0][relly_index].getIdentity() != RelLyToken::GRACE &&
+					 relLyTokens[0][relly_index].getIdentity() != RelLyToken::FREETEXT ) {
 					for (int i = 1; i<numLines; i++ ) {
 						absLyTokens[i].push_back("");
 						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
@@ -761,18 +773,41 @@ void SongLine::translate() {
 					relly_index++;
 				}
 			}
+		} else if ( isLocalComment(*krn_it)  ) {
+			//cout << "Local comment: " << (*krn_it) << endl;
+			for ( int i = 1; i<numLines; i++ ) {
+				kernTokens[2*i].push_back( "!" );
+				kernTokens[2*i+1].push_back( "!" );
+			}
+			//annotate corresponding RelLyToken
+			if ( relly_index < relLyTokens[0].size() ) {
+				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::FREETEXT) {
+					cerr << getLocation() << ": Warning: No RelLyToken for FREETEXT " << relLyTokens[0][relly_index].getToken() << endl;
+				} else {
+					for (int i=1; i<numLines; i++) {
+						text_ann[i-1].push_back( RelLyToken::NO_WORD);
+					}
+					relly_index++;
+				}
+			}
+		} else if ( isGlobalComment(*krn_it)  ) {
+			//cout << "Global comment: " << (*krn_it) << endl;
+			for ( int i = 1; i<numLines; i++ ) {
+				kernTokens[2*i].push_back( "" );
+				kernTokens[2*i+1].push_back( "" );
+			}
+			//There should be no corresponding RelLyToken.
 		} else if( hasGrace(*krn_it) ) { //grace note in **kern. Do not place a syllable
 			for (int i=1; i<numLines; i++) {
 				kernTokens[2*i].push_back(".");
 				kernTokens[2*i+1].push_back(".");
-				//Only increase relly_index if it points to grace. There could be more than one grace note
-				if (relLyTokens[0][relly_index].getGraceType() != RelLyToken::NOGRACE) {
-					for(int i=1; i<numLines;i++) text_ann[i-1].push_back(RelLyToken::NO_WORD);
-					relly_index++;
-				}
-
 			}
-		} else { // text or TIMES or UNKNOWN with corresponding kern token
+			//Only increase relly_index if it points to grace. There could be more than one grace note
+			if (relLyTokens[0][relly_index].getGraceType() != RelLyToken::NOGRACE) {
+				for(int i=1; i<numLines;i++) text_ann[i-1].push_back(RelLyToken::NO_WORD);
+				relly_index++;
+			}
+		} else { // not tandem, not comment, not grace, not barline
 			for ( int i = 1; i<numLines; i++ ) {
 				if ( relly_index >= relLyTokens[i].size() ) {
 					//for ( int knn = 0; knn<kernTokens[2*i].size(); knn++) cout <<  kernTokens[2*i][knn] << endl;
@@ -842,14 +877,12 @@ void SongLine::translate() {
 							text_ann[i-1].push_back(currentTextStatus);
 
 						}
-
-					} else { //TIMES or UNKNOWN
+					} else { //Not a NOTE or a CHORD: //TIMES or UNKNOWN or SOMETHING ELSE
 						//if UNKNOWN: DONTKNOW
 						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
 							text_ann[i-1].push_back(RelLyToken::DONTKNOW);
 						else
 							text_ann[i-1].push_back( RelLyToken::NO_WORD );
-						krn_it--; // Same Token again. DO NOT USE krn_it AFTER THIS.
 					}
 				}
 
@@ -863,11 +896,18 @@ void SongLine::translate() {
 				}
 
 			}
+			//Everything that has a rellytoken, but not a kerntoken:
+			if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::TIMES_COMMAND ||
+				 relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
+					krn_it--; // Same Token again. DO NOT USE krn_it AFTER THIS.
 
 			relly_index++;
 		}
 	}
 	//tokens left in
+
+
+	//cout << "Number of text syllables: " <<
 
 	//debug
 	/*
@@ -877,22 +917,27 @@ void SongLine::translate() {
 	for( debugit2 = (relLyTokens[0]).begin(); debugit2 != (relLyTokens[0]).end(); debugit2++ ) {
 		cout << (*debugit2).getToken() << '\t'; }
 	cout << endl;
-	for( debugit = (absLyTokens[1]).begin(); debugit != (absLyTokens[1]).end(); debugit++ ) {
-		cout << (*debugit) << '\t'; }
-	cout << endl;
-	for( debugit = (absLyTokens[0]).begin(); debugit != (absLyTokens[0]).end(); debugit++ ) {
-		cout << (*debugit) << '\t'; }
-	cout << endl;
-	for( debugit = (absLyTokens[1]).begin(); debugit != (absLyTokens[1]).end(); debugit++ ) {
-		cout << (*debugit) << '\t'; }
-	cout << endl;
+	//for( debugit = (absLyTokens[1]).begin(); debugit != (absLyTokens[1]).end(); debugit++ ) {
+	//	cout << (*debugit) << '\t'; }
+	//cout << endl;
+	//for( debugit = (absLyTokens[0]).begin(); debugit != (absLyTokens[0]).end(); debugit++ ) {
+	//	cout << (*debugit) << '\t'; }
+	//cout << endl;
+	//for( debugit = (absLyTokens[1]).begin(); debugit != (absLyTokens[1]).end(); debugit++ ) {
+	//	cout << (*debugit) << '\t'; }
+	//cout << endl;
 	for( debugit = (kernTokens[0]).begin(); debugit != (kernTokens[0]).end(); debugit++ ) {
 		cout << (*debugit) << '\t'; }
 	cout << endl;
 	for( debugit = (kernTokens[1]).begin(); debugit != (kernTokens[1]).end(); debugit++ ) {
 		cout << (*debugit) << '\t'; }
 	cout << endl;
+	vector<RelLyToken::TextStatus>::iterator debugit3;
+	for( debugit3 = (text_ann[0]).begin(); debugit3 != (text_ann[0]).end(); debugit3++ ) {
+		cout << (*debugit3) << '\t'; }
+	cout << endl;
 	*/
+
 	translationMade = true;
 
 	//some checks
@@ -1171,75 +1216,84 @@ void SongLine::breakWcelines() {
 					} break;
 					case 21 : { // trill - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "trill could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addOrnament(RelLyToken::TRILL);
 						}
 					} break;
 					case 22 : { // prall - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "prall could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addOrnament(RelLyToken::PRALL);
 						}
 					} break;
 					case 23 : { // prallprall - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "prallprall could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addOrnament(RelLyToken::PRALLPRALL);
 						}
 					} break;
 					case 24 : { // mordent - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "mordent could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addOrnament(RelLyToken::MORDENT);
 						}
 					} break;
 					case 25 : { // turn - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "turn could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addOrnament(RelLyToken::TURN);
 						}
 					} break;
 					case 26 : { // "//" - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "// could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addOrnament(RelLyToken::DOUBLESLASH);
 						}
 					} break;
 					case 27 : { // -. or staccato - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "staccato could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addArticulation(RelLyToken::STACCATO);
 						}
 					} break;
 					case 28 : { // staccatissimo - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "staccatissimo could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addArticulation(RelLyToken::STACCATISSIMO);
 						}
 					} break;
 					case 29 : { // fermata - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "fermata could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].setFermata();
 						}
 					} break;
 					case 30 : { // accent - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "accent could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addArticulation(RelLyToken::ACCENT);
 						}
 					} break;
 					case 31 : { // stopped - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "+ could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addArticulation(RelLyToken::STOPPED);
 						}
 					} break;
 					case 32 : { // tenuto - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "tenuto could not be attached to last note");
-						if (ix>0) {
+						if (ix>=0) {
 							(relLyTokens.back())[ix].addArticulation(RelLyToken::TENUTO);
 						}
+					} break;
+					case 33 : { // free text - last note should get mark (? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "text could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+
 					} break;
 					default: {
 						ctoken = lexer->YYText();
@@ -1811,15 +1865,30 @@ vector<string> SongLine::getKernLine(bool lines) const {
 	vector<string> res;
 	string s;
 
+	/*
+	for(int i=0; i<kernTokens.size(); i++)
+	{
+		cout << "kernTokens["<<i<<"]:" << endl;
+		for (int j=0; j<kernTokens[i].size(); j++) {
+			cout << kernTokens[i][j] << " ";
+		}
+		cout << endl;
+	}
+	*/
+
 	if ( kernTokens.size() == 0 ) return res;
 
 	for(int j=0; j < kernTokens[0].size(); j++) {
 		s = "";
-		for (int i=0; i < kernTokens.size(); i = i+2 ) {
-			s = s + kernTokens[i][j] + "\t";
+		if ( isGlobalComment(kernTokens[0][j]) ) {
+			s = kernTokens[0][j];
+		} else {
+			for (int i=0; i < kernTokens.size(); i = i+2 ) {
+				s = s + kernTokens[i][j] + "\t";
+			}
+			//remove last tab.
+			s = s.substr(0,s.size()-1);
 		}
-		//remove last tab.
-		s = s.substr(0,s.size()-1);
 		res.push_back(s);
 	}
 
@@ -2120,9 +2189,15 @@ vector<string> SongLine::getKernEndSignature() const {
 	s = s.substr(0,s.size()-1);
 	res.push_back(s);
 
-	//comment
-	res.push_back("!! produced by wce2krn " + version + " (released on " + releasedate + ")");
+	//do footer
+	vector<string> footer = formatFooterField(footerField);
+	for(int i=0; i<footer.size(); i++) {
+		res.push_back("!! " + footer[i]);
+	}
+	res.push_back("!!");
 
+	//comment
+	res.push_back("!! generated by wce2krn " + version + " (released on " + releasedate + ")");
 
 	return res;
 }
@@ -2148,6 +2223,7 @@ string SongLine::upbeatToString(RationalTime t) const {
 
 bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const {
 	//locale loc("");
+
 	string::size_type pos = 0;
 	stringstream ss;
 	string strduration;
@@ -2188,6 +2264,10 @@ bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const 
 	pos = relLyTokens[0][index].getWCE_Pos(); //initialisation of pos: start of lily line
 
 	if ( relLyTokens[0][index].getIdentity() == RelLyToken::NOTE ) {
+
+		//skip '\ficta', \gl, \bar ETC
+
+		//TODO
 
 		//ptichclass
 		if ( (pos = lyline.find_first_of("abcdefgsr", pos)) == string::npos) return false;
@@ -2428,6 +2508,22 @@ string SongLine::getLocation() const {
 
 bool SongLine::endsWithBarLine() const {
 	return (relLyTokens[0].back()).getIdentity() == RelLyToken::BARLINE;
+}
+
+bool SongLine::isLocalComment(string krntoken) const {
+	if (krntoken.size() >= 2) {
+		if (krntoken[0] == '!' && krntoken[1] != '!' )
+			return true;
+	}
+	return false;
+}
+
+bool SongLine::isGlobalComment(string krntoken) const {
+	if (krntoken.size() >= 2) {
+		if (krntoken[0] == '!' && krntoken[1] == '!' )
+			return true;
+	}
+	return false;
 }
 
 string SongLine::getNLBIdentifier(bool escape_underscore) const {
