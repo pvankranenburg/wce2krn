@@ -110,11 +110,12 @@ vector<string> formatFooterField( vector<string> footerField ) {
 	//first line
 	//remove lilypond markup command
 	string firstline = footerField[0];
-	if ( ( pos = firstline.find_first_of("\\markup { \\wordwrap-string #\"")) != string::npos ) {
-		firstline.erase(pos, pos+29);
+	if ( ( pos = firstline.find("\\markup { \\wordwrap-string #\"")) != string::npos ) {
+		firstline.erase(pos, 29);
 		pvktrim(firstline); //there seems always be a space after the markup command....
-		if ( firstline.size() > 0 )
+		if ( firstline.size() > 0 ) {
 			res.push_back(firstline);
+		}
 	}
 
 	//middle lines
@@ -134,10 +135,11 @@ vector<string> formatFooterField( vector<string> footerField ) {
 	//last line
 	//remove "
 	string lastline = footerField.back();
-	if ( ( pos = lastline.find_last_of("\"}")) != string::npos ) {
-		lastline.erase(pos, pos+2);
-		if ( lastline.size() > 0)
+	if ( ( pos = lastline.find("\"}")) != string::npos ) {
+		lastline.erase(pos, 2);
+		if ( lastline.size() > 0) {
 			res.push_back(lastline);
+		}
 	}
 
 	return res;
