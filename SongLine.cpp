@@ -1280,11 +1280,13 @@ void SongLine::breakWcelines() {
 							(relLyTokens.back())[ix].addArticulation(RelLyToken::ACCENT);
 						}
 					} break;
-					case 31 : { // stopped - should be attached to last note
+					case 31 : { // plus - treat as free text.
 						int ix = ixLastNote(relLyTokens, "+ could not be attached to last note");
 						if (ix>=0) {
-							(relLyTokens.back())[ix].addArticulation(RelLyToken::STOPPED);
+							(relLyTokens.back())[ix].setFreeText();
 						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
 					} break;
 					case 32 : { // tenuto - should be attached to last note
 						int ix = ixLastNote(relLyTokens, "tenuto could not be attached to last note");
@@ -1292,7 +1294,7 @@ void SongLine::breakWcelines() {
 							(relLyTokens.back())[ix].addArticulation(RelLyToken::TENUTO);
 						}
 					} break;
-					case 33 : { // free text - last note should get mark (? in kern). Text will be local comment
+					case 33 : { // free text - last note should get mark (?? in kern). Text will be local comment
 						int ix = ixLastNote(relLyTokens, "text could not be attached to last note");
 						if (ix>=0) {
 							(relLyTokens.back())[ix].setFreeText();

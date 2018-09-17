@@ -238,7 +238,7 @@ string RelLyToken::krnArticulations() const {
 	stringstream res;
 
 	//first handle all cases that return I
-	if ( isIn(STOPPED, articulations) ) return "I";
+	//if ( isIn(STOPPED, articulations) ) return "I";
 
 	//rest in right order
 	if ( isIn(STACCATO, articulations) ) res << "'";
