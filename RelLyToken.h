@@ -28,7 +28,7 @@ struct Pitchclass_Octave {
 class RelLyToken {
 public:
 	
-	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, GRACE, CHORD, BARLINE, CLEF_COMMAND, KEY_COMMAND, UNKNOWN };
+	enum Identity { NOTE, TIME_COMMAND, TIMES_COMMAND, TEXT, FREETEXT, GRACE, CHORD, BARLINE, CLEF_COMMAND, KEY_COMMAND, UNKNOWN };
 	enum SlurStatus { NO_SLUR_INFO, START_SLUR, END_SLUR, ENDSTART_SLUR, IN_SLUR, NO_SLUR, START_NEW_SLUR }; //only START_SLUR and END_SLUR can be extracted from relative ly token!
 	enum TieStatus { NO_TIE_INFO, START_TIE, CONTINUE_TIE, END_TIE, NO_TIE }; //only START_TIE can be extracted from relative ly token!
 	//enum GlissandoStatus { START_GLISSANDO, END_GLISSANDO };
@@ -114,6 +114,9 @@ public:
 	bool hasSoftBreak() const { return softBreak; };
 	void setFermata() { fermata = true; };
 	bool hasFermata() const { return fermata; };
+	void setFreeText() { freeText=true; };
+	bool hasFreeText() const { return freeText; };
+	std::string getFreeText() const ;
 	
 	TimeSignature getTimeSignature() const; //do only invoke if identity is TIME_COMMAND
 	
@@ -139,6 +142,7 @@ private:
 	bool softBreak;
 	bool beginGlissando;
 	bool fermata;
+	bool freeText;
 	vector<RelLyToken> notes; //contains the notes of a chord
 	vector<Ornament> ornaments;
 	vector<Articulation> articulations;

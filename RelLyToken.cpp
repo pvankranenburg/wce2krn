@@ -22,7 +22,7 @@ using namespace std;
 #define yyFlexLexer ChordNoteFlexLexer
 #include <FlexLexer.h>
 
-RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool hassoftbreak, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos), softBreak(hassoftbreak), beginGlissando(false), fermata(false) {
+RelLyToken::RelLyToken(string t, string loc, int lineno, int linepos, RelLyToken::Identity token_id, bool hassoftbreak, bool is_music) : token(t), id(token_id), location(loc), WCE_LineNumber(lineno), WCE_Pos(linepos), softBreak(hassoftbreak), beginGlissando(false), fermata(false), freeText(false) {
 	if (getIdentity() == CHORD) {
 			notes = splitChord();
 	}
@@ -36,13 +36,14 @@ RelLyToken::RelLyToken(const RelLyToken& r) : token(r.getToken()),
 											  softBreak(r.hasSoftBreak()),
 											  beginGlissando(r.getGlissandoBegin()),
 											  fermata(r.hasFermata()),
+											  freeText(r.hasFreeText()),
 											  notes(r.getNotes()),
 											  ornaments(r.getOrnaments()),
 											  articulations(r.getArticulations()) {
 
 }
 
-RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0), softBreak(false), beginGlissando(false) {
+RelLyToken::RelLyToken() : token(""), id(UNKNOWN), location(""), WCE_LineNumber(0), WCE_Pos(0), softBreak(false), beginGlissando(false), fermata(false), freeText(false) {
 
 }
 
@@ -327,6 +328,11 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 	if (slur == END_SLUR || slur == ENDSTART_SLUR) res << ")";
 	
 	res << editorial;
+
+	//free text?
+	if( hasFreeText() ) {
+		res << "??";
+	}
 
 	string s;
 	res >> s;
@@ -707,6 +713,20 @@ bool RelLyToken::getFicta() const {
 	return res;
 }
 
+string RelLyToken::getFreeText() const {
+	if ( getIdentity() == FREETEXT ) {
+		string tok = getToken();
+		pvktrim(tok);
+		//remove _ or ^ and leading and trailing "
+		string::size_type pos;
+		if ( tok.size() > 0 ) tok.erase(0,1);
+		if ( (pos = tok.find_first_of("\"")) != string::npos ) tok.erase(pos,1);
+		if ( (pos = tok.find_last_of("\"")) != string::npos ) tok.erase(pos,1);
+		return tok;
+	}
+	else return "";
+}
+
 bool RelLyToken::containsClosingBraceBeforeNote() const {
 	bool res = false;
 	string::size_type pos1, pos2;
@@ -779,6 +799,7 @@ string RelLyToken::printIdentity(Identity i) {
 		case TIME_COMMAND: return "TIME_COMMAND";
 		case TIMES_COMMAND: return "TIMES_COMMAND";
 		case TEXT: return "TEXT";
+		case FREETEXT: return "FREETEXT";
 		case GRACE: return "GRACE";
 		case CHORD: return "CHORD";
 		case BARLINE: return "BARLINE";

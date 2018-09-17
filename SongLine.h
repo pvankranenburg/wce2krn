@@ -105,6 +105,8 @@ public:
 	bool endsWithBarLine() const;
 	//bool changeMeterLastBar(int num, int den); //TODO for \stopbar problem
 	std::string getNLBIdentifier(bool escape_underscore=false) const;
+	bool isLocalComment(string krntoken) const;
+	bool isGlobalComment(string krntoken) const;
 
 	//NB no initialSlur and finalSlur status. Slurs should not be extended over line endings. -- might happen though
 

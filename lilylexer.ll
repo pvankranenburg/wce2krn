@@ -29,7 +29,6 @@ tekst			[\^_]\"[^\"]*\"{ws}*
 %%
 [\^_]\"\+\"{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 31; }
 [\^_]\"-\"{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 32; }
-[\^_]\"[^\"]*\"{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 [\^_]\\markup{ws}*\{								{ BEGIN(INMARKUP); brace_count=1; /*clog << "INSTR  " << YYText() << endl; */ return 4; }
 <INMARKUP>\{										{ brace_count++; return 4; }
 <INMARKUP>\}										{ brace_count--; if (brace_count==0) BEGIN(INITIAL); return 4; }
@@ -78,6 +77,8 @@ tekst			[\^_]\"[^\"]*\"{ws}*
 ~													return 7; /*clog << "TIE  " << YYText() << endl;*/
 \}													return 8; /*clog << "CLOSINGBRACE " << YYText() << endl;*/
 \{													return 9; /*clog << "OPENINGBRACE " << YYText() << endl;*/
+    /*This captures any text. Make sure it is AFTER rules for ornaments and other elements coded as text */
+[\^_]\"[^\"]*\"{ws}*								{/*clog << "INSTR  " << YYText() << endl; */ return 33; }
 ({ficta}{ws}*|{glis}{ws}*|{cross}{ws}*|\{{ws}*)*{note}{ws}*\}*		return 1; /*clog << "NOTE  " << YYText() << endl;*/
 ({ficta}{ws}*|{glis}{ws}*|{cross}{ws}*|\{{ws}*)*{chord}{ws}*\}*	return 12; /*clog << "CHORD " << YYText() << endl;*/
 {time_command}{ws}*{digit}+"/"{digit}+{ws}*			return 2; /*clog << "TIME  " << YYText() << endl;*/

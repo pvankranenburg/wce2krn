@@ -24,6 +24,12 @@ Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), web
 	//extract the lilypond lines
 	vector<string> wcelines = wcefile.getContents();
 
+	//footnotes?
+	//vector<string> footnotelines = wcefile.getFooterField();
+	//for (int i=0; i<footnotelines.size(); i++) {
+	//	cout << footnotelines[i] << endl;
+	//}
+
 	//find out number of datalines (spines)
 	//find out number of lines in song
 	vector<bool> lineprofile;
