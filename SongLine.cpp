@@ -677,6 +677,7 @@ void SongLine::translate() {
 	// add the { and } phrase markers to the kern melody
 	// find out first and last note
 	// first and last item in kerntokens not starting with = or * or !
+	// put } BEFORE yy,xx,YY,XX,?? (canonical)
 	// NOT for GRACE
 	if (graceType == RelLyToken::NOGRACE) {
 		int ix_first = 0;
@@ -703,7 +704,15 @@ void SongLine::translate() {
 			}
 			if (found) {
 				kernTokens[0][ix_first] = "{" + kernTokens[0][ix_first];
-				kernTokens[0][ix_last] = kernTokens[0][ix_last] + "}";
+				//find position to insert: BEFORE yy,xx,YY,XX,?? (canonical)
+				string::size_type pos = kernTokens[0][ix_last].size();
+				string::size_type tmp = kernTokens[0][ix_last].size();
+				if ( ( tmp = kernTokens[0][ix_last].rfind("yy") ) != string::npos) if ( tmp < pos ) pos = tmp;
+				if ( ( tmp = kernTokens[0][ix_last].rfind("YY") ) != string::npos) if ( tmp < pos ) pos = tmp;
+				if ( ( tmp = kernTokens[0][ix_last].rfind("xx") ) != string::npos) if ( tmp < pos ) pos = tmp;
+				if ( ( tmp = kernTokens[0][ix_last].rfind("XX") ) != string::npos) if ( tmp < pos ) pos = tmp;
+				if ( ( tmp = kernTokens[0][ix_last].rfind("??") ) != string::npos) if ( tmp < pos ) pos = tmp;
+				kernTokens[0][ix_last].insert(pos, "}");
 			}
 		}
 	}
