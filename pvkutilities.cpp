@@ -145,3 +145,14 @@ vector<string> formatFooterField( vector<string> footerField ) {
 	return res;
 }
 
+string escapeQuotes(string in) { //UTF proof?
+	string res = "";
+	for (int i=0; i<in.size(); i++) {
+		if ( in[i] == '"' )
+			res = res + "\\\"";
+		else
+			res = res + in[i];
+	}
+	return res;
+}
+

@@ -25,6 +25,7 @@ Version 1.79
 - Explicit barlines exported to **kern also in case of free meter
 - title of song exported to **kern
 - "+" now treated as free text. Not as articulation.
+- " in title now handled properly in lilypond export.
 
 Version 1.78.1 (20180505)
 - bugfixes
