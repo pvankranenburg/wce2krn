@@ -132,6 +132,7 @@ private:
 	bool translationMade; //true if absLyLine and KernLine are made.
 	void repairTitle(); //remove non-printable characters (esp. half UTF-8 characters).
 	void repairFinalBarline();
+	void repairFinalSoftBreak();
 
 	//for check
 	vector<RelLyToken::SlurStatus> slurs_ann; //annotation for slurs
