@@ -1306,7 +1306,78 @@ void SongLine::breakWcelines() {
 						}
 						ctoken = lexer->YYText();
 						(relLyTokens.back()).push_back(RelLyToken(ctoken, getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
-
+					} break;
+					case 34 : { // segno - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "Segno could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"Segno\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 35 : { // coda - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "Coda could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"coda\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 36 : { // Fine - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "Fine could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"Fine\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 37 : { // D.C. - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "D.C. could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"D.C.\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 38 : { // D.C. al Fine - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "D.C.al Fine could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"D.C. al Fine\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 39 : { //D.C. al Coda - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "D.C. al Coda could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"D.C. al Coda\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 40 : { // D.S.  - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "D.S. could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"D.S.\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 41 : { // D.S. al Fine - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "D.S. al Fine could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"D.S. al Fine\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
+					} break;
+					case 42 : { // D.S. al Coda - last note should get mark (?? in kern). Text will be local comment
+						int ix = ixLastNote(relLyTokens, "D.S. al Coda could not be attached to last note");
+						if (ix>=0) {
+							(relLyTokens.back())[ix].setFreeText();
+						}
+						ctoken = lexer->YYText();
+						(relLyTokens.back()).push_back(RelLyToken("^\"D.S. al Coda\"", getLocation(), WCELineNumber, pos_in_line, RelLyToken::FREETEXT, is_music));
 					} break;
 					default: {
 						ctoken = lexer->YYText();
