@@ -72,6 +72,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   graceType(gt) {
 	translate();
 	repairTitle();
+	//repairFinalBarline(); // do this IN translate
 }
 
 SongLine::SongLine() : wcelines(vector<string>()),
@@ -184,6 +185,9 @@ void SongLine::translate() {
 
 	//break wcelines into tokens
 	breakWcelines();
+
+	//TEMPORAL FIX
+	repairFinalBarline();
 
 	//initialization of context
 	int currentOctave = 0;
@@ -2669,7 +2673,7 @@ bool SongLine::checkLengths() const {
 //
 void SongLine::repairTitle() {
 
-	cout << title << endl;
+	//cout << title << endl;
 
 	string::size_type npos;
 	vector<u_int> to_delete;
@@ -2683,6 +2687,44 @@ void SongLine::repairTitle() {
 		title.erase(to_delete[i],1);
 	}
 
-	cout << title << endl;
+	//cout << title << endl;
+}
+
+// check whether final barline is ":..:". If so, replace with ":|."
+void SongLine::repairFinalBarline() {
+
+	if ( phraseNo != numPhrases ) //only for final phrase
+		return;
+
+	//cout << "Repairing final barline" << endl;
+
+	bool found = false;
+	int rl_ix = 0;
+
+	//find final barline (if given). No note or chord allowed after barline.
+	//search backwards
+	for( rl_ix = relLyTokens[0].size()-1; rl_ix < relLyTokens[0].size(); rl_ix-- ) { //find final bar line
+		if ( relLyTokens[0][rl_ix].getIdentity() == RelLyToken::NOTE ||
+			 relLyTokens[0][rl_ix].getIdentity() == RelLyToken::CHORD )
+			continue;
+		if ( relLyTokens[0][rl_ix].getIdentity() == RelLyToken::BARLINE ) {
+			found = true;
+			//cout << "Found: " << relLyTokens[0][rl_ix].getToken() << endl;
+			break;
+		}
+	}
+
+	relLyTokens[0][rl_ix]; //alias
+
+	if ( relLyTokens[0][rl_ix].getBarLineType() == RelLyToken::DOUBLEREPEAT ) { //do repair
+		relLyTokens[0][rl_ix].repairBarline();
+		//check
+		if ( relLyTokens[0][rl_ix].getBarLineType() != RelLyToken::ENDREPEAT )
+			cerr << getLocation() << ": Warning: repair final barline failed." << endl;
+	}
+
+	//cout << relLyTokens[0][rl_ix].getToken() << endl;
+	//cout << "done" << endl;
+
 }
 

@@ -117,6 +117,7 @@ public:
 	void setFreeText() { freeText=true; };
 	bool hasFreeText() const { return freeText; };
 	std::string getFreeText() const ;
+	void repairBarline();
 	
 	TimeSignature getTimeSignature() const; //do only invoke if identity is TIME_COMMAND
 	

@@ -821,3 +821,15 @@ bool RelLyToken::isRest() const {
 	return res;
 }
 
+void RelLyToken::repairBarline() {
+	string::size_type pos;
+	if ( getIdentity() == BARLINE && getBarLineType() == DOUBLEREPEAT ) {
+		pos = token.find(":..:");
+		if ( pos != string::npos )
+			token.replace(pos, 4, ":|.");
+	}
+}
+
+
+
+
