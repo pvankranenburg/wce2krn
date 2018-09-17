@@ -1492,10 +1492,18 @@ vector<string> SongLine::getLyLine(bool absolute, bool lines, int ly_ver) const{
 
 		// make sure first note has duration
 		// do this before changing the line (like adding \times 2/3 at the beginning)
-		if (!inheritFirstLynoteDuration( res[0], initialDuration)) {
-			cerr << getLocation() << " Error: Problem checking duration of first note/rest." << endl;
-			exit(1);
+
+		//TODO: fix inheritFirstLynoteDuration
+
+		if (lines) {
+			cerr << getLocation() << " Warning: inheritFirstLynoteDuration() broken. Don't use single line output." << endl;
 		}
+
+		//if (!inheritFirstLynoteDuration( res[0], initialDuration)) {
+		//	cerr << getLocation() << " Error: Problem checking duration of first note/rest." << endl;
+		//	exit(1);
+		//}
+
 
 		if ( lines ) {
 			if ( initialTripletStatus ) {
@@ -2231,6 +2239,8 @@ string SongLine::upbeatToString(RationalTime t) const {
 
 bool SongLine::inheritFirstLynoteDuration( string & lyline, int duration) const {
 	//locale loc("");
+
+	cerr << "SongLine::inheritFirstLynoteDuration() is broken. Do not use." << endl;
 
 	string::size_type pos = 0;
 	stringstream ss;
