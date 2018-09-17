@@ -536,6 +536,12 @@ void SongLine::translate() {
 					}
 				}
 
+				if ( meterInvisible ) { //do explicitly indicated barlines
+					string barstr = (*rl_it).getKernBarLine(0,true);
+					kernTokens[0].push_back(barstr);
+					kernTokens[1].push_back(barstr);
+				}
+
 				//do slur and tie annotation
 				ties_ann.push_back(RelLyToken::NO_TIE_INFO);
 				slurs_ann.push_back(RelLyToken::NO_SLUR_INFO);
