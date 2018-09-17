@@ -2721,6 +2721,15 @@ void SongLine::repairFinalBarline() {
 		//check
 		if ( relLyTokens[0][rl_ix].getBarLineType() != RelLyToken::ENDREPEAT )
 			cerr << getLocation() << ": Warning: repair final barline failed." << endl;
+		//also change lilyline
+
+		string::size_type pos;
+		if (  (pos = wcelines[0].rfind(":..:")) != string::npos ) {
+			cout << wcelines[0] << endl;
+			wcelines[0].replace(pos, 4, ":|.");
+			cout << wcelines[0] << endl;
+		}
+
 	}
 
 	//cout << relLyTokens[0][rl_ix].getToken() << endl;
