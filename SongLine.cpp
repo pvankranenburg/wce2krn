@@ -71,6 +71,7 @@ SongLine::SongLine(vector<string> lines, RationalTime upb, TimeSignature timesig
 																   instrumental(instr),
 																   graceType(gt) {
 	translate();
+	repairTitle();
 }
 
 SongLine::SongLine() : wcelines(vector<string>()),
@@ -2661,3 +2662,27 @@ bool SongLine::checkLengths() const {
 	}
 	return res;
 }
+
+//if title contains non-printable character, remove it
+//this occurs if the title has been cut in the middle of UTF-8 2-byte character.
+//Also remove carriage return
+//
+void SongLine::repairTitle() {
+
+	cout << title << endl;
+
+	string::size_type npos;
+	vector<u_int> to_delete;
+	for(int i=0; i<title.size()-1; i++) {
+		if ( (unsigned char)title[i] > 194 && title[i+1] == ' ' ) //cutted UTF pair
+			to_delete.push_back(i);
+		if ( (unsigned char)title[i] == 0x0d ) //carriage return
+			to_delete.push_back(i);
+	}
+	for(int i=to_delete.size()-1; i>=0; i--) {
+		title.erase(to_delete[i],1);
+	}
+
+	cout << title << endl;
+}
+
