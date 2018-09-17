@@ -111,6 +111,7 @@ public:
 	bool containsClosingBraceAfterNote() const;
 	bool isRest() const;
 	void setSoftBreak() { softBreak = true;};
+	void removeSoftBreak() { softBreak = false;};
 	bool hasSoftBreak() const { return softBreak; };
 	void setFermata() { fermata = true; };
 	bool hasFermata() const { return fermata; };

@@ -189,6 +189,9 @@ void SongLine::translate() {
 	//TEMPORAL FIX
 	repairFinalBarline();
 
+	//check softbreak at end of line.
+	repairFinalSoftBreak();
+
 	//initialization of context
 	int currentOctave = 0;
 	int lastOctave = initialOctave; // we need both current and last octave to compute octaves
@@ -2778,6 +2781,26 @@ void SongLine::repairTitle() {
 	}
 
 	//cout << title << endl;
+}
+
+// check whether there is a softbreak at the end of the line. If so, remove.
+void SongLine::repairFinalSoftBreak() {
+	//find last note
+
+	int rl_ix = 0;
+	for( rl_ix = relLyTokens[0].size()-1; rl_ix >= 0 ; rl_ix-- ) { //find final bar line
+		if ( relLyTokens[0][rl_ix].getIdentity() == RelLyToken::NOTE ||
+			 relLyTokens[0][rl_ix].getIdentity() == RelLyToken::CHORD )
+			break;
+	}
+
+	if ( rl_ix >= 0 && rl_ix < relLyTokens[0].size() ) {
+		if ( relLyTokens[0][rl_ix].hasSoftBreak() ) {
+			cerr << getLocation() << ": Error: softbreak at end of line." << endl;
+			relLyTokens[0][rl_ix].removeSoftBreak();
+		}
+	}
+
 }
 
 // check whether final barline is ":..:". If so, replace with ":|."
