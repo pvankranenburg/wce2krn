@@ -297,6 +297,10 @@ string WCE_File::getLocation() const {
 	return fn + ": Record " + getRecord() + " - Strophe " + getStrophe();
 }
 
-
+string WCE_File::getInitialClef() const {
+	string clf = initialClef;
+	if ( clf.size() < 1 ) clf = "treble";
+	return clf;
+}
 
 
