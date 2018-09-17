@@ -2758,15 +2758,21 @@ bool SongLine::checkLengths() const {
 void SongLine::repairTitle() {
 
 	//cout << title << endl;
+	//cout << "title.size " << title.size() << endl;
 
 	string::size_type npos;
 	vector<u_int> to_delete;
-	for(int i=0; i<title.size()-1; i++) {
+
+	//NB title.size() returns unsigned int. If size == 0: size-1 ...
+	for(int i=0; i<(int)title.size()-1; i++) {
 		if ( (unsigned char)title[i] > 194 && title[i+1] == ' ' ) //cutted UTF pair
 			to_delete.push_back(i);
 		if ( (unsigned char)title[i] == 0x0d ) //carriage return
 			to_delete.push_back(i);
 	}
+
+	//cout << "size to_delete: " << to_delete.size() << endl;
+
 	for(int i=to_delete.size()-1; i>=0; i--) {
 		title.erase(to_delete[i],1);
 	}
