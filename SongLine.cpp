@@ -256,7 +256,7 @@ void SongLine::translate() {
 		//to note or not to note
 		//in each case the slur and tie annotation have to be updated, for keeping the annotations in sync with the melody.
 		id = (*rl_it).getIdentity();
-		//cout << (*rl_it).getToken() << " : " << id << endl;
+		//cout << (*rl_it).getToken() << " : " << id << endl << flush;
 		switch(id) {
 			case RelLyToken::NOTE:
 			case RelLyToken::CHORD: {
@@ -2774,7 +2774,7 @@ void SongLine::repairFinalBarline() {
 
 	//find final barline (if given). No note or chord allowed after barline.
 	//search backwards
-	for( rl_ix = relLyTokens[0].size()-1; rl_ix < relLyTokens[0].size(); rl_ix-- ) { //find final bar line
+	for( rl_ix = relLyTokens[0].size()-1; rl_ix >= 0 ; rl_ix-- ) { //find final bar line
 		if ( relLyTokens[0][rl_ix].getIdentity() == RelLyToken::NOTE ||
 			 relLyTokens[0][rl_ix].getIdentity() == RelLyToken::CHORD )
 			continue;
@@ -2785,25 +2785,25 @@ void SongLine::repairFinalBarline() {
 		}
 	}
 
-	relLyTokens[0][rl_ix]; //alias
+	if ( found ) {
+		if ( relLyTokens[0][rl_ix].getBarLineType() == RelLyToken::DOUBLEREPEAT ) { //do repair
+			relLyTokens[0][rl_ix].repairBarline();
+			//check
+			if ( relLyTokens[0][rl_ix].getBarLineType() != RelLyToken::ENDREPEAT )
+				cerr << getLocation() << ": Warning: repair final barline failed." << endl;
+			//also change lilyline
 
-	if ( relLyTokens[0][rl_ix].getBarLineType() == RelLyToken::DOUBLEREPEAT ) { //do repair
-		relLyTokens[0][rl_ix].repairBarline();
-		//check
-		if ( relLyTokens[0][rl_ix].getBarLineType() != RelLyToken::ENDREPEAT )
-			cerr << getLocation() << ": Warning: repair final barline failed." << endl;
-		//also change lilyline
+			string::size_type pos;
+			if (  (pos = wcelines[0].rfind(":..:")) != string::npos ) {
+				//cout << wcelines[0] << endl;
+				wcelines[0].replace(pos, 4, ":|.");
+				//cout << wcelines[0] << endl;
+			}
 
-		string::size_type pos;
-		if (  (pos = wcelines[0].rfind(":..:")) != string::npos ) {
-			//cout << wcelines[0] << endl;
-			wcelines[0].replace(pos, 4, ":|.");
-			//cout << wcelines[0] << endl;
 		}
-
+		//cout << relLyTokens[0][rl_ix].getToken() << endl;
 	}
 
-	//cout << relLyTokens[0][rl_ix].getToken() << endl;
 	//cout << "done" << endl;
 
 }
