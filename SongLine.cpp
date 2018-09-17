@@ -2108,9 +2108,11 @@ vector<string> SongLine::getKernBeginSignature(bool lines, bool meterinvisible) 
 	//first print some comments
 	res.push_back("!! Published by the Meertens Institute (http://www.meertens.knaw.nl)");
 	res.push_back("!! Part of the Database of Dutch Songs (NLB) (http://www.liederenbank.nl)");
+	res.push_back("!! Part of the Meertens Tune Collections (MTC) (http://www.liederenbank.nl/mtc)");
 	res.push_back(string("!! NLB identifier: " + getNLBIdentifier()));
 	res.push_back(string("!! NLB record number: " + record));
 	res.push_back(string("!! NLB strophe/voice number: " + strophe));
+	res.push_back(string("!!!OTL: "+title));
 
 
 	//identify spine
