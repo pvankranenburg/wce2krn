@@ -47,4 +47,6 @@ int translateKeySignature(string lykey);
 
 vector<string> formatFooterField( vector<string> footerField );
 
+string escapeQuotes(string in);
+
 #endif

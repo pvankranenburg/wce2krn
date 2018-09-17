@@ -1760,30 +1760,30 @@ vector<string> SongLine::getLyBeginSignature(bool absolute, bool lines, bool web
 	//	if ( !lines ) {
 	//		if ( title.size() != 0 && title.compare(0,3,"NLB") ) { //only produce given title if it is not an NLB number. do not construct one
 	//			//cout << title << endl;
-	//			songtitle = "title = \"" + title + "\"";
+	//			songtitle = "title = \"" + escapeQuotes(title) + "\"";
 	//		}
 	//	}
 	//}
 	//else
-	{   if (!weblily) piece = "piece = \"Record " + record + " - Strophe " + strophe;
-		if ( lines ) {
-			stringstream s;
-			s << phraseNo;
-			string str_phraseNo = "";
-			s >> str_phraseNo;
-			if (!weblily) piece = piece + " - Phrase " + str_phraseNo + "\"";
-		} else {
-			if (!weblily) piece = piece + "\"";
-		}
-		if ( title.size() != 0 ) { //use provided title if given for 'title' field.
-			songtitle = "title = \"" + title + "\"";
-		} else {
-			if (weblily)
-				songtitle = "";
-			else
-				songtitle = "title = \"[" + this->getNLBIdentifier() + "]\"";
-		}
+	if (!weblily) piece = "piece = \"Record " + record + " - Strophe " + strophe;
+	if ( lines ) {
+		stringstream s;
+		s << phraseNo;
+		string str_phraseNo = "";
+		s >> str_phraseNo;
+		if (!weblily) piece = piece + " - Phrase " + str_phraseNo + "\"";
+	} else {
+		if (!weblily) piece = piece + "\"";
 	}
+	if ( title.size() != 0 ) { //use provided title if given for 'title' field.
+		songtitle = "title = \"" + escapeQuotes(title) + "\"";
+	} else {
+		if (weblily)
+			songtitle = "";
+		else
+			songtitle = "title = \"[" + this->getNLBIdentifier() + "]\"";
+	}
+
 	if ( songtitle.size() != 0 ) {
 		res.push_back(songtitle);
 	}
