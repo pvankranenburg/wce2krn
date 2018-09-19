@@ -133,6 +133,7 @@ private:
 	void repairTitle(); //remove non-printable characters (esp. half UTF-8 characters).
 	void repairFinalBarline();
 	void repairFinalSoftBreak();
+	bool increaseRelly_index(int& relly_index) const;
 
 	//for check
 	vector<RelLyToken::SlurStatus> slurs_ann; //annotation for slurs
