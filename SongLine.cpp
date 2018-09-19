@@ -760,40 +760,63 @@ void SongLine::translate() {
 	RelLyToken::TextStatus currentTextStatus = RelLyToken::SINGLE_WORD;
 	//RelLyToken::Identity correspondingIdentity = RelLyToken::UNKNOWN;
 
+	//if ( graceType != RelLyToken::NOGRACE )
+	//	cout << "%%%%%%%%% GRACE %%%%%%%%%%" << endl;
+
 	for ( krn_it = kernTokens[0].begin(); krn_it != kernTokens[0].end(); krn_it++) {
 		//now do the krn
 
 		//if ( graceType == RelLyToken::NOGRACE )
-		//	cout << "[ " << (*krn_it) << " -- " << relLyTokens[0][relly_index].getToken() << " ]" << endl;
+			//cout << "[ " << (*krn_it) << " -- " << relLyTokens[0][relly_index].getToken() << " ]" << endl;
+			//ALSO UNCOMMENT BELOW.
 
-		//if tandem or barline.
-		if ( (*krn_it)[0] == '=' || (*krn_it)[0] == '*' ) {
-			if ( (*krn_it).find("*") == 0 ) //tandem
-				for ( int i = 1; i<numLines; i++ ) {
-					kernTokens[2*i].push_back( "*" );
-					kernTokens[2*i+1].push_back( "*" );
-				}
-			else //barline
-				for ( int i = 1; i<numLines; i++ ) {
-					kernTokens[2*i].push_back( (*krn_it) );
-					kernTokens[2*i+1].push_back( (*krn_it) );
-				}
+		//as long as relly_index points to token with no corresponding **kern token: increase relly_index + annotate
+		//currently, this is only TIMES_COMMAND,
+		while ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::TIMES_COMMAND ) {
+			increaseRelly_index(relly_index);
+			for (int i=1; i<numLines; i++) {
+				text_ann[i-1].push_back( RelLyToken::NO_WORD);
+			}
+			//cout << "[ " << (*krn_it) << " -- " << relLyTokens[0][relly_index].getToken() << " ]" << endl;
+		}
 
-			//for everything in relLyTokens[0] not corresponding to **kern data token, increase relly_index
-			if ( relly_index < relLyTokens[0].size() ) {
-				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::NOTE &&
-				     relLyTokens[0][relly_index].getIdentity() != RelLyToken::CHORD &&
-					 relLyTokens[0][relly_index].getIdentity() != RelLyToken::GRACE &&
-					 relLyTokens[0][relly_index].getIdentity() != RelLyToken::FREETEXT ) {
-					for (int i = 1; i<numLines; i++ ) {
-						absLyTokens[i].push_back("");
-						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
-							text_ann[i-1].push_back( RelLyToken::DONTKNOW );
-						else {
-							text_ann[i-1].push_back( RelLyToken::NO_WORD );
-						}
+		//if tandem
+		if ( (*krn_it)[0] == '*' ) {
+			for ( int i = 1; i<numLines; i++ ) {
+				kernTokens[2*i].push_back( "*" );
+				kernTokens[2*i+1].push_back( "*" );
+			}
+			//update relly_index + annotate (if needed: TIME_COMMAND, CLEF_COMMAND, KEY_COMMAND)
+			if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::TIME_COMMAND ||
+				 relLyTokens[0][relly_index].getIdentity() == RelLyToken::CLEF_COMMAND ) {
+				increaseRelly_index(relly_index);
+				for (int i=1; i<numLines; i++) {
+					text_ann[i-1].push_back( RelLyToken::NO_WORD);
+				}
+			} else if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::KEY_COMMAND ) {
+				if ( (*krn_it).substr(0,3) == "*k[") { //only update relly after key signature of key change
+					increaseRelly_index(relly_index);
+					for (int i=1; i<numLines; i++) {
+						text_ann[i-1].push_back( RelLyToken::NO_WORD);
 					}
-					relly_index++;
+				}
+			} else {
+				// *k[] (after key) goes without RelLyToken
+				if ((*krn_it).substr(0,3) != "*k[") {
+					cerr << getLocation() << ": Warning: **kern tandem without corresponding RelLyToken:";
+					cerr << "[ " << (*krn_it) << " -- " << relLyTokens[0][relly_index].getToken() << " ]" << endl;
+				}
+			}
+		} else if ( (*krn_it)[0] == '=' ) {
+			for ( int i = 1; i<numLines; i++ ) {
+				kernTokens[2*i].push_back( (*krn_it) );
+				kernTokens[2*i+1].push_back( (*krn_it) );
+			}
+			//update relly_index + annotate if there is a barline in lily input
+			if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::BARLINE ) {
+				increaseRelly_index(relly_index);;
+				for (int i=1; i<numLines; i++) {
+					text_ann[i-1].push_back( RelLyToken::NO_WORD);
 				}
 			}
 		} else if ( isLocalComment(*krn_it)  ) {
@@ -805,12 +828,15 @@ void SongLine::translate() {
 			//annotate corresponding RelLyToken
 			if ( relly_index < relLyTokens[0].size() ) {
 				if ( relLyTokens[0][relly_index].getIdentity() != RelLyToken::FREETEXT) {
-					cerr << getLocation() << ": Warning: No RelLyToken for FREETEXT " << relLyTokens[0][relly_index].getToken() << endl;
+					//it might be FREETEXT on one a grace. CHECK
+					vector<string>::iterator prev_krn_it = krn_it - 1; //should be safe
+					if ( !hasGrace(*prev_krn_it) )
+						cerr << getLocation() << ": Warning: No RelLyToken for FREETEXT " << relLyTokens[0][relly_index].getToken() << endl;
 				} else {
 					for (int i=1; i<numLines; i++) {
 						text_ann[i-1].push_back( RelLyToken::NO_WORD);
 					}
-					relly_index++;
+					increaseRelly_index(relly_index);;
 				}
 			}
 		} else if ( isGlobalComment(*krn_it)  ) {
@@ -820,17 +846,16 @@ void SongLine::translate() {
 				kernTokens[2*i+1].push_back( "" );
 			}
 			//There should be no corresponding RelLyToken.
-		} else if( hasGrace(*krn_it) ) { //grace note in **kern. Do not place a syllable
+		} else if( hasGrace(*krn_it) && graceType == RelLyToken::NOGRACE ) { //grace note in **kern. Do not place a syllable. N.B. distinct cases for songline or 'graceline'
 			for (int i=1; i<numLines; i++) {
 				kernTokens[2*i].push_back(".");
 				kernTokens[2*i+1].push_back(".");
 			}
-			//Only increase relly_index if it points to grace. There could be more than one grace note
 			if (relLyTokens[0][relly_index].getGraceType() != RelLyToken::NOGRACE) {
 				for(int i=1; i<numLines;i++) text_ann[i-1].push_back(RelLyToken::NO_WORD);
-				relly_index++;
+				increaseRelly_index(relly_index);;
 			}
-		} else { // not tandem, not comment, not grace, not barline
+		} else { // not tandem, not comment, not grace, not barline. Probably data token
 			for ( int i = 1; i<numLines; i++ ) {
 				if ( relly_index >= relLyTokens[i].size() ) {
 					//for ( int knn = 0; knn<kernTokens[2*i].size(); knn++) cout <<  kernTokens[2*i][knn] << endl;
@@ -900,7 +925,7 @@ void SongLine::translate() {
 							text_ann[i-1].push_back(currentTextStatus);
 
 						}
-					} else { //Not a NOTE or a CHORD: //TIMES or UNKNOWN or SOMETHING ELSE
+					} else { //Not a NOTE or a CHORD: //SOMETHING ELSE?
 						//if UNKNOWN: DONTKNOW
 						if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
 							text_ann[i-1].push_back(RelLyToken::DONTKNOW);
@@ -919,18 +944,26 @@ void SongLine::translate() {
 				}
 
 			}
-			//Everything that has a rellytoken, but not a kerntoken:
-			if ( relLyTokens[0][relly_index].getIdentity() == RelLyToken::TIMES_COMMAND ||
-				 relLyTokens[0][relly_index].getIdentity() == RelLyToken::UNKNOWN )
-					krn_it--; // Same Token again. DO NOT USE krn_it AFTER THIS.
-
-			relly_index++;
+			//this should be outside the loop:
+			increaseRelly_index(relly_index);;
 		}
 	}
-	//tokens left in
 
+	//if ( graceType != RelLyToken::NOGRACE )
+	//    cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
 
-	//cout << "Number of text syllables: " <<
+	//check: relly_index should point at relLyTokens[0].size()-1 now
+	//cout << "relly_index: " << relly_index << endl;
+	//cout << "relLyTokens[0].size(): " << relLyTokens[0].size() << endl;
+	if ( relly_index != relLyTokens[0].size()-1 )
+		cerr << getLocation() << ": Warning: it seems not all (or too many) rellytokens have been processed." << endl;
+
+	//check: text annotations should have the same length as the RelLyTokens.
+	if (text_ann.size() >0 ) { //any text line at all
+		if ( text_ann[0].size() != relLyTokens[0].size() ) {
+			cerr << getLocation() << ": Warning: text annotations should have same size as rellytokens." << endl;
+		}
+	}
 
 	//debug
 	/*
@@ -977,6 +1010,17 @@ void SongLine::translate() {
 	//check ties
 	checkTies();
 
+}
+
+bool SongLine::increaseRelly_index(int& relly_index) const {
+	bool res = false;
+	if ( relLyTokens.size() > 0 ) {
+		if ( relly_index < relLyTokens[0].size()-1 ) {
+			relly_index++;
+			res = true;
+		}
+	}
+	return res;
 }
 
 SongLine& SongLine::operator=(const SongLine& sl) {
@@ -1509,6 +1553,13 @@ RationalTime SongLine::rationalDuration(int duration, int dots, bool triplet) co
 
 string SongLine::toText(string tok, RelLyToken::TextStatus ts, Representation repr) const {
 	pvktrim(tok);
+
+	if ( ts == RelLyToken::NO_WORD ) {
+		cerr << getLocation() << ": Error: Attempt to handle lyric " << tok << " which is annotated as NO_WORD." << endl;
+	}
+	if ( ts == RelLyToken::DONTKNOW ) {
+		cerr << getLocation() << ": Error: Attempt to handle lyric " << tok << " which is annotated as DONTKNOW." << endl;
+	}
 
 	if ( tok.size() == 0 ) {
 		if ( repr == KERN ) return "."; else return "";
