@@ -329,12 +329,18 @@ void WCE_File::readTitles(string filename) {
 		//find escaped " and replace with something unlikely (the alert '\a')
 		while ( (pos = line.find("\\\"") ) !=string::npos ) {
 			line[pos] = '\a';
-			line[pos+1] = '\a';
+			line[pos+1] = '\f';
 		}
 		pos = line.find("\",\"");
 		if ( pos == string::npos ) {
 			cerr << "Titlefile " << filename << ": fields should be enclosed in quotes and separated by comma: " << line << endl;
 			exit(1);
+		}
+
+		//change \" back
+		while ( (pos = line.find("\a") ) !=string::npos ) {
+			line[pos] = '\\';
+			line[pos+1] = '"';
 		}
 
 		string::size_type start_fn = 1; //line[0] is (should be) "
