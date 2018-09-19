@@ -12,9 +12,14 @@
 #include <cstdlib>
 using namespace std;
 
-WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisible(false), eachPhraseNewStaff(true), record("unknown"), initialClef("treble") {
+WCE_File::WCE_File(string inputfilename, string filename_titles) : filename(inputfilename), fn_titles(filename_titles), meterInvisible(false), eachPhraseNewStaff(true), record("unknown"), initialClef("treble") {
 	
+	//if titlefile provided, read titles
 	
+	if ( filename_titles.size() > 0 ) {
+		readTitles(filename_titles);
+	}
+
 	string line; //line from wce file
 	string::size_type pos;
 	
@@ -109,6 +114,16 @@ WCE_File::WCE_File(string inputfilename) : filename(inputfilename), meterInvisib
 		if( (pos = line.find("SignatureController-titleTextField")) != string::npos ) {
 			if (stdinput) getline(cin,line); else getline(infile,line);
 			title = extractStringFromLine(line);
+
+			//see if a title is externally provided (via -t option)
+			if (filename_titles.size() > 0 ) {
+				string ext_title = "";
+				try { ext_title=titles.at(inputfilename); }
+				catch (const std::out_of_range& oor) { cerr << getLocation() << " Warning: title file provided (" << filename_titles << "), but wce filename (" << inputfilename << ") not found." << endl; }
+				if (ext_title.size() > 0)
+					title = ext_title;
+			}
+
 			continue;
 		}
 		if( (pos = line.find("SignatureController-isMeterInvisibleSwitch")) != string::npos ) {
@@ -303,4 +318,38 @@ string WCE_File::getInitialClef() const {
 	return clf;
 }
 
+void WCE_File::readTitles(string filename) {
+	ifstream titlefile;
+	titlefile.open(filename.c_str());
+
+	string line; //line from wce file
+	string::size_type pos;
+
+	while(getline(titlefile,line)) {
+		//find escaped " and replace with something unlikely (the alert '\a')
+		while ( (pos = line.find("\\\"") ) !=string::npos ) {
+			line[pos] = '\a';
+			line[pos+1] = '\a';
+		}
+		pos = line.find("\",\"");
+		if ( pos == string::npos ) {
+			cerr << "Titlefile " << filename << ": fields should be enclosed in quotes and separated by comma: " << line << endl;
+			exit(1);
+		}
+
+		string::size_type start_fn = 1; //line[0] is (should be) "
+		string::size_type end_fn = pos-1;
+		string::size_type start_title = pos+3;
+		string::size_type end_title = line.size() - 1 - 1; //line[-1] is (should be) "
+		uint len_fn = end_fn - start_fn + 1;
+		uint len_title = end_title - start_title + 1;
+
+		string fn_wce = line.substr(1,len_fn);
+		string title = line.substr(start_title, len_title);
+		//cout << fn_wce << " - " << title << endl;
+		titles[fn_wce] = title;
+	}
+
+	titlefile.close();
+}
 

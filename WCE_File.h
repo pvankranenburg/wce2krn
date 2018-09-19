@@ -14,11 +14,12 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<map>
 using namespace std;
 
 class WCE_File {
 public:
-	WCE_File(string inputfilename);
+	WCE_File(string inputfilename, string filename_titles);
 	
 	vector<string> getContents() const;
 	vector<string> getBeginSignature() const;
@@ -43,8 +44,12 @@ public:
 	bool getEachPhraseNewStaff() const { return eachPhraseNewStaff; }
 
 private:
+	void readTitles(string filename);
+
 	ifstream infile;
+	map<string,string> titles;
 	bool stdinput;
+	string fn_titles;
 	vector<string> contents;
 	vector<string> beginSignature;
 	vector<string> endSignature;
