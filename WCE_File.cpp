@@ -323,13 +323,13 @@ void WCE_File::readTitles(string filename) {
 	titlefile.open(filename.c_str());
 
 	string line; //line from wce file
-	string::size_type pos;
+	string::size_type pos, tmppos;
 
 	while(getline(titlefile,line)) {
 		//find escaped " and replace with something unlikely (the alert '\a')
-		while ( (pos = line.find("\\\"") ) !=string::npos ) {
-			line[pos] = '\a';
-			line[pos+1] = '\f';
+		while ( (tmppos = line.find("\\\"") ) !=string::npos ) {
+			line[tmppos] = '\a';
+			line[tmppos+1] = '\f';
 		}
 		pos = line.find("\",\"");
 		if ( pos == string::npos ) {
@@ -338,9 +338,9 @@ void WCE_File::readTitles(string filename) {
 		}
 
 		//change \" back
-		while ( (pos = line.find("\a") ) !=string::npos ) {
-			line[pos] = '\\';
-			line[pos+1] = '"';
+		while ( (tmppos = line.find("\a") ) !=string::npos ) {
+			line[tmppos] = '\\';
+			line[tmppos+1] = '"';
 		}
 
 		string::size_type start_fn = 1; //line[0] is (should be) "
