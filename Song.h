@@ -21,7 +21,7 @@ using namespace std;
 
 class Song {
 public:
-	Song(string inputfilename, bool weblilypond);
+	Song(string inputfilename, bool weblilypond, string filename_titles);
 	
 	TimeSignature translateTimeSignature(string lyTimeSignature) const;
 	RationalTime translateUpbeat(string lyUpbeat) const;

@@ -17,7 +17,7 @@
 #include <cstdlib>
 using namespace std;
 
-Song::Song(string inputfilename, bool weblilypond) : wcefile(inputfilename), weblily(weblilypond) {
+Song::Song(string inputfilename, bool weblilypond, string filename_titles) : wcefile(inputfilename, filename_titles), weblily(weblilypond) {
 
 	int i; //index
 

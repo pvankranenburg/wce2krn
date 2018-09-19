@@ -20,13 +20,11 @@ void print_usage() {
 	cout << "Usage: wce2krn [-k] [-r] [-s] [-l] [-v] [-h] [wcefile]" << endl;
 	cout << "Reads wce-file and generates *kern file" << endl;
 	cout << " -k: generate kernfile." << endl;
-	cout << " -208: generate lilypond 2.8 compatible lilypond file (default)." << endl;
-	cout << " -210: generate lilypond 2.10 compatible lilypond file (default is lilypond 2.8)." << endl;
-	cout << " -211: generate lilypond 2.11 compatible lilypond file (default is lilypond 2.8)." << endl;
 	cout << " -w: generate lilypond for Meertens Tune Collections." << endl;
 	//cout << " -a: generate absolute lilypond file (not implemented)!" << endl;
 	cout << " -l: generate file(s) with only the lyrics." << endl;
-	cout << " -s: spit in lines." << endl;
+	//cout << " -s: spit in lines (don't use)." << endl;
+	cout << " -t <FILE>: read titles from FILE." << endl;
 	cout << " -p: print the contents of the music to stdout with annotations" << endl;
 	cout << " -e: suppress log messages." << endl;
 	cout << " -v: print version number and exit." << endl;
@@ -47,6 +45,7 @@ int main (int argc, char * const argv[]) {
 	bool lyrics = false;
 	bool absly = false;
 	bool relly = false;
+	string fn_titles = "";
 	int ly_ver = 8;
 	bool weblily = false;
 	bool suppresslog = false;
@@ -57,13 +56,14 @@ int main (int argc, char * const argv[]) {
 	
 	for (int i = 1; i<argc; i++ ) {
 		arg = string(argv[i]);
-		if ( arg == "-s" ) split = true;
-		else if ( arg == "-k" ) kern = true;
+		if ( arg == "-k" ) kern = true;
 		else if ( arg == "-l" ) lyrics = true;
 		else if ( arg == "-r" ) relly = true;
-		else if ( arg == "-210" ) ly_ver = 10;
-		else if ( arg == "-211" ) ly_ver = 11;
-		else if ( arg == "-a" ) absly = true;
+		else if ( arg == "-t" ) fn_titles = string(argv[i+1]);
+		//else if ( arg == "-s" ) split = true;
+		//else if ( arg == "-210" ) ly_ver = 10;
+		//else if ( arg == "-211" ) ly_ver = 11;
+		//else if ( arg == "-a" ) absly = true;
 		else if ( arg == "-w" ) { weblily = true; ly_ver = 16; }
 		else if ( arg == "-p" ) printContents = true;
 		else if ( arg == "-e" ) suppresslog = true;
@@ -93,7 +93,7 @@ int main (int argc, char * const argv[]) {
 		if ( pos != string::npos) basename.erase(pos);
 	}
 	
-	Song s(filename, weblily);
+	Song s(filename, weblily, fn_titles);
 	if (printContents) s.printContents();
 			
 	if (basename == "-" && kern && lyrics) kern = false;
