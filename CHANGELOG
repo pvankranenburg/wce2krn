@@ -26,6 +26,8 @@ Version 1.79
 - title of song exported to **kern
 - "+" now treated as free text. Not as articulation.
 - " in title now handled properly in lilypond export.
+- titles filtered for unprintable (non-UTF) characters
+- option added to get titles from external file
 
 Version 1.78.1 (20180505)
 - bugfixes
