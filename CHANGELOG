@@ -1,4 +1,4 @@
-Version 1.79
+Version 1.80 (20180920)
 - removed warning "something following repeat bar"
 - key changes now exported to **kern
 - 'crossed' note now results in 'x' _after_ pitch class in **kern
