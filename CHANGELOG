@@ -1,3 +1,6 @@
+Version 1.80.1 (20180920)
+- also remove superfluous softbreak from lilypond output.
+
 Version 1.80 (20180920)
 - removed warning "something following repeat bar"
 - key changes now exported to **kern

@@ -2849,6 +2849,15 @@ void SongLine::repairFinalSoftBreak() {
 		if ( relLyTokens[0][rl_ix].hasSoftBreak() ) {
 			cerr << getLocation() << ": Error: softbreak at end of line." << endl;
 			relLyTokens[0][rl_ix].removeSoftBreak();
+			//also remove softbreak from lilypond source line
+			string::size_type pos;
+			if ( ( pos = wcelines[0].rfind("\\sb") ) != string::npos ) {
+				cout << wcelines[0] << endl;
+				wcelines[0].erase(pos,3);
+				cout << wcelines[0] << endl;
+			} else {
+				cerr << getLocation() << ": Error: not able to remove superfluous softbreak from lily line." << endl;
+			}
 		}
 	}
 
