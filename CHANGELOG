@@ -1,4 +1,6 @@
-Version 1.81
+Version 1.82 (20180922)
+- Add missing text lines (for phrases with only rests).
+- Volti exported as local comments to **kern
 - Added checks for unterminated slurs and ties
 
 Version 1.80.1 (20180920)
