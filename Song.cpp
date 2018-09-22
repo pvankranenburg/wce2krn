@@ -83,6 +83,21 @@ Song::Song(string inputfilename, bool weblilypond, string filename_titles) : wce
 	}
 	//cout << "Instrumental: " << instr << endl;
 
+	//determine maximum number of input lines per phrase
+	int lines_per_phrase = 0;
+	int max_lines_per_phrase = 0;
+	for (i=0; i<lineprofile.size(); i++) {
+		if ( lineprofile[i] ) {
+			lines_per_phrase++;
+			if ( lines_per_phrase > max_lines_per_phrase ) max_lines_per_phrase = lines_per_phrase;
+		} else {
+			lines_per_phrase = 0;
+		}
+	}
+	//last one (if no empty phrases follow:
+	if ( lines_per_phrase > max_lines_per_phrase ) max_lines_per_phrase = lines_per_phrase;
+
+
 	for( i = 0; i <= lineprofile.size(); i++ ) { //doorloop het profile tot size() om ook laatste songline toe te voegen als er geen lege regel volgt
 		//cout << "i: " << i << endl;
 		//cout << wcelines[i] << endl;
@@ -91,6 +106,12 @@ Song::Song(string inputfilename, bool weblilypond, string filename_titles) : wce
 			//cout << "SINGLELINE: " << singleline[singleline.size()-1] << endl; // is cleared after adding to songLines
 		} else { //empty line -> this means that the line that has just been passed can be added to songLines
 			if( !singleline.empty() ) { //don't add empty lines to songLines
+				int diff = max_lines_per_phrase - singleline.size();
+				while ( diff > 0 ) { //probalby Not enough text lines. Add
+					singleline.push_back("");
+					diff = max_lines_per_phrase - singleline.size();
+					cerr << getLocation() << ": Warning: probably a lyric line missing. Adding an empty line." << endl;
+				}
 				if( songLines.empty() ) { //first line of song
 					int initialBarnumber = 0;
 					if ( translateUpbeat(wcefile.getUpbeat()) == RationalTime(0,1) ) initialBarnumber = 1;
