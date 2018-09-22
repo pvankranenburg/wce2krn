@@ -163,6 +163,20 @@ Song::Song(string inputfilename, bool weblilypond, string filename_titles) : wce
 		}
 	}
 
+	//check
+	RelLyToken::TieStatus ts = (songLines.back()).getFinalTieStatus();
+	RelLyToken::SlurStatus ss = (songLines.back()).getFinalSlurStatus();
+
+	if (ss == RelLyToken::START_SLUR ||
+		ss == RelLyToken::ENDSTART_SLUR ||
+		ss == RelLyToken::IN_SLUR ||
+		ss == RelLyToken::START_NEW_SLUR  )
+		cerr << getLocation() << ": Warning: unterminated slur." << endl;
+
+	if (ts == RelLyToken::START_TIE ||
+		ts == RelLyToken::CONTINUE_TIE )
+		cerr << getLocation() << ": Warning: unterminated tie." << endl;
+
 	//cout << "HIER" << endl;
 
 	vector<SongLine>::iterator it_sl;
