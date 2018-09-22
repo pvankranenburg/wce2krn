@@ -929,7 +929,7 @@ void SongLine::translate() {
 						}
 						else if ( relLyTokens[i][relly_index].getToken().size() == 0 ) {
 							text_ann[i-1].push_back(RelLyToken::NO_WORD);
-							cerr << getLocation() << ": Error: Lyric line too short." << endl;
+							cerr << getLocation() << ": Error: Lyric line too short. No text for " << *krn_it << endl;
 						}
 						else {
 							text_ann[i-1].push_back(currentTextStatus);
