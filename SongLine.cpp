@@ -327,6 +327,16 @@ void SongLine::translate() {
 					exit(1);
 				}
 				*/
+				//check (not for (app) gracenote)
+				if (graceType == RelLyToken::NOGRACE) {
+					if ((*rl_it).getSlur() == RelLyToken::START_SLUR) {
+						if (currentSlurStatus == RelLyToken::START_SLUR ||
+							currentSlurStatus == RelLyToken::ENDSTART_SLUR ||
+							currentSlurStatus == RelLyToken::IN_SLUR ) //not START_NEW_SLUR, applies to \app
+							cerr << getLocation() << ": Error: Slur start while previous slur unterminated." << (*rl_it).getToken() <<  endl;
+					}
+				}
+
 				//
 				if ( (*rl_it).getSlur() != RelLyToken::NO_SLUR ) //there is slurinfo, just copy
 					currentSlurStatus = (*rl_it).getSlur();
