@@ -63,11 +63,11 @@ tekst			[\^_]\"[^\"]*\"{ws}*
 [\^_]?\\ds{ws}*										{/*clog << "INSTR  " << YYText() << endl; */ return 40; }
 [\^_]?\\dsf{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 41; }
 [\^_]?\\dsc{ws}*									{/*clog << "INSTR  " << YYText() << endl; */ return 42; }
-\\pv{ws}*											return 17;
-\\sv{ws}*											return 17;
-\\tv{ws}*											return 17;
-\\qv{ws}*											return 17;
-\\xv{ws}*											return 17;
+\\pv{ws}*											return 43;
+\\sv{ws}*											return 44;
+\\tv{ws}*											return 45;
+\\qv{ws}*											return 46;
+\\xv{ws}*											return 47;
 \\p+{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\f+{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
 \\mf{ws}*											{/*clog << "INSTR  " << YYText() << endl; */ return 4; }
