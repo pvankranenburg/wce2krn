@@ -275,12 +275,14 @@ string RelLyToken::createKernSingleNote(int octave, int duration, int dots, bool
 	} else {
 		char pc_up = toupper(pc);
 		octave = octave - 3;
-		if (octave !=0 ) {
+		if (octave > 0 ) {
 			for (int i=1; i<=abs(octave); i++) {
 				if (octave<0) res << pc_up; else res << pc;
 			}
-		} else
-			res << pc_up; //octave-3=0
+		} else {
+			for (int i=0; i>=(octave); i--)
+				res << pc_up; //octave-3=0
+		}
 		//Interpreted pitch?
 		if (getInterpretedPitch()) // yes
 			res << "x";
